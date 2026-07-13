@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Newsreader, Instrument_Sans } from "next/font/google";
 import "./globals.css";
 
@@ -21,6 +21,15 @@ export const metadata: Metadata = {
   title: "Wesley Home & Care — Victoria at Mt Eden",
   description:
     "Boutique aged residential care in the heart of Mt Eden, Tāmaki Makaurau.",
+};
+
+// Prevent mobile Safari from auto-zooming when focusing inputs whose font-size
+// is < 16px (the search + login fields). maximumScale:1 suppresses the focus
+// scale while keeping the design's smaller field text.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({
