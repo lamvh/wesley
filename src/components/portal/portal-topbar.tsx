@@ -3,13 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/shared/icons";
-import { RoleToggle } from "@/components/portal/role-toggle";
-import { BuildingSwitch } from "@/components/portal/building-switch";
-import { usePortalRole } from "@/lib/role-context";
 import { createClient } from "@/lib/supabase/client";
 
 export function PortalTopbar() {
-  const { role } = usePortalRole();
   const router = useRouter();
 
   async function signOut() {
@@ -20,7 +16,6 @@ export function PortalTopbar() {
 
   return (
     <header className="sticky top-0 z-20 flex items-center gap-5 border-b border-line bg-cream/90 px-[30px] py-[13px] backdrop-blur-sm max-md:flex-wrap max-md:gap-y-[10px]">
-      {role === "admin" && <BuildingSwitch />}
       <div className="tb-search flex w-full max-w-[360px] flex-1 items-center gap-[10px] rounded-[11px] border border-line bg-cream-2 px-[14px] py-[8px] transition-colors focus-within:border-navy focus-within:bg-cream-3 max-sm:hidden">
         <Icon name="search" size={18} className="shrink-0 text-search-placeholder" />
         <input
@@ -34,7 +29,6 @@ export function PortalTopbar() {
         </kbd>
       </div>
       <div className="flex-1" />
-      <RoleToggle />
       <div className="text-right leading-[1.15] max-md:hidden">
         <div className="text-[13.5px] font-semibold text-ink-soft">
           Saturday, 11 July

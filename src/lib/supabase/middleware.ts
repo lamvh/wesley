@@ -10,11 +10,20 @@ import { NextResponse, type NextRequest } from "next/server";
 // silently log users out. Redirects below copy the refreshed cookies across.
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
+  const { pathname } = request.nextUrl;
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  // Misconfigured env must not take the whole site down — let the request
+  // through rather than throwing a middleware invocation error.
+  if (!supabaseUrl || !supabaseKey) {
+    return supabaseResponse;
+  }
+
+  let user = null;
+  try {
+    const supabase = createServerClient(supabaseUrl, supabaseKey, {
       cookies: {
         getAll() {
           return request.cookies.getAll();
@@ -29,16 +38,20 @@ export async function updateSession(request: NextRequest) {
           );
         },
       },
-    },
-  );
+    });
 
-  // Do not run code between createServerClient and getUser() — it keeps the
-  // session fresh and avoids hard-to-debug logout bugs.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { pathname } = request.nextUrl;
+    // Do not run code between createServerClient and getUser() — it keeps the
+    // session fresh and avoids hard-to-debug logout bugs.
+    const result = await supabase.auth.getUser();
+    user = result.data.user;
+  } catch {
+    // A network hiccup or auth error must never become a 500. Fail closed on
+    // the portal (send to login), open everywhere else (let the page render).
+    if (pathname.startsWith("/portal")) {
+      return redirectWithSession("/login", request, supabaseResponse, pathname);
+    }
+    return supabaseResponse;
+  }
 
   // Guard the portal.
   if (!user && pathname.startsWith("/portal")) {

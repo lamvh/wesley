@@ -13,12 +13,11 @@ import {
 } from "@/lib/portal-nav";
 import { Icon } from "@/components/shared/icons";
 import { PersonBadge } from "@/components/shared/person-badge";
-import { RoleToggle } from "@/components/portal/role-toggle";
 import { cn } from "@/lib/utils";
 
 // Bottom tab bar shown ≤860px in place of the hidden sidebar (design: the
 // collapsed sidebar is real). Four primary destinations + a "More" sheet that
-// holds the full nav, the admin group, identity and the role toggle.
+// holds the full nav, the admin group and identity.
 const TAB_HREFS = ["/portal", "/portal/residents", "/portal/roster", "/portal/meals"];
 
 export function MobileTabBar() {
@@ -95,10 +94,6 @@ export function MobileTabBar() {
               >
                 <Icon name="close" size={22} />
               </button>
-            </div>
-
-            <div className="mb-3">
-              <RoleToggle />
             </div>
 
             <div className="grid grid-cols-1 gap-[3px]">
