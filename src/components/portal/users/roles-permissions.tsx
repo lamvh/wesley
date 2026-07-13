@@ -116,7 +116,8 @@ export function RolesPermissions({
           </div>
         )}
 
-        <div className="px-6 pb-4 pt-2">
+        <div className="overflow-x-auto px-6 pb-4 pt-2">
+          <div className="min-w-[440px]">
           <div
             className={cn(
               "grid items-center border-b border-line-divider pb-[10px] pt-[14px]",
@@ -158,6 +159,7 @@ export function RolesPermissions({
               ))}
             </div>
           ))}
+          </div>
         </div>
       </div>
     </div>

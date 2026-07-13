@@ -23,7 +23,7 @@ export default function RoomsPage() {
           </Button>
         }
       />
-      <div className="mt-[22px] grid grid-cols-4 gap-4">
+      <div className="mt-[22px] grid grid-cols-4 gap-4 max-md:grid-cols-2">
         {kpis.map((kpi) => (
           <KpiCard key={kpi.label} kpi={kpi} />
         ))}

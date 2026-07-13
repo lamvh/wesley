@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useMediaQuery } from "@/lib/use-media-query";
 import { usePortalRole } from "@/lib/role-context";
 import { portalIdentity } from "@/lib/portal-identity";
 import { PORTAL_NAV, PORTAL_ADMIN_NAV, isNavActive, type PortalNavItem } from "@/lib/portal-nav";
@@ -40,7 +41,11 @@ function NavLink({
 export function PortalSidebar() {
   const pathname = usePathname();
   const { role } = usePortalRole();
-  const [collapsed, setCollapsed] = useState(false);
+  const [userCollapsed, setUserCollapsed] = useState(false);
+  // Below 1024px the sidebar is forced to a slim icon rail (still visible).
+  const forced = useMediaQuery("(max-width: 1023px)");
+  const collapsed = forced || userCollapsed;
+  const setCollapsed = setUserCollapsed;
   const me = portalIdentity(role);
   const isAdmin = role === "admin";
   const mainNav = PORTAL_NAV.filter((i) => !i.adminOnly || isAdmin);
@@ -48,8 +53,8 @@ export function PortalSidebar() {
   return (
     <aside
       className={cn(
-        "sticky top-0 flex h-screen shrink-0 flex-col bg-navy-deep px-[14px] py-[18px] text-sidebar-fg transition-[width] max-lg:hidden",
-        collapsed ? "w-[76px]" : "w-64",
+        "sticky top-0 flex h-screen shrink-0 flex-col bg-navy-deep px-[14px] py-[18px] text-sidebar-fg transition-[width]",
+        collapsed ? "w-[68px] px-[10px]" : "w-64",
       )}
     >
       <div className={cn("flex items-center gap-[11px] px-2 pb-4 pt-[6px]", collapsed && "justify-center px-0")}>
@@ -64,15 +69,27 @@ export function PortalSidebar() {
             </span>
           </Link>
         )}
+        {!forced && !collapsed && (
+          <button
+            type="button"
+            onClick={() => setCollapsed((c) => !c)}
+            title="Collapse menu"
+            className="text-sidebar-muted hover:text-cream"
+          >
+            <Icon name="chevron-left" />
+          </button>
+        )}
+      </div>
+      {!forced && collapsed && (
         <button
           type="button"
-          onClick={() => setCollapsed((c) => !c)}
-          title={collapsed ? "Expand menu" : "Collapse menu"}
-          className={cn("text-sidebar-muted hover:text-cream", collapsed && "hidden")}
+          onClick={() => setCollapsed(false)}
+          title="Expand menu"
+          className="mb-1 flex justify-center text-sidebar-muted hover:text-cream"
         >
-          <Icon name="chevron-left" />
+          <Icon name="chevron-right" />
         </button>
-      </div>
+      )}
 
       <nav className="vscroll mt-[6px] flex flex-1 flex-col gap-[3px] overflow-y-auto">
         {mainNav.map((item) => (

@@ -9,7 +9,8 @@ const COLS = "grid-cols-[2.2fr_1.3fr_1.5fr_1fr_1fr_40px]";
 // and an inert ⋯ row menu. Rows are pre-filtered by the caller.
 export function UserTable({ users }: { users: User[] }) {
   return (
-    <div className="mt-4 overflow-hidden rounded-2xl border border-line bg-cream-2">
+    <div className="mt-4 overflow-x-auto rounded-2xl border border-line bg-cream-2">
+      <div className="min-w-[720px]">
       <div
         className={cn(
           "grid gap-[14px] border-b border-line-divider px-[22px] py-[14px] text-[12px] font-bold uppercase tracking-[0.4px] text-ink-faint",
@@ -81,6 +82,7 @@ export function UserTable({ users }: { users: User[] }) {
           </div>
         );
       })}
+      </div>
     </div>
   );
 }

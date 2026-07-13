@@ -15,7 +15,7 @@ export function MarketingPageHeader({
         <div className="text-[13px] font-bold uppercase tracking-[2px] text-bronze-text">
           {eyebrow}
         </div>
-        <h1 className="mt-[14px] font-serif text-[46px] font-medium tracking-[-0.4px]">
+        <h1 className="mt-[14px] font-serif text-[46px] font-medium tracking-[-0.4px] max-sm:text-[36px]">
           {title}
         </h1>
         {intro && (

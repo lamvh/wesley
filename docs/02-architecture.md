@@ -98,6 +98,18 @@ Pages, layouts, cards, lists, tables = RSC reading mock-data accessors.
 - `<Photo slot="vme-hero" alt="..." />` (`components/shared/photo.tsx`) maps slot ID → file via `next/image`; unmapped slot → labelled placeholder (design uses `image-slot` with a placeholder string; keep that string as fallback label).
 - Slot→file mapping lives in `lib/mock-data/photos.ts` (built by cross-referencing `screenshots/*.png` in the design project). Activities screen uses direct `assets/act-*.jpeg` / `assets/birthday-*.jpeg` (lines 951–1000) — copy those too.
 
+## Responsive / mobile
+
+The design is one responsive layout (desktop-first) that reflows at phone width (390px reference). Implemented with Tailwind `max-*` utilities mapping to the design's own breakpoints (~1024 / ~860 / ~680px → `lg` / `md` / `sm`):
+
+- **Marketing nav** (`site-nav`): below `lg` the desktop nav is replaced by a hamburger → dropdown drawer (client `useState`); "Family login" hidden below `sm`; hero H1 shrinks 62→44→40px, hero height becomes auto.
+- **Portal sidebar** (`portal-sidebar`): below 1024px auto-collapses to a slim **icon rail** (68px, still visible + navigable) via `useMediaQuery`; the expand/collapse toggle only shows on desktop.
+- **Topbar**: wraps on mobile; building switch + date hidden below `md`; search hidden below `sm`.
+- **Grids** stack (`max-md:grid-cols-1`, KPI rows `grid-cols-4 max-md:grid-cols-2`).
+- **Wide tables** (roster grid, meal-report, users, incidents, permission matrix) live in an `overflow-x-auto` wrapper with a `min-w-[…]` inner so they scroll internally — the page body never scrolls horizontally.
+
+The "Victoria - Mobile" design file is a canvas board rendering these same screens at 390px — no separate mobile screens.
+
 ## Providers (root layout)
 
 Fonts (Newsreader + Instrument Sans via `next/font`), `PortalRoleProvider` scoped to portal layout only (not global). No theme/dark-mode provider this phase (single light theme).

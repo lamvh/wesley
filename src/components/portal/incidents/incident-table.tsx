@@ -26,8 +26,8 @@ const headers = ["Ref", "Resident & type", "Reported by", "Severity", "Status"];
 
 export function IncidentTable({ incidents }: { incidents: Incident[] }) {
   return (
-    <div className="mt-4 overflow-hidden rounded-2xl border border-line bg-cream-2">
-      <Table className="block w-full">
+    <div className="mt-4 overflow-x-auto rounded-2xl border border-line bg-cream-2">
+      <Table className="block w-full min-w-[720px]">
         <TableHeader className="block">
           <TableRow
             className={cn(cols, "border-b border-line px-[22px] py-[13px] hover:bg-transparent")}

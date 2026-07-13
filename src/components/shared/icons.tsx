@@ -26,6 +26,8 @@ const PATHS: Record<string, string> = {
   buildings: '<path d="M3 21V7l8-4v18"/><path d="M11 21V9l8 3v9"/><path d="M2 21h20"/><path d="M7 9v.01M7 13v.01M7 17v.01"/>',
   "chevron-left": '<path d="M15 6l-6 6 6 6"/>',
   "chevron-right": '<path d="M9 6l6 6-6 6"/>',
+  menu: '<path d="M3 6h18M3 12h18M3 18h18"/>',
+  close: '<path d="M6 6l12 12M18 6L6 18"/>',
 };
 
 export type IconName = keyof typeof PATHS | string;

@@ -7,7 +7,7 @@ import { getStats } from "@/lib/mock-data";
 export function Hero() {
   const stats = getStats();
   return (
-    <section className="relative h-[640px] overflow-hidden">
+    <section className="relative h-[640px] overflow-hidden max-sm:h-auto max-sm:min-h-[520px]">
       <div className="absolute inset-0">
         <Photo
           slot="vme-hero"
@@ -26,7 +26,7 @@ export function Hero() {
             <span className="inline-flex items-center gap-2 rounded-full border border-cream/30 bg-cream/[0.16] px-[13px] py-[6px] text-[12.5px] font-semibold uppercase tracking-[0.4px] text-cream">
               Boutique aged care · Est. 1998
             </span>
-            <h1 className="mt-5 font-serif text-[62px] font-medium leading-[1.03] tracking-[-0.5px] text-hero-title">
+            <h1 className="mt-5 font-serif text-[62px] font-medium leading-[1.03] tracking-[-0.5px] text-hero-title max-md:text-[44px] max-sm:text-[40px] max-sm:leading-[1.05]">
               A warm place to call home, in the heart of Mt&nbsp;Eden
             </h1>
             <p className="mt-5 max-w-[500px] text-[18.5px] leading-[1.6] text-hero-body">
