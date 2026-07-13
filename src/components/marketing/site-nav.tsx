@@ -55,13 +55,13 @@ export function SiteNav() {
 
         <div className="flex items-center gap-3 max-sm:gap-2">
           <Link
-            href="/portal/family"
+            href="/login?as=family"
             className="rounded-[10px] border border-line-strong px-[15px] py-[9px] text-[14px] font-semibold text-navy max-sm:hidden"
           >
             Family login
           </Link>
           <Link
-            href="/portal"
+            href="/login"
             className="rounded-[10px] bg-navy px-[17px] py-[10px] text-[14px] font-semibold text-cream max-sm:px-3"
           >
             Staff portal

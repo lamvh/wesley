@@ -93,25 +93,31 @@ export function StockView() {
     ]);
   };
   const placeOrder = () => {
-    // One logged order per provider PO, captured before the cart is cleared.
+    // One logged order per provider PO, grouped from the cart before it clears.
+    const byProvider = new Map<string, { name: string; lines: number; subtotal: number }>();
+    for (const p of catalog) {
+      const qty = cart[p.id];
+      if (!qty) continue;
+      const g = byProvider.get(p.prov) ?? { name: providerName(p.prov), lines: 0, subtotal: 0 };
+      g.lines += 1;
+      g.subtotal += qty * p.price;
+      byProvider.set(p.prov, g);
+    }
     logActions(
-      cartGroups.map((g) => ({
+      [...byProvider.values()].map((g) => ({
         kind: "order_placed" as const,
-        summary: `Placed order · ${g.provName}`,
-        detail: `${g.lines.length} items · ${g.subtotalLabel}`,
+        summary: `Placed order · ${g.name}`,
+        detail: `${g.lines} items · ${money(g.subtotal)}`,
       })),
     );
     setCart({});
     setOrderPlaced(true);
   };
   const clearCart = () => {
-    if (cartCount > 0) {
+    const count = Object.values(cart).reduce((a, q) => a + q, 0);
+    if (count > 0) {
       logActions([
-        {
-          kind: "cart_cleared",
-          summary: "Cleared order cart",
-          detail: `${cartCount} items removed`,
-        },
+        { kind: "cart_cleared", summary: "Cleared order cart", detail: `${count} items removed` },
       ]);
     }
     setCart({});
@@ -228,6 +234,7 @@ export function StockView() {
       {tab === "providers" && (
         <ProvidersTab providers={providers} onNewOrder={() => setTab("order")} />
       )}
+      {tab === "activity" && <StockActivityTab entries={activity} />}
     </div>
   );
 }

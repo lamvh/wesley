@@ -220,7 +220,20 @@ orders(id uuid pk default gen_random_uuid(),
 order_lines(order_id uuid references orders(id) on delete cascade,
             product_id text references products(id), qty int, unit_price numeric(10,2),
             primary key (order_id, product_id))
+
+-- Action log for stock management (backs the Stock → Activity tab).
+-- A scoped slice of the deferred generic audit log.
+stock_activity_logs(id uuid pk default gen_random_uuid(),
+                    building_id text references buildings(id),
+                    kind text not null,          -- order_placed|reorder_autofill|cart_cleared|stock_adjusted
+                    summary text not null,        -- "Placed order · MedSupply NZ"
+                    detail text,                  -- "5 items · $286.50"
+                    actor_id uuid references users(id),
+                    order_id uuid null references orders(id),   -- when kind=order_placed
+                    product_id text null references products(id), -- when kind=stock_adjusted
+                    created_at timestamptz default now())
 ```
+The client `logActions()` (StockView) appends one row per material action; on Place order it writes one `order_placed` row per provider PO. Summary tiles/audit views read `stock_activity_logs` ordered by `created_at desc`.
 Client cart (`{productId: qty}`) → on Place order, split by `products.provider_id` into one `orders` row per provider + `order_lines`. Inventory status = `stock_levels.qty_now` vs `products.par` (the `stockLevel` helper). `suggestReorderCart` = "top every below-par product up to par".
 
 ### Meal intake logs (Meal report)
