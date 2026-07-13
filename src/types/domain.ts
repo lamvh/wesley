@@ -394,3 +394,21 @@ export interface Product {
 
 /** cart[productId] = quantity */
 export type Cart = Record<string, number>;
+
+// ---- stock activity log ----
+// Every material stock action is recorded so procurement is auditable.
+// Maps to a future `stock_activity_logs` table (see docs/03-data-model.md).
+export type StockActionKind =
+  | "order_placed"
+  | "reorder_autofill"
+  | "cart_cleared"
+  | "stock_adjusted";
+
+export interface StockActivityEntry {
+  id: string;
+  at: string; // display timestamp, e.g. "Today 09:14" (mock)
+  actor: string; // who performed the action
+  kind: StockActionKind;
+  summary: string; // headline, e.g. "Placed order · MedSupply NZ"
+  detail: string; // context, e.g. "12 items · $340.00"
+}

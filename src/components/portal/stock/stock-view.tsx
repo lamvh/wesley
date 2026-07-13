@@ -6,41 +6,69 @@ import {
   getBuildingById,
   getProductCatalog,
   getProviders,
+  getStockActivitySeed,
   providerName,
   suggestReorderCart,
 } from "@/lib/mock-data";
 import { useBuilding } from "@/lib/building-context";
+import { usePortalRole } from "@/lib/role-context";
+import { portalIdentity } from "@/lib/portal-identity";
 import { PortalPageHeader } from "@/components/shared/portal-page-header";
 import { Button } from "@/components/ui/button";
 import { InventoryTab } from "@/components/portal/stock/inventory-tab";
 import { ProvidersTab } from "@/components/portal/stock/providers-tab";
+import { StockActivityTab } from "@/components/portal/stock/stock-activity-tab";
 import {
   OrderTab,
   type CartGroup,
   type OrderCategory,
 } from "@/components/portal/stock/order-tab";
-import type { Cart } from "@/types/domain";
+import type { Cart, StockActivityEntry } from "@/types/domain";
 
-type Tab = "inventory" | "order" | "providers";
+type Tab = "inventory" | "order" | "providers" | "activity";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "inventory", label: "Inventory" },
   { key: "order", label: "Place order" },
   { key: "providers", label: "Providers" },
+  { key: "activity", label: "Activity" },
 ];
+
+// Clock label for a freshly logged action ("Today 09:14").
+function nowLabel(): string {
+  const d = new Date();
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `Today ${hh}:${mm}`;
+}
 
 const money = (n: number) => `$${n.toFixed(2)}`;
 
 export function StockView() {
   const { buildingId } = useBuilding();
   const buildingName = getBuildingById(buildingId).name;
+  const { role } = usePortalRole();
+  const actor = portalIdentity(role).name;
 
   const [tab, setTab] = useState<Tab>("inventory");
   const [cart, setCart] = useState<Cart>({});
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [activity, setActivity] = useState<StockActivityEntry[]>(getStockActivitySeed);
+  const [logSeq, setLogSeq] = useState(0);
 
   const catalog = getProductCatalog();
   const providers = getProviders();
+
+  // Record one or more actions to the activity log (newest first).
+  function logActions(items: Omit<StockActivityEntry, "id" | "at" | "actor">[]) {
+    if (items.length === 0) return;
+    const at = nowLabel();
+    setActivity((prev) => [
+      ...items.map((it, i) => ({ ...it, id: `log-${logSeq + i}`, at, actor })),
+      ...prev,
+    ]);
+    setLogSeq((n) => n + items.length);
+  }
 
   function bumpCart(id: string, delta: number) {
     setCart((prev) => {
@@ -53,14 +81,39 @@ export function StockView() {
     setOrderPlaced(false);
   }
   const autoFill = () => {
-    setCart(suggestReorderCart());
+    const fill = suggestReorderCart();
+    setCart(fill);
     setOrderPlaced(false);
+    logActions([
+      {
+        kind: "reorder_autofill",
+        summary: "Auto-filled reorder cart",
+        detail: `${Object.keys(fill).length} below-par items topped to par`,
+      },
+    ]);
   };
   const placeOrder = () => {
+    // One logged order per provider PO, captured before the cart is cleared.
+    logActions(
+      cartGroups.map((g) => ({
+        kind: "order_placed" as const,
+        summary: `Placed order · ${g.provName}`,
+        detail: `${g.lines.length} items · ${g.subtotalLabel}`,
+      })),
+    );
     setCart({});
     setOrderPlaced(true);
   };
   const clearCart = () => {
+    if (cartCount > 0) {
+      logActions([
+        {
+          kind: "cart_cleared",
+          summary: "Cleared order cart",
+          detail: `${cartCount} items removed`,
+        },
+      ]);
+    }
     setCart({});
     setOrderPlaced(false);
   };

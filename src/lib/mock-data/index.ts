@@ -35,6 +35,7 @@ export {
   getProductCatalog,
   providerName,
   suggestReorderCart,
+  getStockActivitySeed,
 } from "./stock-catalog";
 export {
   SHIFT_ORDER,

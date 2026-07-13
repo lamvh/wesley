@@ -69,6 +69,20 @@ Derive these in the accessor/helper layer (e.g. `getPortalIdentity(role)`) — n
 ## Tokens
 `navy-deep` (sidebar bg), `gold-deep` (active nav pill), `bronze`/gold tile (logo mark), `cream`/`.9` + `blur(8px)` (sticky topbar), `cream-2` + `field` (search + role-on button), `border`/`E7DECD` (topbar divider), avatar-palette entries for `meColor`, `muted`/`muted-2` for eyebrow + meta. Radius: nav/inputs `11px`, pills `100px`, logo tile `10px`. Icons: `19×19`, `stroke-width 1.8`, `currentColor` (source `1060–1062`).
 
+## Responsive (mobile)
+
+Design source: `.design-src/victoria-mt-eden.dc.html` (canvas: `Victoria - Mobile.dc.html`, every screen at 390px). Breakpoints follow the design: **≤1024px** two-column splits collapse to one; **≤860px** the sidebar is replaced by a bottom tab bar; **≤680px** card grids go single-column and section padding trims.
+
+| Width | Sidebar | Nav affordance | Topbar |
+|---|---|---|---|
+| ≥1024px | full `w-64` | left sidebar | full (search, date/wings, View website) |
+| 861–1023px | slim icon rail (`w-[68px]`, forced) | left sidebar | full |
+| ≤860px | **hidden** (`max-[860px]:hidden`) | **`mobile-tabbar`** (bottom) + More sheet | compact; date + "View website" hidden |
+
+- **`mobile-tabbar`** (`components/portal/mobile-tabbar.tsx`) — client island, `fixed bottom-0`, shown only `max-[860px]:flex`. Four primary destinations (Dashboard, Residents, Roster, Meals) with short labels + a **More** button. Active tab uses `gold-deep`. `<main>` gets `pb-[84px]` on mobile so content clears the bar; the bar respects `env(safe-area-inset-bottom)`.
+- **More sheet** (inside `mobile-tabbar`) — bottom sheet holding identity, the `role-toggle`, the full main nav, the admin group (admin only), and "View website". Backdrop tap or the close button dismisses it. This is the mobile home for everything dropped from the sidebar/topbar.
+- **`.wide-scroll`** (`globals.css`) — opt-in wrapper (`overflow-x:auto`) for wide tables/grids (roster, stock) so they scroll horizontally instead of overflowing on phones; content sets its own `min-width`.
+
 ## Out of scope (this phase)
 - Search box — inert, no query, no results.
 - Role state not persisted (resets on reload); no auth, no route guards. Admin-only routes visited as staff show an "Admin only" empty state, not a redirect.

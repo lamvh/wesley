@@ -25,7 +25,7 @@ export function PortalTopbar() {
       </div>
       <Link
         href="/"
-        className="rounded-[10px] border border-line-strong px-[14px] py-[9px] text-[13.5px] font-semibold text-navy"
+        className="rounded-[10px] border border-line-strong px-[14px] py-[9px] text-[13.5px] font-semibold text-navy max-[860px]:hidden"
       >
         View website
       </Link>

@@ -53,7 +53,7 @@ export function PortalSidebar() {
   return (
     <aside
       className={cn(
-        "sticky top-0 flex h-screen shrink-0 flex-col bg-navy-deep px-[14px] py-[18px] text-sidebar-fg transition-[width]",
+        "sticky top-0 flex h-screen shrink-0 flex-col bg-navy-deep px-[14px] py-[18px] text-sidebar-fg transition-[width] max-[860px]:hidden",
         collapsed ? "w-[68px] px-[10px]" : "w-64",
       )}
     >

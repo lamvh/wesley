@@ -158,3 +158,13 @@
     border: 2px solid var(--color-cream);
   }
 }
+
+@layer utilities {
+  /* Wrap wide tables/grids so they scroll horizontally on narrow screens
+     instead of overflowing the viewport. Content sets its own min-width. */
+  .wide-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 16px;
+  }
+}

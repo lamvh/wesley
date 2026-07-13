@@ -63,6 +63,8 @@ Other states:
 - No empty states — dashboard always has data both roles.
 - Hover: cards/rows are static (no per-row hover nav this phase).
 
+**Loading state** (`dashboard-skeleton.tsx`): `DashboardView` is a client island with an explicit `loading` → render transition. On mount **and on every role switch** it shows `DashboardSkeleton` — a pulsing mirror of the real layout (header, 4 KPIs, birthday strip, both split rows) — then swaps to content. Today `getDashboard(role)` is synchronous mock data; the settle window (`~450ms`) stands in for the async Supabase query that will replace it, so the skeleton path is real and forward-compatible. Skeleton carries `aria-busy` / `aria-live`.
+
 ## Interactions
 - **"Open portal"** (family card header) → `/portal/family`. Real nav.
 - **"View all"** (Needs attention) — inert stub this phase.
@@ -81,5 +83,6 @@ Other states:
 - Layout matches source `484–581`: 4-col KPIs, single birthdays strip, `1.5fr/1fr` then `1fr/1.5fr` two-col rows, `16px` gaps.
 - All content via `getDashboard(role)`; colors derived from semantic scales/avatar palette — no inline fixtures, no raw hex in JSX.
 - "Open portal" navigates to `/portal/family`; inert buttons noted above do nothing.
-- Named sub-components exist: `kpi-card`, `birthday-pill`, `alert-row`, `occupancy-bar`, `family-message-row`.
+- Named sub-components exist: `kpi-card`, `birthday-pill`, `alert-row`, `occupancy-bar`, `family-message-row`, `dashboard-skeleton`.
+- Loading state: first paint (and each role switch) shows `DashboardSkeleton`, then real content; skeleton grid matches the loaded layout.
 - `pnpm build` + `pnpm lint` clean; no body horizontal scroll; columns stack sensibly on narrow widths.
