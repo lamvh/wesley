@@ -142,7 +142,7 @@ Accessors: `getProviders()`, `getProductCatalog()`, `providerName(id)`, `suggest
 
 ## Future Supabase mapping (deferred — not this phase)
 
-> **Status:** the **core subset** is now authored as a migration — `supabase/migrations/0001_core_schema.sql` (tables `roles`, `role_permissions`, `buildings`, `building_wings`, `app_users`, `staff`, `residents`, all with RLS) + a seed from the mocks (`scripts/db/seed-core-schema.mts`, or paste-ready `supabase/seed/0001_core_seed.sql`). Screens still read mock data; swapping accessors to Supabase queries is the next step. The remaining tables below are still deferred.
+> **Status:** the **core subset is LIVE in the DB** — `supabase/migrations/0001_core_schema.sql` (tables `roles`, `role_permissions`, `buildings`, `building_wings`, `app_users`, `staff`, `residents`, all with RLS) applied + seeded from the mocks (`scripts/db/seed-core-schema.mts`, or paste-ready `supabase/seed/0001_core_seed.sql`). Row counts: roles 6, role_permissions 240 (6×10×4), buildings 2, app_users 11, staff 10, residents 9. `app_users` already gates portal access + role (verified end-to-end). Screens still read mock data — swapping accessors to Supabase queries is the next step. The remaining tables below are still deferred.
 
 Accessors become async queries; screens unchanged (already `await` accessors where practical). The shapes below keep the mock layer DB-compatible so the swap is mechanical. RLS on every table.
 

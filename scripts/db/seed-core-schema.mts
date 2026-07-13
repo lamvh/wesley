@@ -25,13 +25,33 @@ function readEnv(key: string): string | undefined {
   return line.slice(line.indexOf("=") + 1).trim().replace(/^["']|["']$/g, "");
 }
 
-const connectionString = readEnv("DIRECT_URL") ?? readEnv("DATABASE_URL");
-if (!connectionString) throw new Error("DIRECT_URL / DATABASE_URL missing in .env.local");
+// Build discrete connection fields instead of handing pg a connection STRING —
+// a URL-reserved char in the password (@ / : ? #) breaks pg's URL parser and
+// yields a bogus password. The greedy match takes the password up to the LAST
+// '@' (hosts never contain '@'), so a raw special-char password parses fine.
+// SUPABASE_DB_PASSWORD (raw, no encoding) overrides the URL password if set.
+function pgConfig() {
+  const url = readEnv("DIRECT_URL") ?? readEnv("DATABASE_URL");
+  if (!url) throw new Error("DIRECT_URL / DATABASE_URL missing in .env.local");
+  const m = url.match(
+    /^postgres(?:ql)?:\/\/([^:]+):(.*)@([^:/?]+)(?::(\d+))?\/([^?]+)/,
+  );
+  if (!m) throw new Error("Could not parse DIRECT_URL / DATABASE_URL");
+  const [, user, urlPw, host, port, database] = m;
+  return {
+    user,
+    password: readEnv("SUPABASE_DB_PASSWORD") ?? urlPw,
+    host,
+    port: port ? Number(port) : 5432,
+    database,
+    ssl: { rejectUnauthorized: false as const },
+  };
+}
 
 const DEFAULT_BUILDING = "wesley";
 
 async function main() {
-  const client = new pg.Client({ connectionString, ssl: { rejectUnauthorized: false } });
+  const client = new pg.Client(pgConfig());
   await client.connect();
   console.log("Connected. Applying schema…");
 

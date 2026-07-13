@@ -6,7 +6,7 @@
 - **Render:** RSC shell (fixed navy sidebar + cream topbar + `<main>`) with three small client islands (see below)
 
 ## Purpose
-Shared chrome for the staff/admin portal: fixed left navigation, sticky topbar (search + sign-out), and the scrolling content region every portal screen renders into. Access is gated by **Supabase Auth** (middleware guards `/portal/**` — see `docs/features/portal/login.md`). Nav visibility / identity / console name still derive from a client role context (`usePortalRole`, default `admin`) so no screen prop-drills the role; the manual Admin/Staff toggle and the Lodge/Wesley building switch have been **removed** (real role will come from the signed-in user's `app_users` record — RBAC wiring pending).
+Shared chrome for the staff/admin portal: fixed left navigation, sticky topbar (search + sign-out), and the scrolling content region every portal screen renders into. Access is gated by **Supabase Auth** (middleware guards `/portal/**` — see `docs/features/portal/login.md`) **and by role assignment**: `PortalLayout` is an async RSC that looks up the signed-in user's `app_users` row and shows an "access not provisioned" screen to anyone without an active assignment. Nav visibility / identity / console name derive from a client role context (`usePortalRole`) whose `initialRole` is now derived server-side from `app_users.role_id`; the manual Admin/Staff toggle and the Lodge/Wesley building switch have been **removed**.
 
 ## Layout
 `flex` row, `min-height:100vh`:
@@ -37,8 +37,8 @@ Shared chrome for the staff/admin portal: fixed left navigation, sticky topbar (
 
 ## Role context (client)
 
-- **`PortalRoleProvider`** + **`usePortalRole()`** live in `lib/role-context.tsx` (`"use client"`). Provider wraps the portal subtree inside `PortalLayout`; it is **not** global (marketing pages never mount it). Shape: `{ role: 'admin' | 'staff'; setRole(r) }`, default `'admin'`. With the toggle removed, `setRole` currently has no UI caller — the role is effectively pinned to `admin` until RBAC wiring replaces the source with the signed-in user's `app_users.role_id`.
-- Consumers: `portal-sidebar` (reads for nav gating + identity), `mobile-tabbar`, and portal views that branch on role (Dashboard variant, Stock, Meal report).
+- **`PortalRoleProvider`** + **`usePortalRole()`** live in `lib/role-context.tsx` (`"use client"`). Provider wraps the portal subtree inside `PortalLayout`; it is **not** global (marketing pages never mount it). Shape: `{ role: 'admin' | 'staff'; setRole(r) }`. `initialRole` is derived **server-side** in `PortalLayout` from the signed-in user's `app_users.role_id` via `toPortalRole` (`super_admin`/`admin` → `admin`, everyone else → `staff`); with the toggle removed `setRole` has no UI caller. Before the schema is applied the lookup fails open and the default `admin` stands.
+- Access helpers: `lib/supabase/current-user.ts` — `getCurrentUser()` (auth user + `app_users` row, fails open if the table/infra is missing), `canAccessPortal()`, `toPortalRole()`. Consumers: `portal-sidebar` (nav gating + identity), `mobile-tabbar`, and portal views that branch on role (Dashboard variant, Stock, Meal report).
 
 ### Role-derived values (source `1354–1411`)
 
@@ -87,12 +87,14 @@ Design source: `.design-src/victoria-mt-eden.dc.html` (canvas: `Victoria - Mobil
 
 ## Out of scope (this phase)
 - Search box — focusable input but query/results not wired.
-- Role source: still the client `usePortalRole` default (`admin`), not yet driven by the signed-in user's `app_users.role_id` (RBAC wiring pending). No manual toggle. Admin-only routes visited as non-admin show an "Admin only" empty state, not a redirect.
+- Nav gating is still the coarse `admin`/`staff` split (mapped from `app_users.role_id`), not yet the fine-grained `role_permissions` matrix. No manual toggle. Admin-only routes visited as non-admin show an "Admin only" empty state, not a redirect.
+- Access gating (unprovisioned → "access not provisioned" screen) is **live in code but fails open until the schema is applied**, so it only enforces once `app_users` exists in the DB.
 - Date/wings are static strings (no "today" computation).
 
 ## Definition of Done
 - Sidebar fixed + independently scrollable; topbar sticky with `blur` over `cream/.9`; `<main>` scrolls without body horizontal scroll.
 - `/portal/**` requires a Supabase session (middleware redirects to `/login`); sign-out clears the session and returns to `/login`.
+- Once the schema is applied, a signed-in user with no active `app_users` row sees the "access not provisioned" screen instead of the portal; the portal role reflects their `app_users.role_id`.
 - Every portal route has a `loading.tsx` skeleton fallback.
 - Active nav item shows the `gold-deep` pill matching the current route via `usePathname`.
 - Role read only through `usePortalRole()`; identity/nav data from accessors, no inline fixtures, no raw hex in JSX.

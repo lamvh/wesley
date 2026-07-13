@@ -32,7 +32,8 @@ Mobile-first by construction (single `400px` column, large tap targets); scales 
 - Clients: `lib/supabase/client.ts` (browser), `lib/supabase/server.ts` (RSC/actions), `lib/supabase/middleware.ts` (`updateSession`).
 - `src/middleware.ts` (matcher `/portal/:path*`, `/login`): refreshes the session, redirects unauthenticated `/portal*` → `/login?next=…`, and bounces signed-in users off `/login`.
 - Sign-out lives in `PortalTopbar` (`supabase.auth.signOut()` → `/login`).
-- Requires a Supabase Auth user to exist (create in Studio → Authentication, or invite). Role→RLS mapping (`users.role_id`) is still deferred — see `docs/03-data-model.md`; the topbar role toggle stays a demo device for now.
+- Requires a Supabase Auth user to exist (create in Studio → Authentication, or invite).
+- **Access gating:** after sign-in, `PortalLayout` resolves the user's `app_users` row (`lib/supabase/current-user.ts`); only an active assignment enters the portal (else the "access not provisioned" screen), and the portal role derives from `app_users.role_id`. Fails open until the schema is applied. See `docs/components/portal-shell.md`.
 
 ## Out of scope (this phase)
 Password reset, SSO, sign-up/self-registration, email-confirmation UX, validation beyond non-empty.

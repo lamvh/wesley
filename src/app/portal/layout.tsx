@@ -3,14 +3,35 @@ import { BuildingProvider } from "@/lib/building-context";
 import { PortalSidebar } from "@/components/portal/portal-sidebar";
 import { PortalTopbar } from "@/components/portal/portal-topbar";
 import { MobileTabBar } from "@/components/portal/mobile-tabbar";
+import { AccessPending } from "@/components/portal/access-pending";
+import {
+  getCurrentUser,
+  canAccessPortal,
+  toPortalRole,
+} from "@/lib/supabase/current-user";
 
-export default function PortalLayout({
+export default async function PortalLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Middleware guarantees a signed-in user reaches here. Only assigned
+  // (non-suspended) accounts see the portal; while the schema isn't applied
+  // yet the lookup fails open (see getCurrentUser) so nobody is locked out.
+  const me = await getCurrentUser();
+  if (me && !canAccessPortal(me)) {
+    return (
+      <AccessPending
+        email={me.email}
+        suspended={me.appUser?.status === "Suspended"}
+      />
+    );
+  }
+
+  const initialRole = toPortalRole(me?.appUser?.role_id);
+
   return (
-    <PortalRoleProvider>
+    <PortalRoleProvider initialRole={initialRole}>
       <BuildingProvider>
         <div className="flex min-h-screen bg-cream">
           <PortalSidebar />
