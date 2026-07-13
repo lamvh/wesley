@@ -142,7 +142,9 @@ Accessors: `getProviders()`, `getProductCatalog()`, `providerName(id)`, `suggest
 
 ## Future Supabase mapping (deferred — not this phase)
 
-Accessors become async queries; screens unchanged (already `await` accessors where practical). **Do not build any of this now** — the shapes below only keep the mock layer DB-compatible so the swap is mechanical. RLS on every table.
+> **Status:** the **core subset** is now authored as a migration — `supabase/migrations/0001_core_schema.sql` (tables `roles`, `role_permissions`, `buildings`, `building_wings`, `app_users`, `staff`, `residents`, all with RLS) + a seed from the mocks (`scripts/db/seed-core-schema.mts`, or paste-ready `supabase/seed/0001_core_seed.sql`). Screens still read mock data; swapping accessors to Supabase queries is the next step. The remaining tables below are still deferred.
+
+Accessors become async queries; screens unchanged (already `await` accessors where practical). The shapes below keep the mock layer DB-compatible so the swap is mechanical. RLS on every table.
 
 ### Care/ops tables (existing screens)
 `residents`, `rooms`, `staff`, `shifts` (+ `shift_staff` join), `leave_requests`, `stock_items`, `incidents`, `meal_services`, `activities`, `family_posts`, `visits`, `messages`, `birthdays`.
