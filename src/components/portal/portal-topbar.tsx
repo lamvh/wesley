@@ -1,15 +1,19 @@
+"use client";
+
 import Link from "next/link";
 import { Icon } from "@/components/shared/icons";
 import { RoleToggle } from "@/components/portal/role-toggle";
+import { BuildingSwitch } from "@/components/portal/building-switch";
+import { usePortalRole } from "@/lib/role-context";
 
 export function PortalTopbar() {
+  const { role } = usePortalRole();
   return (
-    <header className="sticky top-0 z-20 flex items-center gap-5 border-b border-line bg-cream/90 px-[30px] py-[13px] backdrop-blur-sm">
-      <div className="flex max-w-[420px] flex-1 items-center gap-[10px] rounded-[11px] border border-line bg-cream-2 px-[14px] py-[9px] text-search-placeholder">
+    <header className="sticky top-0 z-20 flex items-center gap-5 border-b border-line bg-cream/90 px-[30px] py-[13px] backdrop-blur-sm max-md:flex-wrap max-md:gap-y-[10px]">
+      {role === "admin" && <BuildingSwitch />}
+      <div className="tb-search flex max-w-[340px] flex-1 items-center gap-[10px] rounded-[11px] border border-line bg-cream-2 px-[14px] py-[9px] text-search-placeholder max-sm:hidden">
         <Icon name="search" />
-        <span className="text-[14px] max-sm:hidden">
-          Search residents, staff, stock…
-        </span>
+        <span className="text-[14px]">Search residents, staff, stock…</span>
       </div>
       <div className="flex-1" />
       <RoleToggle />

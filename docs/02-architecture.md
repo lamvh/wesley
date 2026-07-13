@@ -28,6 +28,7 @@
 | `/portal/family` | `app/portal/family/page.tsx` | Family portal | both |
 | `/portal/stock` | `app/portal/stock/page.tsx` | Stock & supplies | all staff |
 | `/portal/meal-report` | `app/portal/meal-report/page.tsx` | Meal report (intake logging) | all staff |
+| `/portal/buildings` | `app/portal/buildings/page.tsx` | Buildings (multi-site) | admin |
 | `/portal/incidents` | `app/portal/incidents/page.tsx` | Incidents & compliance | admin |
 | `/portal/users` | `app/portal/users/page.tsx` | Users & access (RBAC, super-admin) | admin |
 
@@ -77,8 +78,9 @@ Pages, layouts, cards, lists, tables = RSC reading mock-data accessors.
 ## Role model
 
 - `PortalRoleProvider` (client) wraps portal layout; `usePortalRole()` → `{ role, setRole }`. Default `admin`. Not persisted this phase.
-- **Nav structure** (`lib/portal-nav.ts`): main = Dashboard · Stock · Meal report · Rooms(admin) · Residents · Roster · Meals · Activities · Family; Administration group (admin) = Incidents · Users & access. Sidebar is collapsible (client `useState`).
-- **Admin-only nav** (Rooms, Incidents, Users & access) hidden when `role === 'staff'`. Stock & Meal report are visible to all staff.
+- **Nav structure** (`lib/portal-nav.ts`): main = Dashboard · Stock · Meal report · Rooms(admin) · Residents · Roster · Meals · Activities · Family; Administration group (admin) = Buildings · Incidents · Users & access. Sidebar is collapsible (client `useState`).
+- **Admin-only nav** (Rooms, Buildings, Incidents, Users & access) hidden when `role === 'staff'`. Stock & Meal report are visible to all staff.
+- **Active building** (`BuildingProvider` / `useBuilding`, client): topbar `BuildingSwitch` (admin) selects the care home; shared with the Buildings screen + Stock header. Visual scoping this phase; becomes a real per-building data filter + RLS dimension with the DB.
 - **Permission model** (Users & access): a `role → module → action` matrix (`PermissionMatrix`, see 03-data-model.md). UI-editable this phase; becomes the server-side authorization source (RLS) with real auth.
 - **Dashboard** renders admin vs staff variant (greeting, KPIs, alerts differ — lines 1124–1148).
 - Topbar shows role pill toggle + identity: admin = Sarah Beckett / Facility Manager / SB / `#BE7350`; staff = Aroha Ngata / Registered Nurse · Rātā / AN / `#6E875E` (lines 1408–1411). Console name: admin "Admin Console", staff "Care Station".

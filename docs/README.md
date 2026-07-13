@@ -21,12 +21,12 @@ Frontend build of the **Victoria at Mt Eden** product for Wesley Home & Care —
 
 **Marketing** — [home](./features/marketing/home.md) · [our-rooms](./features/marketing/our-rooms.md) · [life-here](./features/marketing/life-here.md) · [our-home](./features/marketing/our-home.md) · [careers](./features/marketing/careers.md) · [contact](./features/marketing/contact.md)
 
-**Portal** — [dashboard](./features/portal/dashboard.md) · [rooms](./features/portal/rooms.md) · [room-detail](./features/portal/room-detail.md) · [residents](./features/portal/residents.md) · [resident-detail](./features/portal/resident-detail.md) · [roster-shifts](./features/portal/roster-shifts.md) · [meals-dietary](./features/portal/meals-dietary.md) · [meal-report](./features/portal/meal-report.md) · [activities](./features/portal/activities.md) · [family-portal](./features/portal/family-portal.md) · [stock-supplies](./features/portal/stock-supplies.md) · [incidents-compliance](./features/portal/incidents-compliance.md) · [users-access](./features/portal/users-access.md)
+**Portal** — [dashboard](./features/portal/dashboard.md) · [buildings](./features/portal/buildings.md) · [rooms](./features/portal/rooms.md) · [room-detail](./features/portal/room-detail.md) · [residents](./features/portal/residents.md) · [resident-detail](./features/portal/resident-detail.md) · [roster-shifts](./features/portal/roster-shifts.md) · [meals-dietary](./features/portal/meals-dietary.md) · [meal-report](./features/portal/meal-report.md) · [activities](./features/portal/activities.md) · [family-portal](./features/portal/family-portal.md) · [stock-supplies](./features/portal/stock-supplies.md) · [incidents-compliance](./features/portal/incidents-compliance.md) · [users-access](./features/portal/users-access.md)
 
 ## Product at a glance
 
 - **Marketing site (6):** Home · Our rooms · Life here · Our home · Careers · Contact
-- **Staff portal (14):** Dashboard (admin+staff) · Rooms · Room detail · Residents · Resident detail · Roster & shifts · Meals & dietary · Meal report · Activities · Family portal · Stock & supplies · Incidents & compliance · Users & access (RBAC)
+- **Staff portal (15):** Dashboard (admin+staff) · Buildings (multi-site) · Rooms · Room detail · Residents · Resident detail · Roster & shifts (weekly scheduler) · Meals & dietary · Meal report · Activities · Family portal · Stock & supplies (inventory/order/providers) · Incidents & compliance · Users & access (RBAC)
 - **Roles:** Admin (Sarah Beckett, Facility Manager) · Staff (Aroha Ngata, RN) — client-side toggle, no auth this phase.
 
 ## Rule (non-negotiable)

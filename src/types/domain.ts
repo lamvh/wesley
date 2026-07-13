@@ -324,3 +324,73 @@ export interface MealReportResident {
 
 /** log[residentIdx][meal] = intake level (or absent when not yet logged) */
 export type MealLog = Record<number, Partial<Record<"breakfast" | "lunch" | "dinner", IntakeLevel>>>;
+
+// ---- buildings (multi-site) ----
+export interface Building {
+  id: string;
+  name: string;
+  full: string;
+  suburb: string;
+  wings: string[];
+  suites: number;
+  occupied: number;
+  staff: number;
+  mgr: string;
+  color: string;
+  tint: string;
+  initials: string;
+}
+
+// ---- roster scheduler ----
+export interface ShiftType {
+  id: string;
+  code: string;
+  label: string;
+  time: string;
+  color: string;
+  tint: string;
+  border: string;
+}
+
+export interface RosterStaff {
+  name: string;
+  pos: string;
+  initials: string;
+  color: string;
+}
+
+export interface RosterDay {
+  dow: string;
+  date: string;
+}
+
+/** grid["{rowIdx}-{colIdx}"] = list of shift-type ids for that staff/day cell */
+export type RosterGrid = Record<string, string[]>;
+
+// ---- stock: providers, catalog, ordering ----
+export interface Provider {
+  id: string;
+  name: string;
+  cat: string;
+  contact: string;
+  phone: string;
+  lead: string;
+  terms: string;
+  pref: boolean;
+  color: string;
+  tint: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  cat: string;
+  unit: string;
+  price: number;
+  prov: string;
+  par: number;
+  qtyNow: number;
+}
+
+/** cart[productId] = quantity */
+export type Cart = Record<string, number>;

@@ -22,6 +22,7 @@ export const PORTAL_NAV: PortalNavItem[] = [
 
 // Administration group (admin only).
 export const PORTAL_ADMIN_NAV: PortalNavItem[] = [
+  { href: "/portal/buildings", label: "Buildings", icon: "buildings" },
   { href: "/portal/incidents", label: "Incidents & compliance", icon: "incidents" },
   { href: "/portal/users", label: "Users & access", icon: "users" },
 ];

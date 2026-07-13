@@ -108,6 +108,38 @@ type MealLog = Record<number, Partial<Record<MealSlot, IntakeLevel>>>;
 
 - One logical record per **(resident, service_date, meal_slot)**. `summariseMealLog()` aggregates → the 4 KPI tiles.
 
+## Buildings / multi-site (`lib/mock-data/buildings.ts`)
+
+Backs the **Buildings** screen + topbar switcher. The active building is client state (`BuildingProvider` / `useBuilding`).
+
+```ts
+interface Building { id; name; full; suburb; wings: string[]; suites; occupied; staff; mgr; color; tint; initials }
+```
+Accessors: `getBuildings()`, `getBuildingById(id)`, `occupancyPct(b)`. Two sites seeded (Wesley, The Lodge). `wings/suites/occupied/staff` are denormalised counts here; in the DB they become derived aggregates per `building_id`.
+
+## Roster scheduling (`lib/mock-data/roster-schedule.ts`)
+
+Backs the redesigned **Roster** weekly grid.
+
+```ts
+interface ShiftType { id; code; label; time; color; tint; border }   // 7 types: ms,m,e,a,n,tld,tll
+interface RosterStaff { name; pos; initials; color }
+interface RosterDay { dow; date }
+type RosterGrid = Record<string, string[]>;   // grid["{rowIdx}-{colIdx}"] = shiftId[]
+```
+Accessors: `getShiftDefs()`, `getShiftLegend()`, `getRosterStaff()`, `getRosterDays()`, `getDefaultRosterGrid()`, `dailyTotals(staffCount, days, grid)`, `totalShifts(grid)`, `SHIFT_ORDER`, `ROSTER_WEEK_TITLE`. A cell can hold multiple shift ids (e.g. TL day+late). Shift-type colors are stored (they're a fixed lookup, rendered via inline style).
+
+## Stock, providers & ordering (`lib/mock-data/stock-catalog.ts`)
+
+Backs the redesigned **Stock** tabs (Inventory / Place order / Providers).
+
+```ts
+interface Provider { id; name; cat; contact; phone; lead; terms; pref; color; tint }
+interface Product  { id; name; cat; unit; price; prov; par; qtyNow }   // prov = provider id
+type Cart = Record<string, number>;   // { productId: qty }
+```
+Accessors: `getProviders()`, `getProductCatalog()`, `providerName(id)`, `suggestReorderCart()` (fills below-par up to par). Cart/order state is client-only; orders group **by provider** into separate POs. Stock status derives via `stockLevel(qtyNow, par)`.
+
 ## Future Supabase mapping (deferred — not this phase)
 
 Accessors become async queries; screens unchanged (already `await` accessors where practical). **Do not build any of this now** — the shapes below only keep the mock layer DB-compatible so the swap is mechanical. RLS on every table.
@@ -142,6 +174,54 @@ role_permissions(role_id text references roles(id) on delete cascade,
                  primary key (role_id, module, action))
 ```
 Authorization = source of truth server-side: RLS policies + route guards read `role_permissions`, NOT the client matrix. The UI matrix mirrors it. `togglePerm` → `upsert role_permissions`. Add user → `insert users(status='Invited')` + Supabase invite email.
+
+### Buildings / multi-site
+```sql
+buildings(id text pk,                 -- 'wesley' | 'lodge'
+          name text, full_name text, suburb text,
+          manager_user_id uuid references users(id),
+          color text, created_at timestamptz default now())
+building_wings(building_id text references buildings(id), name text,
+               primary key (building_id, name))
+```
+**Every care/ops table gains a `building_id` FK** (residents, rooms, staff, roster, stock_levels, incidents…). suites/occupied/staff counts on the Buildings card become aggregate queries per building. The active building (topbar switcher) becomes a query filter and — with auth — an RLS scoping dimension (a user only sees buildings they're assigned to).
+
+### Roster scheduling
+```sql
+shift_types(id text pk,               -- ms|m|e|a|n|tld|tll
+            code text, label text, time_label text,
+            color text, tint text, border text)
+roster_assignments(id uuid pk default gen_random_uuid(),
+                   building_id text references buildings(id),
+                   staff_id uuid references staff(id),
+                   work_date date not null,
+                   shift_type_id text references shift_types(id),
+                   published_at timestamptz,          -- null = draft
+                   unique (building_id, staff_id, work_date, shift_type_id))
+```
+Grid cell `grid["{r}-{c}"]` = the set of `roster_assignments` for that (staff, date). `toggleShift` → insert/delete one row. "Staff on duty" totals + "shifts assigned" → aggregates. Publish sets `published_at` for the week.
+
+### Stock, providers & ordering
+```sql
+providers(id text pk, name text, category text,
+          contact_email citext, phone text, lead_time text, terms text,
+          preferred bool default false, color text, created_at timestamptz default now())
+products(id text pk, name text, category text, unit text,
+         price numeric(10,2), provider_id text references providers(id), par int)
+stock_levels(product_id text references products(id),
+             building_id text references buildings(id),
+             qty_now int not null default 0,
+             primary key (product_id, building_id))
+orders(id uuid pk default gen_random_uuid(),
+       building_id text references buildings(id),
+       provider_id text references providers(id),     -- one PO per provider
+       status text default 'draft', placed_by uuid references users(id),
+       placed_at timestamptz, total_excl_gst numeric(12,2))
+order_lines(order_id uuid references orders(id) on delete cascade,
+            product_id text references products(id), qty int, unit_price numeric(10,2),
+            primary key (order_id, product_id))
+```
+Client cart (`{productId: qty}`) → on Place order, split by `products.provider_id` into one `orders` row per provider + `order_lines`. Inventory status = `stock_levels.qty_now` vs `products.par` (the `stockLevel` helper). `suggestReorderCart` = "top every below-par product up to par".
 
 ### Meal intake logs (Meal report)
 ```sql
