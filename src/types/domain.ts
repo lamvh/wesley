@@ -266,3 +266,61 @@ export interface ContactInfo {
   email: string;
   hours: string;
 }
+
+// ---- users & access (super admin) ----
+export type UserRole =
+  | "super_admin"
+  | "admin"
+  | "nurse"
+  | "carer"
+  | "activities"
+  | "family";
+export type UserStatus = "Active" | "Invited" | "Suspended";
+
+export interface User {
+  name: string;
+  email: string;
+  role: UserRole;
+  scope: string;
+  status: UserStatus;
+  last: string;
+  initials: string;
+  color: string;
+}
+
+export type ModuleKey =
+  | "dashboard"
+  | "residents"
+  | "rooms"
+  | "roster"
+  | "meals"
+  | "activities"
+  | "family"
+  | "stock"
+  | "incidents"
+  | "users";
+
+export interface AppModule {
+  key: ModuleKey;
+  label: string;
+}
+
+export type PermissionAction = "view" | "create" | "edit" | "delete";
+export type Permission = Record<PermissionAction, boolean>;
+export type ModulePermissions = Record<ModuleKey, Permission>;
+export type PermissionMatrix = Record<UserRole, ModulePermissions>;
+
+// ---- meal report (daily intake) ----
+export type IntakeLevel = "all" | "most" | "some" | "refused";
+
+export interface MealReportResident {
+  idx: number;
+  name: string;
+  room: string;
+  initials: string;
+  color: string;
+  diet: string;
+}
+
+/** log[residentIdx][meal] = intake level (or absent when not yet logged) */
+export type MealLog = Record<number, Partial<Record<"breakfast" | "lunch" | "dinner", IntakeLevel>>>;

@@ -4,8 +4,11 @@
 import type {
   ActivityCategory,
   CareTier,
+  IntakeLevel,
   RoomStatus,
   Severity,
+  UserRole,
+  UserStatus,
   Wing,
 } from "@/types/domain";
 
@@ -111,3 +114,54 @@ export const occupancyToneClass = {
   navy: "bg-navy",
   gold: "bg-gold-text",
 } as const;
+
+/** User role -> badge/text/dot classes + human label. */
+export const userRoleMeta: Record<UserRole, Swatch & { label: string; desc: string }> = {
+  super_admin: {
+    ...swatch("text-navy", "bg-navy-tint", "bg-navy"),
+    label: "Super Admin",
+    desc: "Full system control — users, roles and every module.",
+  },
+  admin: {
+    ...swatch("text-rust", "bg-rust-tint", "bg-rust"),
+    label: "Admin",
+    desc: "Facility manager — runs the home day to day.",
+  },
+  nurse: {
+    ...swatch("text-cat-craft", "bg-cat-craft-tint", "bg-cat-craft"),
+    label: "Registered Nurse",
+    desc: "Clinical care, residents, incidents and medications.",
+  },
+  carer: {
+    ...swatch("text-sage", "bg-sage-tint", "bg-sage"),
+    label: "Carer",
+    desc: "Daily hands-on care and resident notes.",
+  },
+  activities: {
+    ...swatch("text-gold-text", "bg-gold-tint", "bg-gold-text"),
+    label: "Activities",
+    desc: "Programme, outings and family highlights.",
+  },
+  family: {
+    ...swatch("text-cat-music", "bg-cat-music-tint", "bg-cat-music"),
+    label: "Family / Whānau",
+    desc: "Read-only portal access for a resident's whānau.",
+  },
+};
+
+/** User status -> text + dot classes. */
+export const userStatusMeta: Record<UserStatus, { text: string; dot: string }> = {
+  Active: { text: "text-sage", dot: "bg-sage" },
+  Invited: { text: "text-gold-text", dot: "bg-bronze" },
+  Suspended: { text: "text-rust", dot: "bg-terracotta" },
+};
+
+/** Meal intake level -> badge classes + label. */
+export const intakeMeta: Record<IntakeLevel, Swatch & { label: string }> = {
+  all: { ...swatch("text-sage", "bg-sage-tint", "bg-sage"), label: "All" },
+  most: { ...swatch("text-cat-craft", "bg-cat-craft-tint", "bg-cat-craft"), label: "Most" },
+  some: { ...swatch("text-gold-text", "bg-gold-tint", "bg-gold-text"), label: "Some" },
+  refused: { ...swatch("text-rust", "bg-rust-tint", "bg-rust"), label: "Refused" },
+};
+
+export const INTAKE_LEVELS: IntakeLevel[] = ["all", "most", "some", "refused"];

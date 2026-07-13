@@ -77,6 +77,85 @@ interface OccupancyWing { name: string; filled: number; total: number; colorKey:
 - `careTierMeta`, `severityMeta`, `roomStatusMeta`, `activityCatMeta` → `{ colorToken, tintToken }` per semantic scale.
 - `slugify(name)`, `initials(name)`.
 
+## Users, roles & permissions — RBAC (`lib/mock-data/users.ts`)
+
+Backs the **Users & access** screen. Types in `types/domain.ts`: `User`, `UserRole`, `UserStatus`, `AppModule`, `ModuleKey`, `Permission`, `PermissionMatrix`.
+
+```ts
+type UserRole = "super_admin" | "admin" | "nurse" | "carer" | "activities" | "family";
+type UserStatus = "Active" | "Invited" | "Suspended";
+interface User { name; email; role: UserRole; scope: string; status: UserStatus; last: string; initials; color }
+
+type ModuleKey = "dashboard"|"residents"|"rooms"|"roster"|"meals"|"activities"|"family"|"stock"|"incidents"|"users";
+type PermissionAction = "view" | "create" | "edit" | "delete";
+type Permission = Record<PermissionAction, boolean>;               // one module's grant
+type PermissionMatrix = Record<UserRole, Record<ModuleKey, Permission>>;
+```
+
+- 6 roles, 10 modules, 4 actions ⇒ matrix of `6 × 10 × 4` grants. `super_admin` is implicit-all and immutable (never store editable rows for it).
+- Accessors: `getUsers()`, `getModules()`, `getDefaultPermissions()` (seed matrix), `countGranted()`, `ROLE_KEYS`. Role/status colors derive in `design-meta.ts` (`userRoleMeta`, `userStatusMeta`) — not stored.
+- **`scope`** is free-text today (e.g. "Rātā wing", "Peggy W. · Rātā 12"). For the DB, model it as a typed FK (wing or resident) — see below.
+
+## Meal intake logs (`lib/mock-data/meal-report.ts`)
+
+Backs the **Meal report** screen. `MealLog[residentIdx][slot] = IntakeLevel`.
+
+```ts
+type IntakeLevel = "all" | "most" | "some" | "refused";
+type MealSlot = "breakfast" | "lunch" | "dinner";
+type MealLog = Record<number, Partial<Record<MealSlot, IntakeLevel>>>;
+```
+
+- One logical record per **(resident, service_date, meal_slot)**. `summariseMealLog()` aggregates → the 4 KPI tiles.
+
 ## Future Supabase mapping (deferred — not this phase)
 
-Tables (RLS on all): `residents`, `rooms`, `staff`, `shifts` (+ `shift_staff` join), `leave_requests`, `supplies`/`stock_items`, `incidents`, `meal_services`, `activities`, `family_posts`, `visits`, `messages`, `birthdays`. Accessors become async Supabase queries; screens unchanged (already `await` accessors where practical). Auth later maps role → `staff.role` (admin/carer). **Do not build any of this now** — listed only so mock shapes stay compatible.
+Accessors become async queries; screens unchanged (already `await` accessors where practical). **Do not build any of this now** — the shapes below only keep the mock layer DB-compatible so the swap is mechanical. RLS on every table.
+
+### Care/ops tables (existing screens)
+`residents`, `rooms`, `staff`, `shifts` (+ `shift_staff` join), `leave_requests`, `stock_items`, `incidents`, `meal_services`, `activities`, `family_posts`, `visits`, `messages`, `birthdays`.
+
+### RBAC tables (Users & access)
+```sql
+-- fixed lookup of the 6 roles
+roles(id text pk,           -- 'super_admin' | 'admin' | 'nurse' | 'carer' | 'activities' | 'family'
+      label text, description text, is_system bool default false)
+
+users(id uuid pk default gen_random_uuid(),
+      auth_id uuid unique references auth.users(id),   -- Supabase Auth link
+      name text not null, email citext unique not null,
+      role_id text not null references roles(id),
+      status text not null default 'Invited',          -- Active | Invited | Suspended
+      last_active_at timestamptz,
+      created_at timestamptz default now())
+
+-- scope: what a non-global user is limited to (wing OR a single resident for family)
+user_scopes(user_id uuid references users(id) on delete cascade,
+            wing text null, resident_id uuid null references residents(id),
+            primary key (user_id, coalesce(wing,''), coalesce(resident_id,'0')))
+
+-- editable grant matrix; super_admin is NOT stored (implicit allow-all)
+role_permissions(role_id text references roles(id) on delete cascade,
+                 module text not null,     -- ModuleKey
+                 action text not null,      -- view|create|edit|delete
+                 granted bool not null default false,
+                 primary key (role_id, module, action))
+```
+Authorization = source of truth server-side: RLS policies + route guards read `role_permissions`, NOT the client matrix. The UI matrix mirrors it. `togglePerm` → `upsert role_permissions`. Add user → `insert users(status='Invited')` + Supabase invite email.
+
+### Meal intake logs (Meal report)
+```sql
+meal_intake_logs(id uuid pk default gen_random_uuid(),
+                 resident_id uuid not null references residents(id),
+                 service_date date not null,
+                 meal_slot text not null,        -- breakfast|lunch|dinner
+                 intake_level text null,          -- all|most|some|refused (null = not logged)
+                 note text,
+                 logged_by uuid references users(id),
+                 logged_at timestamptz default now(),
+                 unique (resident_id, service_date, meal_slot))
+```
+Client `setIntake` → `upsert` on the unique key. Summary tiles → `select count(*) filter (...)` grouped by `intake_level`. A "poor intake / refused" row can trigger an `incidents`/alert workflow later.
+
+### Auth ↔ role
+Supabase Auth user → `users.auth_id`; `users.role_id` drives both nav visibility (client) and data access (RLS). Role toggle (admin/staff) in the topbar is a **demo device** this phase; with real auth it is replaced by the signed-in user's role.

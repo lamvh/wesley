@@ -26,8 +26,10 @@
 | `/portal/meals` | `app/portal/meals/page.tsx` | Meals & dietary | both |
 | `/portal/activities` | `app/portal/activities/page.tsx` | Activities | both |
 | `/portal/family` | `app/portal/family/page.tsx` | Family portal | both |
-| `/portal/stock` | `app/portal/stock/page.tsx` | Stock & supplies | admin |
+| `/portal/stock` | `app/portal/stock/page.tsx` | Stock & supplies | all staff |
+| `/portal/meal-report` | `app/portal/meal-report/page.tsx` | Meal report (intake logging) | all staff |
 | `/portal/incidents` | `app/portal/incidents/page.tsx` | Incidents & compliance | admin |
+| `/portal/users` | `app/portal/users/page.tsx` | Users & access (RBAC, super-admin) | admin |
 
 `[num]` = room number (`05`). `[id]` = resident slug (`margaret-whitcombe`). Detail screens are real routes (source uses modal state; we use nested routes + a back link).
 
@@ -75,7 +77,9 @@ Pages, layouts, cards, lists, tables = RSC reading mock-data accessors.
 ## Role model
 
 - `PortalRoleProvider` (client) wraps portal layout; `usePortalRole()` → `{ role, setRole }`. Default `admin`. Not persisted this phase.
-- **Admin-only nav** (Rooms, Stock, Incidents) hidden when `role === 'staff'` (source: `isAdmin` guards + "Administration" group, lines 508–523).
+- **Nav structure** (`lib/portal-nav.ts`): main = Dashboard · Stock · Meal report · Rooms(admin) · Residents · Roster · Meals · Activities · Family; Administration group (admin) = Incidents · Users & access. Sidebar is collapsible (client `useState`).
+- **Admin-only nav** (Rooms, Incidents, Users & access) hidden when `role === 'staff'`. Stock & Meal report are visible to all staff.
+- **Permission model** (Users & access): a `role → module → action` matrix (`PermissionMatrix`, see 03-data-model.md). UI-editable this phase; becomes the server-side authorization source (RLS) with real auth.
 - **Dashboard** renders admin vs staff variant (greeting, KPIs, alerts differ — lines 1124–1148).
 - Topbar shows role pill toggle + identity: admin = Sarah Beckett / Facility Manager / SB / `#BE7350`; staff = Aroha Ngata / Registered Nurse · Rātā / AN / `#6E875E` (lines 1408–1411). Console name: admin "Admin Console", staff "Care Station".
 - Admin-only screens: if visited as staff, show a simple "Admin only" empty state (no hard guard/redirect this phase).

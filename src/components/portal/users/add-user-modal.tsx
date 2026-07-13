@@ -1,0 +1,138 @@
+"use client";
+
+import { ROLE_KEYS } from "@/lib/mock-data";
+import { userRoleMeta } from "@/lib/design-meta";
+import type { UserRole } from "@/types/domain";
+import { cn } from "@/lib/utils";
+
+export interface AddUserForm {
+  name: string;
+  email: string;
+  role: UserRole;
+  scope: string;
+}
+
+const FIELD =
+  "w-full rounded-[11px] border border-line-soft bg-cream-2 px-[14px] py-[11px] text-[14.5px] text-ink outline-none placeholder:text-ink-faint";
+const LABEL = "mb-[7px] block text-[12.5px] font-bold text-ink-soft";
+
+// Add-user modal. Controlled by the parent; submit is inert this phase
+// (closes without persisting).
+export function AddUserModal({
+  form,
+  onChange,
+  onClose,
+  onSubmit,
+}: {
+  form: AddUserForm;
+  onChange: (patch: Partial<AddUserForm>) => void;
+  onClose: () => void;
+  onSubmit: () => void;
+}) {
+  return (
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-navy-deep/50 p-6 backdrop-blur-sm"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="max-h-[90vh] w-[540px] max-w-full overflow-y-auto rounded-[18px] border border-line-soft bg-cream"
+      >
+        <div className="flex items-start justify-between border-b border-line px-[26px] py-[22px]">
+          <div>
+            <h3 className="font-serif text-[24px] font-semibold">Add a user</h3>
+            <p className="mt-[5px] text-[13.5px] text-ink-muted">
+              They&apos;ll get an email invite to set their password.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="cursor-pointer text-[26px] leading-none text-ink-faint"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="flex flex-col gap-[18px] px-[26px] py-6">
+          <div>
+            <label className={LABEL}>Full name</label>
+            <input
+              value={form.name}
+              onChange={(e) => onChange({ name: e.target.value })}
+              placeholder="e.g. Anahera Wiremu"
+              className={FIELD}
+            />
+          </div>
+          <div>
+            <label className={LABEL}>Email address</label>
+            <input
+              value={form.email}
+              onChange={(e) => onChange({ email: e.target.value })}
+              placeholder="name@wesley.nz"
+              className={FIELD}
+            />
+          </div>
+          <div>
+            <label className={LABEL}>Role</label>
+            <div className="grid grid-cols-2 gap-[9px]">
+              {ROLE_KEYS.map((r) => {
+                const meta = userRoleMeta[r];
+                const on = form.role === r;
+                return (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => onChange({ role: r })}
+                    className={cn(
+                      "rounded-[11px] border-[1.5px] px-3 py-[10px] text-left text-[13px] font-semibold transition-colors",
+                      on
+                        ? cn(
+                            meta.badge.split(" ")[0],
+                            meta.dot.replace("bg-", "border-"),
+                            meta.text,
+                          )
+                        : "border-line-soft bg-cream-2 text-ink-soft",
+                    )}
+                  >
+                    {meta.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div>
+            <label className={LABEL}>
+              Scope / wing{" "}
+              <span className="font-normal text-ink-faint">(optional)</span>
+            </label>
+            <input
+              value={form.scope}
+              onChange={(e) => onChange({ scope: e.target.value })}
+              placeholder="e.g. Rātā wing, or a resident for family"
+              className={FIELD}
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-[10px] border-t border-line px-[26px] py-[18px]">
+          <button
+            type="button"
+            onClick={onClose}
+            className="cursor-pointer rounded-[11px] border border-line-soft bg-cream-2 px-[18px] py-[11px] text-[14px] font-semibold text-ink-soft"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={onSubmit}
+            className="cursor-pointer rounded-[11px] bg-navy px-5 py-[11px] text-[14px] font-semibold text-cream"
+          >
+            Add user &amp; send invite
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -7,9 +7,11 @@ export interface PortalNavItem {
   adminOnly?: boolean;
 }
 
-// Main nav (Rooms is admin-only but lives in the main list).
+// Main nav. Stock & Meal report are visible to all staff; Rooms is admin-only.
 export const PORTAL_NAV: PortalNavItem[] = [
   { href: "/portal", label: "Dashboard", icon: "home" },
+  { href: "/portal/stock", label: "Stock & supplies", icon: "stock" },
+  { href: "/portal/meal-report", label: "Meal report", icon: "mealreport" },
   { href: "/portal/rooms", label: "Rooms", icon: "rooms", adminOnly: true },
   { href: "/portal/residents", label: "Residents", icon: "residents" },
   { href: "/portal/roster", label: "Roster & shifts", icon: "roster" },
@@ -20,8 +22,8 @@ export const PORTAL_NAV: PortalNavItem[] = [
 
 // Administration group (admin only).
 export const PORTAL_ADMIN_NAV: PortalNavItem[] = [
-  { href: "/portal/stock", label: "Stock & supplies", icon: "stock" },
   { href: "/portal/incidents", label: "Incidents & compliance", icon: "incidents" },
+  { href: "/portal/users", label: "Users & access", icon: "users" },
 ];
 
 export function isNavActive(pathname: string, href: string): boolean {
