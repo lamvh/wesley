@@ -1,0 +1,97 @@
+# 02 · Architecture
+
+## Route map
+
+### Marketing — `(marketing)` group, shared `MarketingLayout` (announcement + sticky nav + footer)
+
+| URL | File | Screen |
+|-----|------|--------|
+| `/` | `app/(marketing)/page.tsx` | Home |
+| `/our-rooms` | `app/(marketing)/our-rooms/page.tsx` | Our rooms |
+| `/life-here` | `app/(marketing)/life-here/page.tsx` | Life here |
+| `/our-home` | `app/(marketing)/our-home/page.tsx` | Our home |
+| `/careers` | `app/(marketing)/careers/page.tsx` | Careers |
+| `/contact` | `app/(marketing)/contact/page.tsx` | Contact |
+
+### Portal — `/portal`, shared `PortalLayout` (sidebar + topbar + role toggle)
+
+| URL | File | Screen | Access |
+|-----|------|--------|--------|
+| `/portal` | `app/portal/page.tsx` | Dashboard (admin+staff variants) | both |
+| `/portal/rooms` | `app/portal/rooms/page.tsx` | Rooms | admin |
+| `/portal/rooms/[num]` | `app/portal/rooms/[num]/page.tsx` | Room detail | admin |
+| `/portal/residents` | `app/portal/residents/page.tsx` | Residents | both |
+| `/portal/residents/[id]` | `app/portal/residents/[id]/page.tsx` | Resident detail | both |
+| `/portal/roster` | `app/portal/roster/page.tsx` | Roster & shifts | both |
+| `/portal/meals` | `app/portal/meals/page.tsx` | Meals & dietary | both |
+| `/portal/activities` | `app/portal/activities/page.tsx` | Activities | both |
+| `/portal/family` | `app/portal/family/page.tsx` | Family portal | both |
+| `/portal/stock` | `app/portal/stock/page.tsx` | Stock & supplies | admin |
+| `/portal/incidents` | `app/portal/incidents/page.tsx` | Incidents & compliance | admin |
+
+`[num]` = room number (`05`). `[id]` = resident slug (`margaret-whitcombe`). Detail screens are real routes (source uses modal state; we use nested routes + a back link).
+
+## Folder structure
+
+```
+src/
+├── app/
+│   ├── layout.tsx                 # root: fonts, providers, <html>
+│   ├── globals.css                # tokens (@theme), base
+│   ├── (marketing)/
+│   │   ├── layout.tsx             # MarketingLayout
+│   │   └── <pages>
+│   └── portal/
+│       ├── layout.tsx             # PortalLayout (+ PortalRoleProvider)
+│       └── <pages>
+├── components/
+│   ├── ui/                        # shadcn generated
+│   ├── shared/                    # icons, Photo, badges, kpi-card
+│   ├── marketing/                 # nav, footer, hero, room-card, feature-grid, day-timeline, enquiry-form...
+│   └── portal/                    # sidebar, topbar, role-toggle, occupancy-bar, room-card, resident-card,
+│                                  #   shift-column, meal-card, activity-week, stock-table, incident-table, family-feed...
+├── lib/
+│   ├── mock-data/                 # one file per entity + index accessors
+│   ├── role-context.tsx           # PortalRoleProvider + usePortalRole (client)
+│   └── utils.ts                   # cn(), slugify(), care-tier helpers
+└── types/
+    └── domain.ts                  # entity interfaces
+```
+
+## RSC / client boundary
+
+Default = Server Component. Client islands (smallest possible):
+
+| Island | Why client |
+|--------|-----------|
+| `PortalRoleProvider` / `role-toggle` | holds admin/staff state, toggled in topbar |
+| `portal/sidebar` nav active state | reads pathname (`usePathname`) for active item |
+| `marketing/nav` active state | reads pathname |
+| filter pills (residents tier, roster week view) | local UI state (visual only this phase) |
+| form fields (contact, enquiry) | controlled inputs (inert submit this phase) |
+
+Pages, layouts, cards, lists, tables = RSC reading mock-data accessors.
+
+## Role model
+
+- `PortalRoleProvider` (client) wraps portal layout; `usePortalRole()` → `{ role, setRole }`. Default `admin`. Not persisted this phase.
+- **Admin-only nav** (Rooms, Stock, Incidents) hidden when `role === 'staff'` (source: `isAdmin` guards + "Administration" group, lines 508–523).
+- **Dashboard** renders admin vs staff variant (greeting, KPIs, alerts differ — lines 1124–1148).
+- Topbar shows role pill toggle + identity: admin = Sarah Beckett / Facility Manager / SB / `#BE7350`; staff = Aroha Ngata / Registered Nurse · Rātā / AN / `#6E875E` (lines 1408–1411). Console name: admin "Admin Console", staff "Care Station".
+- Admin-only screens: if visited as staff, show a simple "Admin only" empty state (no hard guard/redirect this phase).
+
+## Navigation behaviour
+
+- Marketing↔portal: "Staff portal" / "Family login" buttons → `/portal` and `/portal/family`; portal "View website" / logo → `/`.
+- Portal sidebar items → portal routes; active item styled with `gold-deep` pill (lines 1064–1076).
+- Detail open = navigate to nested route; "‹ All rooms / All residents" back link → list route.
+
+## Image strategy
+
+- Download ~30 uploaded photos from the design project into `public/images/`.
+- `<Photo slot="vme-hero" alt="..." />` (`components/shared/photo.tsx`) maps slot ID → file via `next/image`; unmapped slot → labelled placeholder (design uses `image-slot` with a placeholder string; keep that string as fallback label).
+- Slot→file mapping lives in `lib/mock-data/photos.ts` (built by cross-referencing `screenshots/*.png` in the design project). Activities screen uses direct `assets/act-*.jpeg` / `assets/birthday-*.jpeg` (lines 951–1000) — copy those too.
+
+## Providers (root layout)
+
+Fonts (Newsreader + Instrument Sans via `next/font`), `PortalRoleProvider` scoped to portal layout only (not global). No theme/dark-mode provider this phase (single light theme).

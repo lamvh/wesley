@@ -1,0 +1,160 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+  Wesley — Victoria at Mt Eden design tokens.
+  All values from docs/01-design-system.md. JSX references token utilities
+  (bg-cream, text-navy, bg-sage-tint, font-serif ...) never raw hex.
+*/
+
+:root {
+  /* shadcn semantic vars, themed to the Wesley palette (light only) */
+  --background: #f4eee2;
+  --foreground: #2b2720;
+  --card: #fcfaf4;
+  --card-foreground: #2b2720;
+  --popover: #fcfaf4;
+  --popover-foreground: #2b2720;
+  --primary: #2c3563;
+  --primary-foreground: #f4eee2;
+  --secondary: #fcfaf4;
+  --secondary-foreground: #2c3563;
+  --muted: #ede6d3;
+  --muted-foreground: #6b6255;
+  --accent: #e4e6f2;
+  --accent-foreground: #2c3563;
+  --destructive: #be7350;
+  --destructive-foreground: #f4eee2;
+  --border: #e7decd;
+  --input: #ddd1bb;
+  --ring: #2c3563;
+  --radius: 0.75rem;
+
+  /* portal accent (re-themeable centrally) */
+  --portal-accent: #2c3563;
+}
+
+@theme inline {
+  /* shadcn semantic vars -> Tailwind color utilities */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* ---- brand primitives ---- */
+  --color-navy: #2c3563;
+  --color-navy-deep: #232a4c;
+  --color-navy-footer: #23283f;
+  --color-gold: #e4b45c;
+  --color-gold-deep: #d99a3c;
+  --color-gold-text: #8a6516;
+  --color-bronze: #b88a34;
+  --color-bronze-text: #b07c22;
+  --color-cream: #f4eee2;
+  --color-cream-2: #fcfaf4;
+  --color-cream-3: #ebe3d3;
+
+  /* ---- text ---- */
+  --color-ink: #2b2720;
+  --color-ink-soft: #3b362d;
+  --color-ink-muted: #6b6255;
+  --color-ink-meta: #857b6c;
+  --color-ink-faint: #948b7b;
+
+  /* ---- lines / fields ---- */
+  --color-line: #e7decd;
+  --color-line-soft: #eae0ce;
+  --color-line-divider: #eee6d6;
+  --color-line-strong: #c9bca0;
+  --color-field: #ddd1bb;
+  --color-ink-nav: #4e453a;
+
+  /* ---- semantic scales (text + tint) ---- */
+  --color-sage: #3f5137;
+  --color-sage-tint: #e5ebdd;
+  --color-navy-tint: #e4e6f2;
+  --color-gold-tint: #f3e8ce;
+  --color-amber: #b0894a;
+  --color-amber-tint: #ede6d3;
+  --color-rust: #93502f;
+  --color-rust-tint: #f1e0d3;
+  --color-terracotta: #be7350;
+  --color-terracotta-tint: #f1e0d3;
+  --color-high: #a4432f;
+  --color-high-tint: #f3dad2;
+  --color-status-available: #4a5488;
+
+  /* ---- on-dark tints (hero / nav / footer over navy) ---- */
+  --color-cream-warm: #ede3d0;
+  --color-hero-title: #fbf7ee;
+  --color-hero-body: #eae1cf;
+  --color-hero-meta: #d8cebb;
+  --color-on-navy: #c9bfac;
+  --color-on-navy-faint: #8f846b;
+
+  /* ---- portal sidebar (over navy-deep) ---- */
+  --color-sidebar-fg: #d6d8cc;
+  --color-sidebar-idle: #b9bfd4;
+  --color-sidebar-muted: #8b92b4;
+  --color-sidebar-faint: #7c83a6;
+  --color-sidebar-border: #39406a;
+  --color-footer-border: #45402f;
+  --color-search-placeholder: #9a9080;
+  --color-toggle-track: #ede4d2;
+
+  /* ---- activity categories ---- */
+  --color-cat-music: #8a4b6b;
+  --color-cat-music-tint: #f2dee8;
+  --color-cat-move: #6b5a2c;
+  --color-cat-move-tint: #ede6d3;
+  --color-cat-craft: #3d6b74;
+  --color-cat-craft-tint: #e1eaec;
+
+  /* ---- fonts (wired in layout.tsx via next/font) ---- */
+  --font-sans: var(--font-instrument), system-ui, sans-serif;
+  --font-serif: var(--font-newsreader), Georgia, serif;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    background: var(--color-cream);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection {
+    background: #e2e4f0;
+  }
+  .vscroll::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  .vscroll::-webkit-scrollbar-thumb {
+    background: #dcd2bf;
+    border-radius: 8px;
+    border: 2px solid var(--color-cream);
+  }
+}

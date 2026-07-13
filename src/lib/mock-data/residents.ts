@@ -1,0 +1,156 @@
+import type { Resident } from "@/types/domain";
+import { slugify } from "@/lib/utils";
+
+// Raw resident facts transcribed from the design source. Presentation
+// (care-tier colour) is derived from `wing`; only the per-person avatar
+// `color` is stored as data. `flags` drive the care-flags pills on the
+// resident detail screen.
+type ResidentSeed = Omit<Resident, "slug">;
+
+const seed: ResidentSeed[] = [
+  {
+    name: "Margaret Whitcombe",
+    pref: "Peggy",
+    room: "12",
+    wing: "Rātā",
+    careType: "Rest Home",
+    age: 84,
+    diet: "Soft, no nuts",
+    mobility: "Walking frame",
+    gp: "Dr Anaru",
+    avatar: "MW",
+    color: "#6E875E",
+    note: "A retired botany teacher who loves the garden and never misses her morning crossword. Family visit Sundays.",
+    flags: ["Falls watch", "Diabetic", "Hearing aid"],
+  },
+  {
+    name: "Henry Fitzgerald",
+    pref: "Harry",
+    room: "07",
+    wing: "Rātā",
+    careType: "Rest Home",
+    age: 88,
+    diet: "Diabetic",
+    mobility: "Independent",
+    gp: "Dr Patel",
+    avatar: "HF",
+    color: "#BE7350",
+    note: "Former merchant sailor with wonderful stories. Enjoys the men’s shed group and a strong cup of tea.",
+    flags: ["Diabetic", "Falls watch"],
+  },
+  {
+    name: "Dorothy Nguyen",
+    pref: "Dot",
+    room: "21",
+    wing: "Kōwhai",
+    careType: "Hospital",
+    age: 91,
+    diet: "Puree, thickened",
+    mobility: "Hoist transfer",
+    gp: "Dr Anaru",
+    avatar: "DN",
+    color: "#8a6ba3",
+    note: "Gentle and quietly funny. Loves being read to and listening to 1950s jazz in the afternoons.",
+    flags: ["Thickened fluids", "Hoist transfer"],
+  },
+  {
+    name: "William Toop",
+    pref: "Bill",
+    room: "18",
+    wing: "Kōwhai",
+    careType: "Hospital",
+    age: 86,
+    diet: "Normal",
+    mobility: "Wheelchair",
+    gp: "Dr Patel",
+    avatar: "WT",
+    color: "#5b8f9a",
+    note: "A keen follower of the cricket. Prefers a window seat and the company of the resident cat, Miso.",
+    flags: ["Wheelchair"],
+  },
+  {
+    name: "Ngaire Thompson",
+    pref: "Ngaire",
+    room: "30",
+    wing: "Tōtara",
+    careType: "Dementia",
+    age: 79,
+    diet: "Finger foods",
+    mobility: "Independent",
+    gp: "Dr Anaru",
+    avatar: "NT",
+    color: "#c08a3e",
+    note: "Settles best with music and movement. Responds warmly to waiata and gentle routine.",
+    flags: ["Dementia care", "Finger foods"],
+  },
+  {
+    name: "Robert McKenzie",
+    pref: "Bob",
+    room: "33",
+    wing: "Tōtara",
+    careType: "Dementia",
+    age: 82,
+    diet: "Soft",
+    mobility: "Walking frame",
+    gp: "Dr Patel",
+    avatar: "RM",
+    color: "#9a7b4f",
+    note: "A retired builder who likes to keep busy. Enjoys tactile activities and afternoon walks in the courtyard.",
+    flags: ["Dementia care", "Falls watch"],
+  },
+  {
+    name: "Patricia Vaughan",
+    pref: "Pat",
+    room: "05",
+    wing: "Rātā",
+    careType: "Rest Home",
+    age: 80,
+    diet: "Vegetarian",
+    mobility: "Independent",
+    gp: "Dr Anaru",
+    avatar: "PV",
+    color: "#7e9b6a",
+    note: "Still knits for the local plunket. Runs the Thursday craft circle with great enthusiasm.",
+    flags: ["Vegetarian", "Independent"],
+  },
+  {
+    name: "George Aleki",
+    pref: "George",
+    room: "24",
+    wing: "Kōwhai",
+    careType: "Respite",
+    age: 77,
+    diet: "Normal",
+    mobility: "Walking stick",
+    gp: "Dr Patel",
+    avatar: "GA",
+    color: "#b06a5a",
+    note: "A warm, sociable man who has settled in wonderfully. Loves the choir and a game of cards.",
+    flags: ["Respite stay", "Walking stick"],
+  },
+  {
+    name: "Joan Ferris",
+    pref: "Joan",
+    room: "15",
+    wing: "Rātā",
+    careType: "Rest Home",
+    age: 85,
+    diet: "Gluten free",
+    mobility: "Walking frame",
+    gp: "Dr Anaru",
+    avatar: "JF",
+    color: "#6e879e",
+    note: "A former church organist. Delights in the Sunday service and singalongs at the piano.",
+    flags: ["Gluten free", "Falls watch"],
+  },
+];
+
+const residents: Resident[] = seed.map((r) => ({ ...r, slug: slugify(r.name) }));
+
+export function getResidents(): Resident[] {
+  return residents;
+}
+
+export function getResidentBySlug(slug: string): Resident | undefined {
+  return residents.find((r) => r.slug === slug);
+}
