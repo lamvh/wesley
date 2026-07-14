@@ -1,14 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ShiftLegend } from "@/components/portal/roster/shift-legend";
 import { RosterGrid } from "@/components/portal/roster/roster-grid";
 import { LeaveRequestRow } from "@/components/portal/roster/leave-request-row";
+import { DutyRosterModal } from "@/components/portal/roster/duty-roster-modal";
+import { DutyRosterPreview } from "@/components/portal/roster/duty-roster-preview";
 import {
+  DUTY_DEFAULTS,
   ROSTER_WEEK_TITLE,
+  buildDutySheets,
   dailyTotals,
   getDefaultRosterGrid,
+  getDutyDayOptions,
+  getDutySheetTitle,
+  getDutyStaffOptions,
   getLeaveRequests,
   getRosterDays,
   getRosterStaff,
@@ -16,23 +23,33 @@ import {
   getShiftLegend,
   totalShifts,
 } from "@/lib/mock-data";
-import type { RosterGrid as RosterGridState } from "@/types/domain";
+import type { DutyForm, RosterGrid as RosterGridState } from "@/types/domain";
 
 // Weekly roster scheduler: staff × 7-day grid with an assignable shift picker
-// per cell, plus the pending leave/requests list. Toolbar + leave actions are
-// inert this phase.
-export function RosterView() {
+// per cell, plus the pending leave/requests list. The header can export a
+// print-ready duty roster (modal → full-screen A4 preview). Toolbar week-nav
+// and leave actions are inert this phase.
+export function RosterView({ initialDutyPreview = false }: { initialDutyPreview?: boolean }) {
   const [grid, setGrid] = useState<RosterGridState>(() => getDefaultRosterGrid());
   const [openCell, setOpenCell] = useState<string | null>(null);
+  const [published, setPublished] = useState(false);
+  const [dutyOpen, setDutyOpen] = useState(false);
+  const [dutyPreview, setDutyPreview] = useState(initialDutyPreview);
+  const [dutyForm, setDutyForm] = useState<DutyForm>(DUTY_DEFAULTS);
 
   const staff = getRosterStaff();
   const days = getRosterDays();
   const defs = getShiftDefs();
   const legend = getShiftLegend();
   const leaveRequests = getLeaveRequests();
+  const dayOptions = getDutyDayOptions();
+  const staffOptions = getDutyStaffOptions();
 
   const totals = dailyTotals(staff.length, days.length, grid);
   const total = totalShifts(grid);
+
+  const dutySheets = useMemo(() => buildDutySheets(grid, dutyForm), [grid, dutyForm]);
+  const dutySheetTitle = getDutySheetTitle(dutyForm);
 
   const openRosterCell = (key: string) =>
     setOpenCell((prev) => (prev === key ? null : key));
@@ -57,6 +74,13 @@ export function RosterView() {
       return next;
     });
     setOpenCell(null);
+  };
+
+  const patchDuty = (patch: Partial<DutyForm>) =>
+    setDutyForm((prev) => ({ ...prev, ...patch }));
+
+  const printDuty = () => {
+    if (typeof window !== "undefined") window.print();
   };
 
   return (
@@ -93,8 +117,18 @@ export function RosterView() {
           >
             Copy last week
           </Button>
-          <Button className="h-auto rounded-[11px] bg-navy px-4 py-[9px] text-[14px] font-semibold text-cream hover:bg-navy/90">
-            Publish roster
+          <Button
+            variant="outline"
+            onClick={() => setDutyOpen(true)}
+            className="h-auto rounded-[11px] border-none bg-navy-tint px-[15px] py-[9px] text-[14px] font-semibold text-navy hover:bg-navy-tint/80"
+          >
+            Export duty roster
+          </Button>
+          <Button
+            onClick={() => setPublished(true)}
+            className="h-auto rounded-[11px] bg-navy px-4 py-[9px] text-[14px] font-semibold text-cream hover:bg-navy/90"
+          >
+            {published ? "Published ✓" : "Publish roster"}
           </Button>
         </div>
       </div>
@@ -125,6 +159,30 @@ export function RosterView() {
           ))}
         </div>
       </section>
+
+      <DutyRosterModal
+        open={dutyOpen}
+        form={dutyForm}
+        dayOptions={dayOptions}
+        staffOptions={staffOptions}
+        onScope={(scope) => patchDuty({ scope })}
+        onDay={(day) => patchDuty({ day })}
+        onOnCall={(onCall) => patchDuty({ onCall })}
+        onChef={(chef) => patchDuty({ chef })}
+        onCancel={() => setDutyOpen(false)}
+        onGenerate={() => {
+          setDutyOpen(false);
+          setDutyPreview(true);
+        }}
+      />
+
+      <DutyRosterPreview
+        open={dutyPreview}
+        sheets={dutySheets}
+        title={dutySheetTitle}
+        onPrint={printDuty}
+        onClose={() => setDutyPreview(false)}
+      />
     </div>
   );
 }
