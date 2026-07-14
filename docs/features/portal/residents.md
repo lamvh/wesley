@@ -24,7 +24,7 @@ Single-column body inside `PortalLayout`, `max-width:1180px`, top-to-bottom:
 | Resident card (×N) | `ResidentCard` (new, `components/portal/resident-card.tsx`) | `cream-2`, `border`, radius `16px`, pad `18px`, `cursor:pointer`. Top: 52px square avatar (`colorKey` bg, `20px` initials) + name (`16px`/600) & "{wing} · Room {room}" (`muted-2` `13px`). Bottom row (margin-top `15px`, space-between): care-tier badge (`careColor` on `careTint`) left + diet (`muted-2` `12.5px`) right. |
 
 ## Data consumed
-From `lib/mock-data/residents.ts` via **`getResidents()`** → `Resident[]` (mirrors `residentsRaw`, lines 1105–1113). Fields used per card:
+**Live from Supabase** via **`getResidents()`** in `lib/data/residents.ts` (async, RSC, runs under the signed-in user's session → RLS `residents_read`). Rows map snake_case DB columns → the `Resident` domain type; ordered by `created_at`. The detail route uses `getResidentBySlug(slug)`. (The mock `lib/mock-data/residents.ts` remains only for screens not yet migrated, e.g. `meal-report`.) Fields used per card:
 - `slug` — `slugify(name)`, the `[id]` route param (e.g. `margaret-whitcombe`).
 - `name` — card title.
 - `wing` — `Rātā | Kōwhai | Tōtara`; shown in "{wing} · Room {room}" and drives care tier.
@@ -44,14 +44,14 @@ Derived (helpers, not stored):
 - **Care-tier badge** (care-tier scale, from wing): Normal → sage `#3F5137`/`#E5EBDD` · Premium → navy `#2C3563`/`#E4E6F2` · VIP → gold `#8A6516`/`#F3E8CE`. Paired with the tier text so color isn't the sole signal.
 - **Tier filter pills:** `All` active by default (navy pill); others inactive. Clicking changes the active pill's styling only — **the grid does not filter** this phase (visual state).
 - **Avatar color** per resident from `colorKey` (avatar palette).
-- **Static list** — always the mock set; no empty/loading state.
+- **DB-backed list** — read live from Supabase; the route's `loading.tsx` skeleton covers the fetch. No client-side filter/empty state yet.
 - **Hover:** card `border-color` darkens `#C9BCA0` + `box-shadow:0 8px 20px -12px rgba(0,0,0,.18)` (source `style-hover`, line 735).
 - Responsive: 3-col grid collapses to 2/1 on narrow widths; pill group + Admit stack under the title; no horizontal body scroll.
 
 ## Interactions
 - **Resident card click** → navigates to `/portal/residents/{slug}` (source `r.open` modal state, line 735; here a real `next/link`).
 - **Tier filter pill click** → sets active pill (client state) — **inert filter** this phase (no grid change).
-- **`+ Admit`** button — visually present, **inert** (no admission flow).
+- **`+ Admit`** → `/portal/residents/new` (create form). **Edit** (on the detail page) → `/portal/residents/{slug}/edit`. Both render `ResidentForm` (client, `useActionState`) backed by the `saveResident` server action; **Remove resident** (edit page) → `deleteResident`. All write to Supabase under RLS and revalidate the list/detail.
 
 ## Tokens
 - Surfaces: `cream-2` (`#FCFAF4`) cards; pill container `#EDE4D2` / border `#E0D5C0`; `border` (`#E7DECD`) card outlines.
@@ -60,9 +60,13 @@ Derived (helpers, not stored):
 - Text: `ink` name, `muted` subtitle, `muted-2` wing/room + diet meta.
 - Type: Newsreader H1 `32px`/500, avatar initials `20px`; Instrument Sans name `16px`/600, meta/badges. Radius card `16px`, avatar tile `14px`, pills/badge `100px`, button `11px`. Grid gap `14px`; `max-width:1180px`.
 
+## Create / edit / delete
+- Routes: `residents/new/page.tsx` (Admit) and `residents/[id]/edit/page.tsx` (Edit) — both render `components/portal/residents/resident-form.tsx`.
+- Server actions: `lib/actions/residents.ts` — `saveResident` (insert when no slug / update when slug present; validates name/wing/care-type/age; slug = `slugify(name)`, avatar = `initials(name)`, colour derived from name) and `deleteResident`. Writes run under the user session (RLS `residents_write`).
+- Form fields: name*, preferred name, wing*, care type*, room, age, diet, mobility, GP, care flags (comma-separated), notes. Native selects so `FormData` submits cleanly; errors surface inline.
+
 ## Out of scope (this phase)
 - **Tier filter pills** are visual only — clicking restyles the active pill but does not filter the resident grid.
-- **`+ Admit`** button inert — no admission/create flow.
 - No search of residents (search lives in the topbar, out of scope this phase).
 - No sort/pagination — all residents render.
 
@@ -71,5 +75,6 @@ Beyond global DoD (00-rules §11):
 1. Header shows H1 "Residents" + the "51 in care · …" subtitle, tier pills, and `+ Admit` button.
 2. Resident grid renders one `ResidentCard` per `getResidents()` entry in source order, each with avatar (colorKey), name, "{wing} · Room {room}", care-tier badge (care-tier scale, no raw hex), and diet.
 3. Each card navigates to `/portal/residents/{slug}`.
-4. Tier pills toggle active styling (client) but leave the grid unfiltered; `+ Admit` is inert.
-5. All content via `getResidents()` + care-tier helpers — no inline fixtures.
+4. Tier pills toggle active styling (client) but leave the grid unfiltered; `+ Admit` opens the create form.
+5. All content via `getResidents()` (Supabase) + care-tier helpers — no inline fixtures.
+6. Admit/Edit persist to Supabase and redirect to the resident; Remove deletes and returns to the list; the directory reflects changes (revalidated).
