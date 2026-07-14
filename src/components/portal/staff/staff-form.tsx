@@ -8,7 +8,6 @@ import type { StaffRecord } from "@/types/domain";
 
 const ROLE_CHOICES = ["Carer", "Registered Nurse", "Team Leader", "Activities"] as const;
 const CONTRACT_CHOICES = ["Full-time", "Part-time", "Casual"] as const;
-const WINGS = ["Rātā", "Kōwhai", "Tōtara", "All wings"] as const;
 
 const fieldCls =
   "rounded-[11px] border border-input bg-cream-2 px-[14px] py-[10px] text-[14.5px] text-ink outline-none focus:border-navy";
@@ -156,17 +155,7 @@ export function StaffForm({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <label className="flex flex-col gap-[6px]">
-              <span className={labelCls}>Wing</span>
-              <select name="wing" defaultValue={staff?.wing ?? WINGS[0]} className={fieldCls}>
-                {WINGS.map((w) => (
-                  <option key={w} value={w}>{w}</option>
-                ))}
-              </select>
-            </label>
-            <Field label="Phone" name="phone" defaultValue={staff?.phone} placeholder="021 …" />
-          </div>
+          <Field label="Phone" name="phone" defaultValue={staff?.phone} placeholder="021 …" />
 
           {state.error && (
             <p role="alert" className="rounded-[10px] border border-high/30 bg-high-tint px-[13px] py-[10px] text-[13px] font-medium text-high">

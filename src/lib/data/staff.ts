@@ -5,11 +5,11 @@ const BUILDING = "wesley";
 export async function getStaff(): Promise<StaffRecord[]> {
   const supabase = await createClient();
   const { data, error } = await supabase.from("staff")
-    .select("id,name,role,wing,contract,hours,phone,start_label,status,initials,color,annual,taken")
+    .select("id,name,role,contract,hours,phone,start_label,status,initials,color,annual,taken")
     .eq("building_id", BUILDING).order("name");
   if (error) throw new Error(`Failed to load staff: ${error.message}`);
   return (data ?? []).map((r) => ({
-    id: r.id, name: r.name, role: r.role ?? "", wing: r.wing ?? "",
+    id: r.id, name: r.name, role: r.role ?? "",
     contract: r.contract ?? "", hours: r.hours ?? 0, phone: r.phone ?? "",
     start: r.start_label ?? "", status: r.status ?? "Active",
     initials: r.initials ?? "", color: r.color ?? "#6E875E",

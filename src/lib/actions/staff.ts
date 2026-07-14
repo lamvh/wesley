@@ -21,7 +21,7 @@ export async function saveStaff(_prev: StaffFormState, fd: FormData): Promise<St
   if (!name) return { error: "Name is required." };
   const contract = str(fd, "contract");
   const fields = {
-    name, role: str(fd, "role") || null, wing: str(fd, "wing") || null,
+    name, role: str(fd, "role") || null,
     contract: contract || null, hours: CONTRACT_HOURS[contract] ?? 0,
     phone: str(fd, "phone") || null, initials: initialsOf(name),
   };

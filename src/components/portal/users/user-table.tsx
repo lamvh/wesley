@@ -1,13 +1,23 @@
 import { PersonBadge } from "@/components/shared/person-badge";
+import { Icon } from "@/components/shared/icons";
 import { userRoleMeta, userStatusMeta } from "@/lib/design-meta";
 import type { User } from "@/types/domain";
 import { cn } from "@/lib/utils";
 
-const COLS = "grid-cols-[2.2fr_1.3fr_1.5fr_1fr_1fr_40px]";
+const COLS = "grid-cols-[2.2fr_1.3fr_1.5fr_1fr_1fr_88px]";
 
 // Users table: avatar+name+email, role badge, scope, status dot, last active,
-// and an inert ⋯ row menu. Rows are pre-filtered by the caller.
-export function UserTable({ users }: { users: User[] }) {
+// and per-row Edit / Remove actions. Rows are pre-filtered by the caller;
+// edit/delete act on the user identity, not the filtered index.
+export function UserTable({
+  users,
+  onEdit,
+  onDelete,
+}: {
+  users: User[];
+  onEdit: (user: User) => void;
+  onDelete: (user: User) => void;
+}) {
   return (
     <div className="mt-4 overflow-x-auto rounded-2xl border border-line bg-cream-2">
       <div className="min-w-[720px]">
@@ -72,13 +82,26 @@ export function UserTable({ users }: { users: User[] }) {
 
             <div className="text-[13px] text-ink-faint">{u.last}</div>
 
-            <button
-              type="button"
-              className="cursor-pointer text-right text-[20px] leading-none tracking-[1px] text-ink-faint"
-              aria-label={`Actions for ${u.name}`}
-            >
-              ⋯
-            </button>
+            <div className="flex justify-end gap-[6px]">
+              <button
+                type="button"
+                onClick={() => onEdit(u)}
+                title="Edit"
+                aria-label={`Edit ${u.name}`}
+                className="flex size-9 shrink-0 items-center justify-center rounded-[10px] border border-line-soft bg-cream text-navy"
+              >
+                <Icon name="edit" size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={() => onDelete(u)}
+                title="Remove"
+                aria-label={`Remove ${u.name}`}
+                className="flex size-9 shrink-0 items-center justify-center rounded-[10px] border border-rust/25 bg-rust-tint text-rust"
+              >
+                <Icon name="trash" size={16} />
+              </button>
+            </div>
           </div>
         );
       })}

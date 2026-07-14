@@ -4,14 +4,14 @@ import { staffContractMeta, staffStatusMeta } from "@/lib/design-meta";
 import type { StaffRecord } from "@/types/domain";
 import { cn } from "@/lib/utils";
 
-const COLS = "grid-cols-[2fr_1fr_0.8fr_1fr_0.7fr_1fr_1fr_88px]";
+const COLS = "grid-cols-[2fr_1fr_1fr_0.7fr_1fr_1fr_88px]";
 
 // Fallback swatches for any contract/status value outside the known sets —
 // keeps the table rendering instead of erroring on unexpected data.
 const FALLBACK_CONTRACT = { badge: "bg-muted text-ink-muted", text: "text-ink-muted", dot: "bg-ink-muted" };
 const FALLBACK_STATUS = { text: "text-ink-muted", dot: "bg-ink-muted" };
 
-// Team directory: avatar+name+tenure, role, wing, contract pill (+ weekly
+// Team directory: avatar+name+tenure, role, contract pill (+ weekly
 // hours), leave balance, phone, status dot, and edit/delete actions.
 // Filtering/search stays out of scope here — StaffView passes the full list.
 export function TeamTab({
@@ -34,7 +34,6 @@ export function TeamTab({
         >
           <div>Name</div>
           <div>Role</div>
-          <div>Wing</div>
           <div>Contract</div>
           <div>Leave</div>
           <div>Contact</div>
@@ -66,7 +65,6 @@ export function TeamTab({
               </div>
 
               <div className="text-[13.5px] text-ink-soft">{s.role}</div>
-              <div className="text-[13.5px] text-ink-soft">{s.wing}</div>
 
               <div>
                 <span className={cn("rounded-full px-[10px] py-1 text-[12px] font-bold", contract.badge)}>

@@ -38,7 +38,7 @@ export function StaffView({ staff, shifts, leaves }: StaffViewProps) {
   const [tab, setTab] = useState<Tab>("team");
 
   const kpis: Kpi[] = [
-    { label: "Total staff", value: String(staff.length), sub: "across all wings" },
+    { label: "Total staff", value: String(staff.length), sub: "on the team" },
     {
       label: "On shift today",
       value: String(staff.filter((s) => s.status === "Active").length),

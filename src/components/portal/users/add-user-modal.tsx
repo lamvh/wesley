@@ -16,15 +16,18 @@ const FIELD =
   "w-full rounded-[11px] border border-line-soft bg-cream-2 px-[14px] py-[11px] text-[14.5px] text-ink outline-none placeholder:text-ink-faint";
 const LABEL = "mb-[7px] block text-[12.5px] font-bold text-ink-soft";
 
-// Add-user modal. Controlled by the parent; submit is inert this phase
-// (closes without persisting).
+// Add / edit user modal. Controlled by the parent, which owns the form and
+// whether we're editing (flips the title + CTA); submit mutates the parent's
+// local user list.
 export function AddUserModal({
   form,
+  editing = false,
   onChange,
   onClose,
   onSubmit,
 }: {
   form: AddUserForm;
+  editing?: boolean;
   onChange: (patch: Partial<AddUserForm>) => void;
   onClose: () => void;
   onSubmit: () => void;
@@ -40,7 +43,9 @@ export function AddUserModal({
       >
         <div className="flex items-start justify-between border-b border-line px-[26px] py-[22px]">
           <div>
-            <h3 className="font-serif text-[24px] font-semibold">Add a user</h3>
+            <h3 className="font-serif text-[24px] font-semibold">
+              {editing ? "Edit user" : "Add a user"}
+            </h3>
             <p className="mt-[5px] text-[13.5px] text-ink-muted">
               They&apos;ll get an email invite to set their password.
             </p>
@@ -129,7 +134,7 @@ export function AddUserModal({
             onClick={onSubmit}
             className="cursor-pointer rounded-[11px] bg-navy px-5 py-[11px] text-[14px] font-semibold text-cream"
           >
-            Add user &amp; send invite
+            {editing ? "Save changes" : "Add user & send invite"}
           </button>
         </div>
       </div>
