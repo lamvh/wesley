@@ -3,7 +3,6 @@
 export { getResidents, getResidentBySlug } from "./residents";
 export { getRooms, getRoomByNum, getRoomKpis, getRoomWings } from "./rooms";
 export { getShifts, getRosterCoverage, getLeaveRequests } from "./staff-shifts";
-export { getStockGroups, getStockKpis } from "./stock";
 export { getIncidents, getComplianceKpis } from "./incidents";
 export { getMeals, getDiets } from "./meals";
 export { getActivityWeek, getBirthdays } from "./activities";
@@ -30,13 +29,7 @@ export {
   MEAL_SLOTS,
 } from "./meal-report";
 export { getBuildings, getBuildingById, occupancyPct } from "./buildings";
-export {
-  getProviders,
-  getProductCatalog,
-  providerName,
-  suggestReorderCart,
-  getStockActivitySeed,
-} from "./stock-catalog";
+export { getProviders, getProductCatalog } from "./stock-catalog";
 export {
   SHIFT_ORDER,
   ROSTER_WEEK_TITLE,

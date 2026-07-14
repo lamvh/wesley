@@ -25,6 +25,7 @@ export const PORTAL_ADMIN_NAV: PortalNavItem[] = [
   { href: "/portal/buildings", label: "Buildings", icon: "buildings" },
   { href: "/portal/incidents", label: "Incidents & compliance", icon: "incidents" },
   { href: "/portal/users", label: "Users & access", icon: "users" },
+  { href: "/portal/staff", label: "Staff", icon: "staff" },
 ];
 
 export function isNavActive(pathname: string, href: string): boolean {

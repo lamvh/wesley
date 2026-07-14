@@ -1,4 +1,4 @@
-import type { Cart, Product, Provider, StockActivityEntry } from "@/types/domain";
+import type { Product, Provider } from "@/types/domain";
 
 const providers: Provider[] = [
   { id: "medsupply", name: "MedSupply NZ", cat: "Clinical & PPE", contact: "orders@medsupply.co.nz", phone: "09 555 0110", lead: "2–3 days", terms: "20th of month", pref: true, color: "#2C3563", tint: "#E4E6F2" },
@@ -28,27 +28,4 @@ export function getProviders(): Provider[] {
 
 export function getProductCatalog(): Product[] {
   return catalog;
-}
-
-export function providerName(id: string): string {
-  return providers.find((p) => p.id === id)?.name ?? id;
-}
-
-/** Seed history for the stock activity log (most-recent first). */
-export function getStockActivitySeed(): StockActivityEntry[] {
-  return [
-    { id: "sa1", at: "Yesterday 16:20", actor: "Sarah Mills", kind: "order_placed", summary: "Placed order · CareWell Continence", detail: "3 items · $118.00" },
-    { id: "sa2", at: "Yesterday 09:05", actor: "Sarah Mills", kind: "reorder_autofill", summary: "Auto-filled reorder cart", detail: "8 below-par items topped to par" },
-    { id: "sa3", at: "Mon 14:32", actor: "Aroha Ngata", kind: "stock_adjusted", summary: "Adjusted stock · Nitrile gloves (M)", detail: "40 → 120 box of 100" },
-    { id: "sa4", at: "Mon 08:47", actor: "Sarah Mills", kind: "order_placed", summary: "Placed order · MedSupply NZ", detail: "5 items · $286.50" },
-  ];
-}
-
-/** Fill every below-par product up to par. */
-export function suggestReorderCart(): Cart {
-  const cart: Cart = {};
-  for (const p of catalog) {
-    if (p.qtyNow < p.par) cart[p.id] = p.par - p.qtyNow;
-  }
-  return cart;
 }

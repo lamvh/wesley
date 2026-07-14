@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { usePortalRole } from "@/lib/role-context";
-import { portalIdentity } from "@/lib/portal-identity";
+import type { PortalIdentity } from "@/lib/portal-identity";
 import {
   PORTAL_NAV,
   PORTAL_ADMIN_NAV,
@@ -20,11 +20,11 @@ import { cn } from "@/lib/utils";
 // holds the full nav, the admin group and identity.
 const TAB_HREFS = ["/portal", "/portal/residents", "/portal/roster", "/portal/meals"];
 
-export function MobileTabBar() {
+export function MobileTabBar({ identity }: { identity: PortalIdentity }) {
   const pathname = usePathname();
   const { role } = usePortalRole();
   const [moreOpen, setMoreOpen] = useState(false);
-  const me = portalIdentity(role);
+  const me = identity;
   const isAdmin = role === "admin";
 
   const tabs = TAB_HREFS.map((href) =>

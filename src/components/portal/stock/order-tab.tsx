@@ -42,6 +42,7 @@ export function OrderTab({
   cartTotalLabel,
   cartEmpty,
   orderPlaced,
+  orderError,
   onBump,
   onPlace,
   onClear,
@@ -53,6 +54,7 @@ export function OrderTab({
   cartTotalLabel: string;
   cartEmpty: boolean;
   orderPlaced: boolean;
+  orderError?: string | null;
   onBump: (id: string, delta: number) => void;
   onPlace: () => void;
   onClear: () => void;
@@ -120,7 +122,7 @@ export function OrderTab({
             </div>
             <div className="mt-3 text-[14.5px] font-semibold text-ink">Order sent</div>
             <div className="mt-1 text-[13px] text-ink-faint">
-              Purchase orders emailed to each provider.
+              Purchase orders recorded for each provider.
             </div>
           </div>
         )}
@@ -150,6 +152,7 @@ export function OrderTab({
             <span className="text-[14px] font-semibold text-ink-soft">Total (excl. GST)</span>
             <span className="font-serif text-[22px] text-ink">{cartTotalLabel}</span>
           </div>
+          {orderError && <p className="text-rust text-[13px] mt-2">{orderError}</p>}
           <button
             type="button"
             onClick={onPlace}

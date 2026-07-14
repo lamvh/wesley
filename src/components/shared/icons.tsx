@@ -21,6 +21,8 @@ const PATHS: Record<string, string> = {
   salon: '<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.5 15.5M14 10l6 10"/>',
   users:
     '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  staff:
+    '<path d="M18 21a8 8 0 0 0-16 0"/><circle cx="10" cy="8" r="5"/><path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"/>',
   mealreport: '<path d="M9 3v6a3 3 0 0 1-6 0V3M6 3v18"/><path d="M15 3v18M18 3v7h3M18 10a3 3 0 0 0 3-3V3"/>',
   lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
   buildings: '<path d="M3 21V7l8-4v18"/><path d="M11 21V9l8 3v9"/><path d="M2 21h20"/><path d="M7 9v.01M7 13v.01M7 17v.01"/>',
@@ -30,6 +32,11 @@ const PATHS: Record<string, string> = {
   close: '<path d="M6 6l12 12M18 6L6 18"/>',
   logout:
     '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>',
+  history:
+    '<path d="M3 3v5h5"/><path d="M3.05 13a9 9 0 1 0 2.13-8.36L3 8"/><path d="M12 7v5l3 2"/>',
+  edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+  trash:
+    '<path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/>',
 };
 
 export type IconName = keyof typeof PATHS | string;

@@ -4,7 +4,7 @@ All screen content comes from `src/lib/mock-data/`. Types in `src/types/domain.t
 
 ## Conventions
 
-- One file per entity: `residents.ts`, `rooms.ts`, `staff-shifts.ts`, `meals.ts`, `activities.ts`, `stock.ts`, `incidents.ts`, `family.ts`, `dashboard.ts`, `marketing-content.ts`, `photos.ts`.
+- One file per entity: `residents.ts`, `rooms.ts`, `staff-shifts.ts`, `meals.ts`, `activities.ts`, `incidents.ts`, `family.ts`, `dashboard.ts`, `marketing-content.ts`, `photos.ts`. (Stock is Supabase-backed — see "Stock, providers & ordering" below; `stock-catalog.ts` remains only as its DB seed source.)
 - Each exports typed data + accessors: `getResidents()`, `getResidentBySlug(slug)`, `getRooms()`, `getRoomByNum(num)`, etc.
 - **Presentation values are derived, not stored** — care-tier colors, severity tints, stock status, initials, occupancy % come from pure helpers (`lib/utils.ts` / accessor layer), keyed off the semantic scales in [01-design-system.md](./01-design-system.md). Raw data stores only the domain fact (e.g. `status: 'Occupied'`), not its hex.
 
@@ -129,25 +129,70 @@ type RosterGrid = Record<string, string[]>;   // grid["{rowIdx}-{colIdx}"] = shi
 ```
 Accessors: `getShiftDefs()`, `getShiftLegend()`, `getRosterStaff()`, `getRosterDays()`, `getDefaultRosterGrid()`, `dailyTotals(staffCount, days, grid)`, `totalShifts(grid)`, `SHIFT_ORDER`, `ROSTER_WEEK_TITLE`. A cell can hold multiple shift ids (e.g. TL day+late). Shift-type colors are stored (they're a fixed lookup, rendered via inline style).
 
-## Stock, providers & ordering (`lib/mock-data/stock-catalog.ts`)
+## Stock, providers & ordering — LIVE (`supabase/migrations/0002_stock_procurement.sql`)
 
-Backs the redesigned **Stock** tabs (Inventory / Place order / Providers).
+Backs the **Stock** tabs (Inventory / Stock in/out / Place order / Providers). Applied + seeded (`scripts/db/seed-stock.mts`).
 
-```ts
-interface Provider { id; name; cat; contact; phone; lead; terms; pref; color; tint }
-interface Product  { id; name; cat; unit; price; prov; par; qtyNow }   // prov = provider id
-type Cart = Record<string, number>;   // { productId: qty }
+```sql
+providers(id, building_id, name, category, contact_email, phone, lead_time, terms, preferred, color, tint, created_at)
+products(id, building_id, name, category, unit, price, provider_id, par, created_at)
+stock_levels(product_id, building_id, qty_now, updated_at)          -- pk (product_id, building_id); on-hand lives HERE, not on products
+stock_movements(id, building_id, product_id, direction 'in'|'out', qty, after_qty, unit,
+                 provider_id, unit_price, dests jsonb, receiver, note, actor_id, moved_at, move_date)
+orders(id, building_id, provider_id, status 'draft'|'placed', placed_by, placed_at, total_excl_gst, created_at)
+order_lines(order_id, product_id, qty, unit_price)                  -- pk (order_id, product_id)
 ```
-Accessors: `getProviders()`, `getProductCatalog()`, `providerName(id)`, `suggestReorderCart()` (fills below-par up to par). Cart/order state is client-only; orders group **by provider** into separate POs. Stock status derives via `stockLevel(qtyNow, par)`.
+
+RLS: `{table}_read` (select, authenticated) / `{table}_write` (all, authenticated) on all six tables.
+
+Two RPCs keep on-hand and the ledger atomic (`security invoker`, RLS applies):
+- `record_stock_movement(p_product_id, p_building_id, p_direction, p_qty, p_unit, p_provider_id, p_unit_price, p_dests, p_receiver, p_note, p_actor_id, p_move_date)` → adjusts `stock_levels.qty_now` (clamped ≥0), then inserts the `stock_movements` row.
+- `delete_stock_movement(p_id)` → reverses the balance, then deletes the row.
+
+Data layer: `src/lib/data/stock.ts` (`getProviders`, `getProducts`, `getMovements`, `getMovementsForProduct`, `getOrders`) reads; `src/lib/actions/stock.ts` (`saveProduct`, `deleteProduct`, `saveProvider`, `deleteProvider`, `recordMovement`, `deleteMovement`, `placeOrder`, `getItemHistory`) writes — all scoped `building_id = 'wesley'` (constant this phase), each write action `revalidatePath("/portal/stock")`. Orders split the draft cart **by provider** into one `orders` row + `order_lines` per PO. Stock status derives client-side via `stockLevel(qtyNow, par)`.
+
+`lib/mock-data/stock-catalog.ts` (`getProviders()`, `getProductCatalog()`) is retained **only** as the seed source for `scripts/db/seed-stock.mts` — the live screen reads Supabase, not this mock.
+
+## Staff administration — LIVE (`supabase/migrations/0003_staff_admin.sql`)
+
+Backs the **Staff** screen (Team / Shift templates / Leave requests). **Schema defined; DB apply/seed deferred** until the DB is reachable from the build env (same handoff as core/Stock — run the migration, then `npx tsx scripts/db/seed-staff.mts`).
+
+```sql
+-- extends the existing `staff` table (from 0001_core_schema.sql)
+alter table public.staff
+  add column contract   text,          -- Full-time | Part-time | Casual
+  add column hours       int,          -- weekly hours, derived from contract on save
+  add column phone       text,
+  add column start_label text,
+  add column annual      int not null default 20,   -- annual leave entitlement (days)
+  add column taken       int not null default 0;     -- days taken, debited by approve_leave
+
+shift_templates(id text pk, building_id, name, time_label, req int, filled int,
+                 color, tint, border, created_at)
+leave_requests(id uuid pk default gen_random_uuid(), building_id, staff_id references staff(id),
+               type text,              -- Annual leave | Sick leave | Shift swap
+               from_date date, to_date date, days int default 1,
+               status text default 'Pending',   -- Pending | Approved | Declined
+               note text, created_at)
+```
+
+RLS: `{table}_read` (select, authenticated) / `{table}_write` (all, authenticated) on `shift_templates` and `leave_requests`.
+
+One RPC keeps approval and the leave balance atomic (`security invoker`, RLS applies):
+- `approve_leave(p_id)` → sets the request `status = 'Approved'`; if `type` is Annual/Sick leave, also debits `staff.taken` by the request's `days`. No-op if already approved.
+
+Data layer: `src/lib/data/staff.ts` (`getStaff`, `getShiftTemplates`, `getLeaveRequests`) reads; `src/lib/actions/staff.ts` (`saveStaff`, `deleteStaff`, `saveShiftTemplate`, `deleteShiftTemplate`, `saveLeave`, `approveLeave`, `declineLeave`) writes — all scoped `building_id = 'wesley'` (constant this phase), each write action `revalidatePath("/portal/staff")`. `saveStaff` edits never touch `annual`/`taken` (balance-only mutation path is `approve_leave`).
+
+Types: `StaffRecord`, `ShiftTemplate`, `StaffLeaveRequest` (`src/types/domain.ts`) — distinct from the pre-existing mock-data `StaffMember`/`LeaveRequest` types still used by Roster's read-only leave list (`components/portal/roster/leave-request-row.tsx`), which is unaffected by this screen.
 
 ## Future Supabase mapping (deferred — not this phase)
 
-> **Status:** the **core subset is LIVE in the DB** — `supabase/migrations/0001_core_schema.sql` (tables `roles`, `role_permissions`, `buildings`, `building_wings`, `app_users`, `staff`, `residents`, all with RLS) applied + seeded from the mocks (`scripts/db/seed-core-schema.mts`, or paste-ready `supabase/seed/0001_core_seed.sql`). Row counts: roles 6, role_permissions 240 (6×10×4), buildings 2, app_users 11, staff 10, residents 9. `app_users` already gates portal access + role (verified end-to-end). Screens still read mock data — swapping accessors to Supabase queries is the next step. The remaining tables below are still deferred.
+> **Status:** the **core subset is LIVE in the DB** — `supabase/migrations/0001_core_schema.sql` (tables `roles`, `role_permissions`, `buildings`, `building_wings`, `app_users`, `staff`, `residents`, all with RLS) applied + seeded from the mocks (`scripts/db/seed-core-schema.mts`, or paste-ready `supabase/seed/0001_core_seed.sql`). Row counts: roles 6, role_permissions 240 (6×10×4), buildings 2, app_users 11, staff 10, residents 9. `app_users` already gates portal access + role (verified end-to-end). **Stock & procurement is also LIVE** — `supabase/migrations/0002_stock_procurement.sql` (tables `providers`, `products`, `stock_levels`, `stock_movements`, `orders`, `order_lines`, all with RLS + two RPCs) applied + seeded; see "Stock, providers & ordering" above. **Staff administration schema is also defined** (`0003_staff_admin.sql`, extended `staff` columns + `shift_templates` + `leave_requests` + `approve_leave` RPC) but DB apply/seed is deferred — see "Staff administration" above. Other screens still read mock data — swapping accessors to Supabase queries is the next step. The remaining tables below are still deferred.
 
 Accessors become async queries; screens unchanged (already `await` accessors where practical). The shapes below keep the mock layer DB-compatible so the swap is mechanical. RLS on every table.
 
 ### Care/ops tables (existing screens)
-`residents`, `rooms`, `staff`, `shifts` (+ `shift_staff` join), `leave_requests`, `stock_items`, `incidents`, `meal_services`, `activities`, `family_posts`, `visits`, `messages`, `birthdays`.
+`residents`, `rooms`, `shifts` (+ `shift_staff` join), `incidents`, `meal_services`, `activities`, `family_posts`, `visits`, `messages`, `birthdays`. (Stock's tables are LIVE — see "Stock, providers & ordering" above. `staff`'s extended columns, `shift_templates`, and `leave_requests` are schema-defined — see "Staff administration" above; neither is deferred anymore.)
 
 ### RBAC tables (Users & access)
 ```sql
@@ -202,41 +247,6 @@ roster_assignments(id uuid pk default gen_random_uuid(),
                    unique (building_id, staff_id, work_date, shift_type_id))
 ```
 Grid cell `grid["{r}-{c}"]` = the set of `roster_assignments` for that (staff, date). `toggleShift` → insert/delete one row. "Staff on duty" totals + "shifts assigned" → aggregates. Publish sets `published_at` for the week.
-
-### Stock, providers & ordering
-```sql
-providers(id text pk, name text, category text,
-          contact_email citext, phone text, lead_time text, terms text,
-          preferred bool default false, color text, created_at timestamptz default now())
-products(id text pk, name text, category text, unit text,
-         price numeric(10,2), provider_id text references providers(id), par int)
-stock_levels(product_id text references products(id),
-             building_id text references buildings(id),
-             qty_now int not null default 0,
-             primary key (product_id, building_id))
-orders(id uuid pk default gen_random_uuid(),
-       building_id text references buildings(id),
-       provider_id text references providers(id),     -- one PO per provider
-       status text default 'draft', placed_by uuid references users(id),
-       placed_at timestamptz, total_excl_gst numeric(12,2))
-order_lines(order_id uuid references orders(id) on delete cascade,
-            product_id text references products(id), qty int, unit_price numeric(10,2),
-            primary key (order_id, product_id))
-
--- Action log for stock management (backs the Stock → Activity tab).
--- A scoped slice of the deferred generic audit log.
-stock_activity_logs(id uuid pk default gen_random_uuid(),
-                    building_id text references buildings(id),
-                    kind text not null,          -- order_placed|reorder_autofill|cart_cleared|stock_adjusted
-                    summary text not null,        -- "Placed order · MedSupply NZ"
-                    detail text,                  -- "5 items · $286.50"
-                    actor_id uuid references users(id),
-                    order_id uuid null references orders(id),   -- when kind=order_placed
-                    product_id text null references products(id), -- when kind=stock_adjusted
-                    created_at timestamptz default now())
-```
-The client `logActions()` (StockView) appends one row per material action; on Place order it writes one `order_placed` row per provider PO. Summary tiles/audit views read `stock_activity_logs` ordered by `created_at desc`.
-Client cart (`{productId: qty}`) → on Place order, split by `products.provider_id` into one `orders` row per provider + `order_lines`. Inventory status = `stock_levels.qty_now` vs `products.par` (the `stockLevel` helper). `suggestReorderCart` = "top every below-par product up to par".
 
 ### Meal intake logs (Meal report)
 ```sql

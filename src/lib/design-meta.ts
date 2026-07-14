@@ -165,3 +165,23 @@ export const intakeMeta: Record<IntakeLevel, Swatch & { label: string }> = {
 };
 
 export const INTAKE_LEVELS: IntakeLevel[] = ["all", "most", "some", "refused"];
+
+/** Staff contract type -> pill classes (Full-time navy, Part-time gold, Casual muted). */
+export const staffContractMeta: Record<string, Swatch> = {
+  "Full-time": swatch("text-navy", "bg-navy-tint", "bg-navy"),
+  "Part-time": swatch("text-gold-text", "bg-gold-tint", "bg-gold-text"),
+  Casual: swatch("text-ink-muted", "bg-muted", "bg-ink-muted"),
+};
+
+/** Staff status -> text + dot classes (Active sage, On leave amber). */
+export const staffStatusMeta: Record<string, { text: string; dot: string }> = {
+  Active: { text: "text-sage", dot: "bg-sage" },
+  "On leave": { text: "text-amber", dot: "bg-amber" },
+};
+
+/** Leave-request status -> pill classes (Pending amber, Approved navy, Declined rust). */
+export const leaveStatusMeta: Record<string, Swatch> = {
+  Pending: swatch("text-amber", "bg-amber-tint", "bg-amber"),
+  Approved: swatch("text-navy", "bg-navy-tint", "bg-navy"),
+  Declined: swatch("text-rust", "bg-rust-tint", "bg-rust"),
+};

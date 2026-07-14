@@ -395,20 +395,49 @@ export interface Product {
 /** cart[productId] = quantity */
 export type Cart = Record<string, number>;
 
-// ---- stock activity log ----
-// Every material stock action is recorded so procurement is auditable.
-// Maps to a future `stock_activity_logs` table (see docs/03-data-model.md).
-export type StockActionKind =
-  | "order_placed"
-  | "reorder_autofill"
-  | "cart_cleared"
-  | "stock_adjusted";
+export type MovementDir = "in" | "out";
 
-export interface StockActivityEntry {
+export interface MovementDest { room: string; person: string; qty: number; }
+
+export interface StockMovement {
   id: string;
-  at: string; // display timestamp, e.g. "Today 09:14" (mock)
-  actor: string; // who performed the action
-  kind: StockActionKind;
-  summary: string; // headline, e.g. "Placed order · MedSupply NZ"
-  detail: string; // context, e.g. "12 items · $340.00"
+  productId: string;
+  item: string;          // product name (denormalised for display)
+  unit: string;
+  dir: MovementDir;
+  qty: number;
+  afterQty: number;      // on-hand balance after this move
+  providerId?: string;   // in only
+  unitPrice?: number;    // in only
+  dests?: MovementDest[]; // out only
+  receiver?: string;     // out only
+  note?: string;
+  by: string;            // actor name
+  date: string;          // ISO move_date
+}
+
+export interface OrderLine { productId: string; name: string; qty: number; unitPrice: number; }
+export interface Order {
+  id: string;
+  providerId: string;
+  status: "draft" | "placed";
+  placedAt?: string;
+  totalExclGst: number;
+  lines: OrderLine[];
+}
+
+// ---- staff administration ----
+export interface StaffRecord {
+  id: string; name: string; role: string; wing: string;
+  contract: string; hours: number; phone: string; start: string;
+  status: string; initials: string; color: string;
+  annual: number; taken: number;
+}
+export interface ShiftTemplate {
+  id: string; name: string; time: string; req: number; filled: number;
+  color: string; tint: string; border: string;
+}
+export interface StaffLeaveRequest {
+  id: string; staffId: string; name: string; initials: string; color: string;
+  type: string; from: string; to: string; days: number; status: string; note: string;
 }

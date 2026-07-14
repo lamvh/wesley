@@ -4,6 +4,7 @@ import { PortalSidebar } from "@/components/portal/portal-sidebar";
 import { PortalTopbar } from "@/components/portal/portal-topbar";
 import { MobileTabBar } from "@/components/portal/mobile-tabbar";
 import { AccessPending } from "@/components/portal/access-pending";
+import { identityFromUser } from "@/lib/portal-identity";
 import {
   getCurrentUser,
   canAccessPortal,
@@ -29,19 +30,20 @@ export default async function PortalLayout({
   }
 
   const initialRole = toPortalRole(me?.appUser?.role_id);
+  const identity = identityFromUser(me?.appUser ?? null, initialRole);
 
   return (
     <PortalRoleProvider initialRole={initialRole}>
       <BuildingProvider>
         <div className="flex min-h-screen bg-cream">
-          <PortalSidebar />
+          <PortalSidebar identity={identity} />
           <div className="flex min-w-0 flex-1 flex-col">
             <PortalTopbar />
             <main className="vscroll flex-1 p-[30px] max-[860px]:p-4 max-[860px]:pb-[84px]">
               {children}
             </main>
           </div>
-          <MobileTabBar />
+          <MobileTabBar identity={identity} />
         </div>
       </BuildingProvider>
     </PortalRoleProvider>

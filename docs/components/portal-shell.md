@@ -31,7 +31,7 @@ Shared chrome for the staff/admin portal: fixed left navigation, sticky topbar (
 
 ## Sub-components
 
-- **`portal-sidebar`** (`components/portal/portal-sidebar.tsx`) — client island. Renders logo, nav list, admin group, and identity footer. Reads `usePortalRole()` for role (gates admin items + picks `me*`/`consoleName`) and `usePathname()` for the active item. Keep the whole sidebar client because both role and pathname are client concerns; nav data (labels/icons/hrefs) is a static array so this file stays small.
+- **`portal-sidebar`** (`components/portal/portal-sidebar.tsx`) — client island. Renders logo, nav list, admin group, and identity footer. Reads `usePortalRole()` for role (gates admin items) and `usePathname()` for the active item; the identity footer (`me*`/`console`) comes from the `identity` prop built server-side from `app_users`. Keep the whole sidebar client because both role and pathname are client concerns; nav data (labels/icons/hrefs) is a static array so this file stays small.
 - **`portal-topbar`** (`components/portal/portal-topbar.tsx`) — **client** island (uses `useRouter` for sign-out). Hosts the search input, static date/wings, "View website" link, and the sign-out button. `role-toggle.tsx` and `building-switch.tsx` were **deleted**.
 - **`sidebar-nav-item`** (`components/portal/sidebar-nav-item.tsx`) — presentational `<Link>` taking `{ href, label, icon, active }`. Active = `gold-deep` (`#D99A3C`) pill with `navy-deep` (`#232A4C`) text weight 600; inactive = transparent with `#B9BFD4` text weight 500 (source `1064–1076`). Icon is a `19×19` inline SVG from the shared icon set.
 
@@ -42,16 +42,13 @@ Shared chrome for the staff/admin portal: fixed left navigation, sticky topbar (
 
 ### Role-derived values (source `1354–1411`)
 
+**Identity (name / role label / initials / avatar colour / console) now comes from the signed-in user's `app_users` row**, not the role. `PortalLayout` builds it via `identityFromUser(appUser, fallbackRole)` (`lib/portal-identity.ts`) and passes a `PortalIdentity` prop into `PortalSidebar` + `MobileTabBar`. Role label maps `role_id` → `roles.label` (e.g. `super_admin` → "Super Admin"), appends `scope` when set (e.g. "Registered Nurse · Rātā wing"); initials = first+last (or first-two for single-word names); colour is derived from the name; `console` = "Admin Console" for super_admin/admin else "Care Station". Before the schema is applied (no `app_users` row) it **falls back** to the demo `portalIdentity(role)` (Sarah Beckett / Aroha Ngata).
+
+Still keyed off the coarse `role` (admin/staff):
+
 | Value | Admin | Staff |
 |-------|-------|-------|
-| `consoleName` (sidebar eyebrow) | Admin Console | Care Station |
-| `meName` | Sarah Beckett | Aroha Ngata |
-| `meRoleLabel` | Facility Manager | Registered Nurse · Rātā |
-| `meInitials` | SB | AN |
-| `meColor` (avatar bg) | `#BE7350` | `#6E875E` |
 | Admin-only nav (Rooms, Stock, Incidents) | shown | hidden |
-
-Derive these in the accessor/helper layer (e.g. `getPortalIdentity(role)`) — not inline in JSX.
 
 ## Client vs server split
 

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { usePortalRole } from "@/lib/role-context";
-import { portalIdentity } from "@/lib/portal-identity";
+import type { PortalIdentity } from "@/lib/portal-identity";
 import { PORTAL_NAV, PORTAL_ADMIN_NAV, isNavActive, type PortalNavItem } from "@/lib/portal-nav";
 import { Icon } from "@/components/shared/icons";
 import { PersonBadge } from "@/components/shared/person-badge";
@@ -38,7 +38,7 @@ function NavLink({
   );
 }
 
-export function PortalSidebar() {
+export function PortalSidebar({ identity }: { identity: PortalIdentity }) {
   const pathname = usePathname();
   const { role } = usePortalRole();
   const [userCollapsed, setUserCollapsed] = useState(false);
@@ -46,7 +46,7 @@ export function PortalSidebar() {
   const forced = useMediaQuery("(max-width: 1023px)");
   const collapsed = forced || userCollapsed;
   const setCollapsed = setUserCollapsed;
-  const me = portalIdentity(role);
+  const me = identity;
   const isAdmin = role === "admin";
   const mainNav = PORTAL_NAV.filter((i) => !i.adminOnly || isAdmin);
 
