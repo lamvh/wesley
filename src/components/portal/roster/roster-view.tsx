@@ -82,10 +82,9 @@ export function RosterView({
   // so the roster reads by role, not a flat alphabetical list.
   const bands = groupStaffForRoster(staff, roles, groups);
 
-  // Per-staff shift picker: only the roles inside the staffer's own big group,
-  // one named section per role, with the staffer's own role leading (see
-  // rosterPickersFor).
-  const pickers = rosterPickersFor(staff, roles, groups, shiftTypes);
+  // Per-staff shift picker: a flat list of shifts filtered to the staffer's own
+  // role group, in canonical order (see rosterPickersFor).
+  const pickers = rosterPickersFor(staff, roles, shiftTypes);
 
   const totals = dailyTotals(
     staff.map((s) => s.id),

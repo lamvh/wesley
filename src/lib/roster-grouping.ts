@@ -95,88 +95,34 @@ export function groupStaffForRoster(
   return bands;
 }
 
-// A named section of the roster cell picker: the shifts of a single role, shown
-// under that role's name. `id`/`label`/`color` come from the RoleDef ("Other
-// shifts" for roleless or unmapped shifts).
-export interface RosterPickerGroup {
-  id: string;
-  label: string;
-  color: string;
-  shifts: ShiftType[];
-}
-
-const OTHER_ROLE: Omit<RosterPickerGroup, "shifts"> = {
-  id: "__other",
-  label: "Other shifts",
-  color: "#7a7163",
-};
-
-// The roster cell picker offers a staffer only the shifts of the role group(s)
-// they belong to — never other big groups' shifts — split into one section per
-// role, each shown under the role's name. The staffer's own-role section(s) lead
-// (e.g. a Registered Nurse sees the "Registered Nurse" section first, then the
-// group's other roles like Carer/Team Leader). Roleless shifts have no group and
-// are universal, so they trail as an "Other" section for everyone. A staffer
-// whose roles map to no group falls back to every role so the cell is never
-// un-assignable.
+// The roster cell picker offers a staffer a FLAT list of shifts whose role
+// belongs to the same role group(s) they do — the whole group, not just their
+// exact role — in the shift list's natural (canonical) order, with no own-role
+// prioritisation. Roleless shifts (no group) are universal. A staffer whose
+// roles map to no group, or who would otherwise see nothing, is offered every
+// shift so the cell is never un-assignable. Role-group banding of the roster
+// itself lives in the grid rows (groupStaffForRoster), not here.
 export function rosterPickersFor(
   staff: StaffRecord[],
   roles: RoleDef[],
-  groups: RoleGroup[],
   shiftTypes: ShiftType[],
-): Record<string, RosterPickerGroup[]> {
+): Record<string, ShiftType[]> {
   const roleToGroup = new Map(roles.map((r) => [r.name, r.groupId]));
-  const roleOrder = new Map(roles.map((r) => [r.name, r.sortOrder]));
-  const roleMeta = new Map(roles.map((r) => [r.name, r]));
-  const groupRank = new Map(groups.map((g) => [g.id, g.sortOrder]));
 
-  // Bucket every shift under its role once (staff-independent); roleless or
-  // unmapped shifts collect under the "Other" section.
-  const byRole = new Map<string, ShiftType[]>();
-  for (const st of shiftTypes) {
-    const key = st.role || OTHER_ROLE.id;
-    (byRole.get(key) ?? byRole.set(key, []).get(key)!).push(st);
-  }
-  const realRoleNames = [...byRole.keys()].filter((rk) => rk !== OTHER_ROLE.id);
+  // Group a shift's role maps to (null = unrestricted: no role, or role has no group).
+  const shiftGroup = (st: ShiftType): string | null =>
+    st.role ? roleToGroup.get(st.role) ?? null : null;
 
-  const groupRankOf = (roleName: string): number => {
-    const gid = roleToGroup.get(roleName);
-    return gid != null ? groupRank.get(gid) ?? Infinity : Infinity;
-  };
-
-  const pickers: Record<string, RosterPickerGroup[]> = {};
+  const pickers: Record<string, ShiftType[]> = {};
   for (const s of staff) {
-    const myRoles = new Set(s.roles);
     const myGroups = new Set(
       s.roles.map((r) => roleToGroup.get(r)).filter((g): g is string => g != null),
     );
-
-    // Only roles inside the staffer's own big group(s); if their roles map to no
-    // group, fall back to every role so a cell always has something to pick.
-    const mine = realRoleNames.filter((rk) => {
-      const gid = roleToGroup.get(rk);
-      return gid != null && myGroups.has(gid);
+    const allowed = shiftTypes.filter((st) => {
+      const g = shiftGroup(st);
+      return g == null || myGroups.has(g);
     });
-    // Section order: the staffer's own role(s) first, then the group's other
-    // roles by big-group order then role order within the group.
-    const sectionRoles = (mine.length ? mine : realRoleNames).sort((a, b) => {
-      const own = (myRoles.has(b) ? 1 : 0) - (myRoles.has(a) ? 1 : 0);
-      if (own !== 0) return own;
-      const byGroup = groupRankOf(a) - groupRankOf(b);
-      if (byGroup !== 0) return byGroup;
-      return (roleOrder.get(a) ?? Infinity) - (roleOrder.get(b) ?? Infinity);
-    });
-    if (byRole.has(OTHER_ROLE.id)) sectionRoles.push(OTHER_ROLE.id);
-
-    pickers[s.id] = sectionRoles.map((rk) => {
-      const rm = roleMeta.get(rk);
-      return {
-        id: rk,
-        label: rm?.name ?? OTHER_ROLE.label,
-        color: rm?.color ?? OTHER_ROLE.color,
-        shifts: byRole.get(rk)!,
-      };
-    });
+    pickers[s.id] = allowed.length ? allowed : shiftTypes;
   }
   return pickers;
 }

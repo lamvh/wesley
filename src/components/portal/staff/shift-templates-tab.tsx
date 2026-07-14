@@ -4,9 +4,11 @@ import { getBuildingById } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import type { RoleDef, ShiftTemplate } from "@/types/domain";
 
-// Shift-template directory: compact cards (3 per row) grouped by building. Each
-// card carries a role pill, "time · Nh paid" payroll line, a gap badge and a
-// coverage bar. Role pill colours come from the role registry (Roles & groups).
+// Shift-template directory: compact cards (3 per row) grouped by building, then
+// by role within each building — each role a sub-section led by the role's pill
+// (colour from the Roles & groups registry) + count. Each card shows its own
+// colour swatch, name, "time · Nh paid" payroll line, a gap badge and a coverage
+// bar.
 export function ShiftTemplatesTab({
   shifts,
   roles,
@@ -35,10 +37,12 @@ export function ShiftTemplatesTab({
     );
   }
 
-  // Role name -> pill colours from the registry (fallback to a neutral tone).
+  // Role name -> pill colours from the registry (fallback to a neutral tone);
+  // roleIndex sequences the role sub-sections within a building by registry order.
   const roleMeta = new Map(roles.map((r) => [r.name, r]));
+  const roleIndex = new Map(roles.map((r, i) => [r.name, i]));
 
-  // Group templates by building, preserving first-seen order.
+  // Group templates by building (first-seen order), then by role within each.
   const buildingIds: string[] = [];
   const byBuilding = new Map<string, ShiftTemplate[]>();
   for (const t of shifts) {
@@ -49,11 +53,86 @@ export function ShiftTemplatesTab({
     byBuilding.get(t.building)!.push(t);
   }
 
+  const renderCard = (t: ShiftTemplate) => {
+    const gap = t.req - t.filled;
+    const staffed = gap <= 0;
+    const pct = t.req > 0 ? Math.min(100, Math.round((t.filled / t.req) * 100)) : 0;
+    const hoursLabel = t.paidHours ? `${t.paidHours}h paid` : "hours n/a";
+    return (
+      <div key={t.id} className="rounded-[13px] border border-line bg-cream-2 px-[15px] py-[14px]">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span
+                className="size-[10px] shrink-0 rounded-[3px] border"
+                style={{ background: t.tint, borderColor: t.border }}
+              />
+              <h4 className="truncate font-serif text-[16px] font-semibold text-ink">{t.name}</h4>
+            </div>
+            <div className="mt-[6px] text-[12px] text-ink-faint">
+              {t.time}
+              {t.time && " · "}
+              {hoursLabel}
+            </div>
+          </div>
+          <span
+            className={cn(
+              "shrink-0 whitespace-nowrap rounded-full px-[9px] py-[2px] text-[10.5px] font-bold",
+              staffed ? "bg-sage-tint text-sage" : "bg-rust-tint text-rust",
+            )}
+          >
+            {staffed ? "Fully staffed" : `${gap} open`}
+          </span>
+        </div>
+
+        <div className="mb-[6px] mt-[13px] flex items-center justify-between">
+          <span className="text-[11.5px] font-semibold text-ink-soft">Coverage</span>
+          <span className="text-[12px] font-bold text-ink">
+            {t.filled} / {t.req}
+          </span>
+        </div>
+        <div className="h-[6px] overflow-hidden rounded-full bg-line">
+          <div
+            className={cn("h-full rounded-full", staffed ? "bg-sage" : "bg-terracotta")}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+
+        <div className="mt-[13px] flex justify-end gap-[6px]">
+          <button
+            type="button"
+            onClick={() => onEdit(t)}
+            title="Edit"
+            className="flex size-8 shrink-0 items-center justify-center rounded-[9px] border border-line-soft bg-cream text-navy"
+          >
+            <Icon name="edit" size={15} />
+          </button>
+          <button
+            type="button"
+            onClick={() => onDelete(t)}
+            title="Remove"
+            className="flex size-8 shrink-0 items-center justify-center rounded-[9px] border border-rust/25 bg-rust-tint text-rust"
+          >
+            <Icon name="trash" size={15} />
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="mt-6 flex flex-col gap-7">
       <ShiftTypesSummary shifts={shifts} />
       {buildingIds.map((bid) => {
         const group = byBuilding.get(bid)!;
+        // Distinct roles in this building, ordered by the role registry ("" =
+        // no role, sorted last).
+        const roleKeys: string[] = [];
+        for (const t of group) {
+          const rk = t.role || "";
+          if (!roleKeys.includes(rk)) roleKeys.push(rk);
+        }
+        roleKeys.sort((a, b) => (roleIndex.get(a) ?? 999) - (roleIndex.get(b) ?? 999));
         return (
           <div key={bid}>
             <div className="mb-[14px] flex items-center gap-[10px]">
@@ -66,80 +145,26 @@ export function ShiftTemplatesTab({
               </span>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 max-lg:grid-cols-2 max-sm:grid-cols-1">
-              {group.map((t) => {
-                const gap = t.req - t.filled;
-                const staffed = gap <= 0;
-                const pct = t.req > 0 ? Math.min(100, Math.round((t.filled / t.req) * 100)) : 0;
-                const rm = roleMeta.get(t.role);
-                const hoursLabel = t.paidHours ? `${t.paidHours}h paid` : "hours n/a";
+            <div className="flex flex-col gap-[18px]">
+              {roleKeys.map((rk) => {
+                const items = group.filter((t) => (t.role || "") === rk);
+                const rm = roleMeta.get(rk);
                 return (
-                  <div key={t.id} className="rounded-[13px] border border-line bg-cream-2 px-[15px] py-[14px]">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className="size-[10px] shrink-0 rounded-[3px] border"
-                            style={{ background: t.tint, borderColor: t.border }}
-                          />
-                          <h4 className="truncate font-serif text-[16px] font-semibold text-ink">{t.name}</h4>
-                        </div>
-                        <div className="mt-[6px] flex flex-wrap items-center gap-x-2 gap-y-[5px]">
-                          {t.role && (
-                            <span
-                              className="rounded-full px-2 py-[2px] text-[10px] font-bold"
-                              style={{ color: rm?.color ?? "#5B5347", background: rm?.tint ?? "#EFE7D7" }}
-                            >
-                              {t.role}
-                            </span>
-                          )}
-                          <span className="text-[12px] text-ink-faint">
-                            {t.time}
-                            {t.time && " · "}
-                            {hoursLabel}
-                          </span>
-                        </div>
-                      </div>
+                  <div key={rk || "__none"}>
+                    <div className="mb-[11px] flex items-center gap-[9px]">
                       <span
-                        className={cn(
-                          "shrink-0 whitespace-nowrap rounded-full px-[9px] py-[2px] text-[10.5px] font-bold",
-                          staffed ? "bg-sage-tint text-sage" : "bg-rust-tint text-rust",
-                        )}
+                        className="rounded-full px-[11px] py-[4px] text-[11.5px] font-bold"
+                        style={{ color: rm?.color ?? "#5B5347", background: rm?.tint ?? "#EFE7D7" }}
                       >
-                        {staffed ? "Fully staffed" : `${gap} open`}
+                        {rk || "No role"}
                       </span>
-                    </div>
-
-                    <div className="mb-[6px] mt-[13px] flex items-center justify-between">
-                      <span className="text-[11.5px] font-semibold text-ink-soft">Coverage</span>
-                      <span className="text-[12px] font-bold text-ink">
-                        {t.filled} / {t.req}
+                      <span className="whitespace-nowrap text-[12px] font-semibold text-ink-faint">
+                        {items.length} {items.length === 1 ? "shift" : "shifts"}
                       </span>
+                      <span className="h-px flex-1 bg-line" />
                     </div>
-                    <div className="h-[6px] overflow-hidden rounded-full bg-line">
-                      <div
-                        className={cn("h-full rounded-full", staffed ? "bg-sage" : "bg-terracotta")}
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-
-                    <div className="mt-[13px] flex justify-end gap-[6px]">
-                      <button
-                        type="button"
-                        onClick={() => onEdit(t)}
-                        title="Edit"
-                        className="flex size-8 shrink-0 items-center justify-center rounded-[9px] border border-line-soft bg-cream text-navy"
-                      >
-                        <Icon name="edit" size={15} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onDelete(t)}
-                        title="Remove"
-                        className="flex size-8 shrink-0 items-center justify-center rounded-[9px] border border-rust/25 bg-rust-tint text-rust"
-                      >
-                        <Icon name="trash" size={15} />
-                      </button>
+                    <div className="grid grid-cols-3 gap-3 max-lg:grid-cols-2 max-sm:grid-cols-1">
+                      {items.map(renderCard)}
                     </div>
                   </div>
                 );

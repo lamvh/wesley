@@ -1,7 +1,7 @@
 import { Fragment } from "react";
 import type { RosterDay, RosterGrid, ShiftType } from "@/types/domain";
 import { rosterCellKey } from "@/types/domain";
-import type { RosterBand, RosterPickerGroup } from "@/lib/roster-grouping";
+import type { RosterBand } from "@/lib/roster-grouping";
 import { PersonBadge } from "@/components/shared/person-badge";
 import { RosterCell } from "@/components/portal/roster/roster-cell";
 
@@ -10,9 +10,9 @@ interface RosterGridProps {
   days: RosterDay[];
   grid: RosterGrid;
   defs: Record<string, ShiftType>;
-  /** staffId -> the shifts to offer, grouped by role group with the staffer's
-   *  own group/role floated to the top. */
-  pickers: Record<string, RosterPickerGroup[]>;
+  /** staffId -> the flat list of shifts to offer (filtered to the staffer's
+   *  role group, canonical order). */
+  pickers: Record<string, ShiftType[]>;
   totals: number[];
   openCell: string | null;
   onOpen: (key: string) => void;
@@ -118,8 +118,9 @@ export function RosterGrid({
                           colIndex={ci}
                           ids={grid[cellKey] ?? []}
                           defs={defs}
-                          pickerGroups={pickers[st.id] ?? []}
+                          pickerDefs={pickers[st.id] ?? []}
                           staffName={st.name}
+                          staffRole={st.roles[0] ?? ""}
                           dayLabel={`${d.dow} ${d.date}`}
                           isOpen={openCell === cellKey}
                           onOpen={onOpen}

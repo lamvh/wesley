@@ -5,7 +5,6 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 // that is always false during SSR — so document is never touched on the server.
 import { createPortal } from "react-dom";
 import type { ShiftType } from "@/types/domain";
-import type { RosterPickerGroup } from "@/lib/roster-grouping";
 import { cn } from "@/lib/utils";
 
 interface RosterCellProps {
@@ -13,8 +12,9 @@ interface RosterCellProps {
   colIndex: number;
   ids: string[];
   defs: Record<string, ShiftType>;
-  pickerGroups: RosterPickerGroup[];
+  pickerDefs: ShiftType[];
   staffName: string;
+  staffRole: string;
   dayLabel: string;
   isOpen: boolean;
   onOpen: (key: string) => void;
@@ -34,8 +34,9 @@ export function RosterCell({
   colIndex,
   ids,
   defs,
-  pickerGroups,
+  pickerDefs,
   staffName,
+  staffRole,
   dayLabel,
   isOpen,
   onOpen,
@@ -146,50 +147,45 @@ export function RosterCell({
                   Day off
                 </button>
               </div>
+              {/* Which role's shifts this cell offers — the picker is a flat
+                  list filtered to the staffer's role group (see rosterPickersFor). */}
+              {staffRole && (
+                <div className="mt-[-3px] mb-[9px] text-[10.5px] font-semibold text-ink-faint">
+                  Shifts for {staffRole}
+                </div>
+              )}
               <div className="max-h-[46vh] overflow-y-auto">
-                {pickerGroups.map((group) => (
-                  <div key={group.id} className="mb-[7px] last:mb-0">
-                    {/* Group-name section header so the group each shift belongs
-                        to is visible; the staffer's own group leads the list. */}
-                    <div
-                      className="mb-[5px] px-[2px] text-[10.5px] font-bold uppercase tracking-[0.4px]"
-                      style={{ color: group.color }}
+                {pickerDefs.map((d) => {
+                  const on = ids.includes(d.id);
+                  return (
+                    <button
+                      key={d.id}
+                      type="button"
+                      onClick={() => onToggle(cellKey, d.id)}
+                      style={on ? { borderColor: d.border, background: d.tint } : undefined}
+                      className={cn(
+                        "mb-[5px] flex w-full items-center gap-[9px] rounded-[9px] border px-[9px] py-[7px] text-left",
+                        on ? "" : "border-line-divider bg-cream-2",
+                      )}
                     >
-                      {group.label}
-                    </div>
-                    {group.shifts.map((d) => {
-                      const on = ids.includes(d.id);
-                      return (
-                        <button
-                          key={d.id}
-                          type="button"
-                          onClick={() => onToggle(cellKey, d.id)}
-                          style={on ? { borderColor: d.border, background: d.tint } : undefined}
-                          className={cn(
-                            "mb-[5px] flex w-full items-center gap-[9px] rounded-[9px] border px-[9px] py-[7px] text-left",
-                            on ? "" : "border-line-divider bg-cream-2",
-                          )}
-                        >
-                          <span
-                            style={{ background: d.color }}
-                            className="size-[10px] shrink-0 rounded-[3px]"
-                          />
-                          <span className="min-w-0 flex-1">
-                            <span className="block text-[12.5px] font-bold text-ink">
-                              {d.code}{" "}
-                              <span className="font-medium text-ink-faint">
-                                · {d.time}
-                              </span>
-                            </span>
+                      <span
+                        style={{ background: d.color }}
+                        className="size-[10px] shrink-0 rounded-[3px]"
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-[12.5px] font-bold text-ink">
+                          {d.code}{" "}
+                          <span className="font-medium text-ink-faint">
+                            · {d.time}
                           </span>
-                          {on && (
-                            <span className="text-[14px] font-extrabold text-sage">✓</span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                ))}
+                        </span>
+                      </span>
+                      {on && (
+                        <span className="text-[14px] font-extrabold text-sage">✓</span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </>,
