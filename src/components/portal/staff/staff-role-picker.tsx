@@ -1,45 +1,57 @@
 import { cn } from "@/lib/utils";
 
-// Editable role picker for the staff form: click a chip to select; add a new
-// role via the input + button; remove via the chip's × — but only when the
-// role is neither the last one nor assigned to any staff member (usedRoles).
+// Editable, MULTI-select role picker for the staff form: click a chip to toggle
+// it in/out of this staffer's roles (several can be on at once). Add a new role
+// option via the input + button; remove an option via its × — but only when the
+// option is neither the last one nor assigned to any staff member (usedRoles).
 export function StaffRolePicker({
   roles,
-  selected,
+  selectedRoles,
   usedRoles,
   newRole,
-  onSelect,
+  onToggle,
   onRemove,
   onNewRoleChange,
   onAdd,
 }: {
   roles: string[];
-  selected: string;
+  selectedRoles: string[];
   usedRoles: string[];
   newRole: string;
-  onSelect: (role: string) => void;
+  onToggle: (role: string) => void;
   onRemove: (role: string) => void;
   onNewRoleChange: (value: string) => void;
   onAdd: () => void;
 }) {
   return (
     <div>
-      <span className="mb-[9px] block text-[12.5px] font-bold text-ink-soft">Role</span>
+      <span className="mb-[9px] block text-[12.5px] font-bold text-ink-soft">
+        Role <span className="font-normal text-ink-faint">(choose one or more)</span>
+      </span>
       <div className="grid grid-cols-2 gap-[9px]">
         {roles.map((r) => {
-          const on = selected === r;
+          const on = selectedRoles.includes(r);
           const removable = roles.length > 1 && !usedRoles.includes(r);
           return (
             <div key={r} className="relative flex">
               <button
                 type="button"
-                onClick={() => onSelect(r)}
+                onClick={() => onToggle(r)}
+                aria-pressed={on}
                 className={cn(
-                  "w-full rounded-[11px] border-[1.5px] py-[10px] text-left text-[13px] font-semibold transition-colors",
+                  "flex w-full items-center gap-2 rounded-[11px] border-[1.5px] py-[10px] text-left text-[13px] font-semibold transition-colors",
                   removable ? "pl-3 pr-8" : "px-3",
                   on ? "border-navy bg-navy-tint text-navy" : "border-line-soft bg-cream-2 text-ink-soft",
                 )}
               >
+                <span
+                  className={cn(
+                    "flex size-[15px] shrink-0 items-center justify-center rounded-[4px] border text-[11px] leading-none",
+                    on ? "border-navy bg-navy text-cream" : "border-line-strong bg-cream",
+                  )}
+                >
+                  {on ? "✓" : ""}
+                </span>
                 {r}
               </button>
               {removable && (

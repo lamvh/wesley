@@ -83,7 +83,20 @@ export function TeamTab({
                 </div>
               </div>
 
-              <div className="text-[13.5px] text-ink-soft">{s.role}</div>
+              <div className="flex flex-wrap gap-[5px]">
+                {s.roles.length ? (
+                  s.roles.map((r) => (
+                    <span
+                      key={r}
+                      className="rounded-full border border-line-soft bg-cream px-[9px] py-[2px] text-[12px] font-medium text-ink-soft"
+                    >
+                      {r}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-[13.5px] text-ink-faint">—</span>
+                )}
+              </div>
 
               <div>
                 <span className={cn("rounded-full px-[10px] py-1 text-[12px] font-bold", contract.badge)}>

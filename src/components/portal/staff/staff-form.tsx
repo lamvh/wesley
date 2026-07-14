@@ -70,7 +70,9 @@ export function StaffForm({
   // Role/contract are choice-grids, not native inputs, so their value is
   // tracked in state and mirrored to hidden fields for the form action.
   const [roles, setRoles] = useState<string[]>(roleOptions);
-  const [role, setRole] = useState(staff?.role ?? roleOptions[0] ?? "");
+  const [selectedRoles, setSelectedRoles] = useState<string[]>(
+    staff?.roles?.length ? staff.roles : roleOptions[0] ? [roleOptions[0]] : [],
+  );
   const [newRole, setNewRole] = useState("");
   const [contract, setContract] = useState(staff?.contract ?? CONTRACT_CHOICES[0]);
   const [visaType, setVisaType] = useState(staff?.visaType || VISA_TYPES[0]);
@@ -91,12 +93,13 @@ export function StaffForm({
     setRoles((prev) => (prev.includes(v) ? prev : [...prev, v]));
   }
 
-  function removeRole(r: string) {
-    setRoles((prev) => {
-      const next = prev.filter((x) => x !== r);
-      if (r === role) setRole(next[0] ?? "");
-      return next;
-    });
+  function toggleRole(r: string) {
+    setSelectedRoles((prev) => (prev.includes(r) ? prev.filter((x) => x !== r) : [...prev, r]));
+  }
+
+  function removeRoleOption(r: string) {
+    setRoles((prev) => prev.filter((x) => x !== r));
+    setSelectedRoles((prev) => prev.filter((x) => x !== r));
   }
 
   return (
@@ -129,7 +132,9 @@ export function StaffForm({
 
         <form action={action} className="flex flex-col gap-4 px-[26px] py-6">
           {staff && <input type="hidden" name="id" value={staff.id} />}
-          <input type="hidden" name="role" value={role} />
+          {selectedRoles.map((r) => (
+            <input key={r} type="hidden" name="roles" value={r} />
+          ))}
           <input type="hidden" name="contract" value={contract} />
 
           <Field
@@ -142,11 +147,11 @@ export function StaffForm({
 
           <StaffRolePicker
             roles={roles}
-            selected={role}
+            selectedRoles={selectedRoles}
             usedRoles={usedRoles}
             newRole={newRole}
-            onSelect={setRole}
-            onRemove={removeRole}
+            onToggle={toggleRole}
+            onRemove={removeRoleOption}
             onNewRoleChange={setNewRole}
             onAdd={addRole}
           />

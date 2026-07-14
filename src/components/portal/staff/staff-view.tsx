@@ -62,7 +62,7 @@ export function StaffView({ staff, shifts, leaves }: StaffViewProps) {
   const [editStaff, setEditStaff] = useState<StaffRecord | null>(null);
   // Role picker options = the base roles plus any custom role already in use;
   // usedRoles blocks deleting a role that staff are still assigned to.
-  const usedRoles = Array.from(new Set(staff.map((s) => s.role).filter(Boolean)));
+  const usedRoles = Array.from(new Set(staff.flatMap((s) => s.roles).filter(Boolean)));
   const roleOptions = Array.from(
     new Set(["Carer", "Registered Nurse", "Team Leader", "Activities", ...usedRoles]),
   );

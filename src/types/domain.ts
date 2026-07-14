@@ -421,7 +421,7 @@ export interface Order {
 
 // ---- staff administration ----
 export interface StaffRecord {
-  id: string; name: string; role: string;
+  id: string; name: string; roles: string[];
   contract: string; hours: number; phone: string; start: string;
   status: string; initials: string; color: string;
   annual: number; taken: number;
