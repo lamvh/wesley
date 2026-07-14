@@ -31,9 +31,6 @@ export {
 export { getBuildings, getBuildingById, occupancyPct } from "./buildings";
 export { getProviders, getProductCatalog } from "./stock-catalog";
 export {
-  SHIFT_ORDER,
-  getShiftDefs,
-  getShiftLegend,
   getRosterDays,
   rosterWeekTitle,
   weekStartOf,

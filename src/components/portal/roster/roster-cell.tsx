@@ -44,6 +44,9 @@ export function RosterCell({
     >
       {ids.map((id) => {
         const d = defs[id];
+        // Skip assignments whose shift type no longer exists (e.g. a template
+        // that was deleted) rather than crashing on an undefined def.
+        if (!d) return null;
         return (
           <div
             key={id}

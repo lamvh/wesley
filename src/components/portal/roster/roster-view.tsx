@@ -7,19 +7,23 @@ import { ShiftLegend } from "@/components/portal/roster/shift-legend";
 import { RosterGrid } from "@/components/portal/roster/roster-grid";
 import {
   dailyTotals,
-  getShiftDefs,
-  getShiftLegend,
   rosterWeekTitle,
   shiftWeek,
   totalShifts,
 } from "@/lib/mock-data";
 import { clearRosterCell, toggleRosterShift } from "@/lib/actions/roster";
-import type { RosterDay, RosterGrid as RosterGridState, StaffRecord } from "@/types/domain";
+import type {
+  RosterDay,
+  RosterGrid as RosterGridState,
+  ShiftType,
+  StaffRecord,
+} from "@/types/domain";
 
 interface RosterViewProps {
   staff: StaffRecord[];
   days: RosterDay[];
   initialGrid: RosterGridState;
+  shiftTypes: ShiftType[];
   weekStartISO: string;
 }
 
@@ -27,15 +31,24 @@ interface RosterViewProps {
 // picker per cell. Cell keys are `${staffId}::${dateISO}`. Assignments auto-save
 // to Supabase on every toggle (optimistic local update + server action), and the
 // visible week is navigated via ?week= so persisted data reloads per week.
-export function RosterView({ staff, days, initialGrid, weekStartISO }: RosterViewProps) {
+export function RosterView({
+  staff,
+  days,
+  initialGrid,
+  shiftTypes,
+  weekStartISO,
+}: RosterViewProps) {
   const router = useRouter();
   const [grid, setGrid] = useState<RosterGridState>(initialGrid);
   const [openCell, setOpenCell] = useState<string | null>(null);
   const [published, setPublished] = useState(false);
   const [, startTransition] = useTransition();
 
-  const defs = getShiftDefs();
-  const legend = getShiftLegend();
+  // Legend/picker vocabulary is the real shift templates. `defs` indexes them
+  // by id for the grid cells; `legend` is the ordered list for the legend bar
+  // and the per-cell picker.
+  const legend = shiftTypes;
+  const defs = Object.fromEntries(shiftTypes.map((s) => [s.id, s]));
 
   const totals = dailyTotals(
     staff.map((s) => s.id),

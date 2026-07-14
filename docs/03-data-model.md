@@ -127,7 +127,7 @@ interface RosterStaff { name; pos; initials; color }
 interface RosterDay { dow; date }
 type RosterGrid = Record<string, string[]>;   // grid["{rowIdx}-{colIdx}"] = shiftId[]
 ```
-Accessors: `getShiftDefs()`, `getShiftLegend()`, `getRosterStaff()`, `getRosterDays()`, `getDefaultRosterGrid()`, `dailyTotals(staffCount, days, grid)`, `totalShifts(grid)`, `SHIFT_ORDER`, `ROSTER_WEEK_TITLE`. A cell can hold multiple shift ids (e.g. TL day+late). Shift-type colors are stored (they're a fixed lookup, rendered via inline style).
+Date/week accessors (`roster-schedule.ts`): `getRosterDays()`, `dailyTotals(staffIds, days, grid)`, `totalShifts(grid)`, `rosterWeekTitle(days)`, week helpers. The **shift-type vocabulary is real data** — `getRosterShiftTypes()` (`lib/data/roster.ts`) maps Supabase `shift_templates` into `ShiftType`; there is no hardcoded shift lookup. A cell can hold multiple shift ids. Shift-type colors are stored per template, rendered via inline style.
 
 ## Stock, providers & ordering — LIVE (`supabase/migrations/0002_stock_procurement.sql`)
 

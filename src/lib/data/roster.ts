@@ -1,7 +1,25 @@
 import { createClient } from "@/lib/supabase/server";
-import { rosterCellKey, type RosterGrid } from "@/types/domain";
+import { getShiftTemplates } from "@/lib/data/staff";
+import { rosterCellKey, type RosterGrid, type ShiftType } from "@/types/domain";
 
 const BUILDING = "wesley";
+
+// The roster legend/picker vocabulary, sourced from the real shift_templates
+// (Staff → Shift templates) and mapped to the ShiftType view shape the grid,
+// legend and cell picker consume. The template name doubles as both the short
+// code chip and the descriptive label.
+export async function getRosterShiftTypes(): Promise<ShiftType[]> {
+  const templates = await getShiftTemplates();
+  return templates.map((t) => ({
+    id: t.id,
+    code: t.name,
+    label: t.name,
+    time: t.time,
+    color: t.color,
+    tint: t.tint,
+    border: t.border,
+  }));
+}
 
 // Load all persisted shift assignments whose date falls in [weekStartISO,
 // weekEndISO] and fold them into the grid keyed by staffId::date.
