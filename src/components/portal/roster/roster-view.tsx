@@ -3,7 +3,6 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ShiftLegend } from "@/components/portal/roster/shift-legend";
 import { RosterGrid } from "@/components/portal/roster/roster-grid";
 import { DutyRosterModal } from "@/components/portal/roster/duty-roster-modal";
 import { DutyRosterPreview } from "@/components/portal/roster/duty-roster-preview";
@@ -75,19 +74,18 @@ export function RosterView({
   });
   const patchDuty = (patch: Partial<DutyForm>) => setDutyForm((prev) => ({ ...prev, ...patch }));
 
-  // Legend/picker vocabulary is the real shift templates. `defs` indexes them
-  // by id for the grid cells; `legend` is the ordered list for the legend bar
-  // and the per-cell picker.
-  const legend = shiftTypes;
+  // Picker vocabulary is the real shift templates. `defs` indexes them by id for
+  // the grid cells; the per-cell picker consumes `shiftTypes` via rosterPickersFor.
   const defs = Object.fromEntries(shiftTypes.map((s) => [s.id, s]));
 
   // Staff are banded into their role group (Nurses & HCAs → Care Takers → …)
   // so the roster reads by role, not a flat alphabetical list.
   const bands = groupStaffForRoster(staff, roles, groups);
 
-  // Per-staff shift picker: each cell only offers shifts matching the staff
-  // member's role group (see rosterPickersFor).
-  const pickers = rosterPickersFor(staff, roles, shiftTypes);
+  // Per-staff shift picker: only the roles inside the staffer's own big group,
+  // one named section per role, with the staffer's own role leading (see
+  // rosterPickersFor).
+  const pickers = rosterPickersFor(staff, roles, groups, shiftTypes);
 
   const totals = dailyTotals(
     staff.map((s) => s.id),
@@ -193,8 +191,6 @@ export function RosterView({
           </Button>
         </div>
       </div>
-
-      <ShiftLegend legend={legend} />
 
       {staff.length === 0 ? (
         <div className="mt-4 rounded-[16px] border border-dashed border-line-strong bg-cream-2 px-6 py-[40px] text-center text-[14px] text-ink-muted">

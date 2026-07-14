@@ -5,6 +5,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 // that is always false during SSR — so document is never touched on the server.
 import { createPortal } from "react-dom";
 import type { ShiftType } from "@/types/domain";
+import type { RosterPickerGroup } from "@/lib/roster-grouping";
 import { cn } from "@/lib/utils";
 
 interface RosterCellProps {
@@ -12,7 +13,7 @@ interface RosterCellProps {
   colIndex: number;
   ids: string[];
   defs: Record<string, ShiftType>;
-  pickerDefs: ShiftType[];
+  pickerGroups: RosterPickerGroup[];
   staffName: string;
   dayLabel: string;
   isOpen: boolean;
@@ -33,7 +34,7 @@ export function RosterCell({
   colIndex,
   ids,
   defs,
-  pickerDefs,
+  pickerGroups,
   staffName,
   dayLabel,
   isOpen,
@@ -43,6 +44,7 @@ export function RosterCell({
   onClear,
 }: RosterCellProps) {
   const tdRef = useRef<HTMLTableCellElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
 
   const flipRight = colIndex >= 4;
@@ -61,15 +63,20 @@ export function RosterCell({
   }, [isOpen, flipRight]);
 
   // A fixed popover detaches from its anchor on scroll/resize — close it so it
-  // never lingers in the wrong place.
+  // never lingers in the wrong place. Scrolls inside the popover's own shift
+  // list must not close it, so ignore scroll events originating within it.
   useEffect(() => {
     if (!isOpen) return;
     const close = () => onClose();
+    const onScroll = (e: Event) => {
+      if (popoverRef.current?.contains(e.target as Node)) return;
+      onClose();
+    };
     window.addEventListener("resize", close);
-    document.addEventListener("scroll", close, true);
+    document.addEventListener("scroll", onScroll, true);
     return () => {
       window.removeEventListener("resize", close);
-      document.removeEventListener("scroll", close, true);
+      document.removeEventListener("scroll", onScroll, true);
     };
   }, [isOpen, onClose]);
 
@@ -119,6 +126,7 @@ export function RosterCell({
               className="fixed inset-0 z-[55] cursor-default"
             />
             <div
+              ref={popoverRef}
               onClick={(e) => e.stopPropagation()}
               style={{ top: pos.top, left: pos.left, width: POPOVER_W }}
               className="fixed z-[60] rounded-[13px] border border-field bg-cream-2 p-[11px] shadow-[0_18px_44px_-14px_rgba(30,28,20,0.42)]"
@@ -138,37 +146,51 @@ export function RosterCell({
                   Day off
                 </button>
               </div>
-              {pickerDefs.map((d) => {
-                const on = ids.includes(d.id);
-                return (
-                  <button
-                    key={d.id}
-                    type="button"
-                    onClick={() => onToggle(cellKey, d.id)}
-                    style={on ? { borderColor: d.border, background: d.tint } : undefined}
-                    className={cn(
-                      "mb-[5px] flex w-full items-center gap-[9px] rounded-[9px] border px-[9px] py-[7px] text-left",
-                      on ? "" : "border-line-divider bg-cream-2",
-                    )}
-                  >
-                    <span
-                      style={{ background: d.color }}
-                      className="size-[10px] shrink-0 rounded-[3px]"
-                    />
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-[12.5px] font-bold text-ink">
-                        {d.code}{" "}
-                        <span className="font-medium text-ink-faint">
-                          · {d.time}
-                        </span>
-                      </span>
-                    </span>
-                    {on && (
-                      <span className="text-[14px] font-extrabold text-sage">✓</span>
-                    )}
-                  </button>
-                );
-              })}
+              <div className="max-h-[46vh] overflow-y-auto">
+                {pickerGroups.map((group) => (
+                  <div key={group.id} className="mb-[7px] last:mb-0">
+                    {/* Group-name section header so the group each shift belongs
+                        to is visible; the staffer's own group leads the list. */}
+                    <div
+                      className="mb-[5px] px-[2px] text-[10.5px] font-bold uppercase tracking-[0.4px]"
+                      style={{ color: group.color }}
+                    >
+                      {group.label}
+                    </div>
+                    {group.shifts.map((d) => {
+                      const on = ids.includes(d.id);
+                      return (
+                        <button
+                          key={d.id}
+                          type="button"
+                          onClick={() => onToggle(cellKey, d.id)}
+                          style={on ? { borderColor: d.border, background: d.tint } : undefined}
+                          className={cn(
+                            "mb-[5px] flex w-full items-center gap-[9px] rounded-[9px] border px-[9px] py-[7px] text-left",
+                            on ? "" : "border-line-divider bg-cream-2",
+                          )}
+                        >
+                          <span
+                            style={{ background: d.color }}
+                            className="size-[10px] shrink-0 rounded-[3px]"
+                          />
+                          <span className="min-w-0 flex-1">
+                            <span className="block text-[12.5px] font-bold text-ink">
+                              {d.code}{" "}
+                              <span className="font-medium text-ink-faint">
+                                · {d.time}
+                              </span>
+                            </span>
+                          </span>
+                          {on && (
+                            <span className="text-[14px] font-extrabold text-sage">✓</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
             </div>
           </>,
           document.body,

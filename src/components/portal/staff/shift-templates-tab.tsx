@@ -1,4 +1,5 @@
 import { Icon } from "@/components/shared/icons";
+import { ShiftTypesSummary } from "@/components/portal/staff/shift-types-summary";
 import { getBuildingById } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import type { RoleDef, ShiftTemplate } from "@/types/domain";
@@ -50,6 +51,7 @@ export function ShiftTemplatesTab({
 
   return (
     <div className="mt-6 flex flex-col gap-7">
+      <ShiftTypesSummary shifts={shifts} />
       {buildingIds.map((bid) => {
         const group = byBuilding.get(bid)!;
         return (
