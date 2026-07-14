@@ -31,6 +31,9 @@ export async function saveStaff(_prev: StaffFormState, fd: FormData): Promise<St
     phone: str(fd, "phone") || null, initials: initialsOf(name),
     visa_type: visaType || null,
     visa_expiry: noExpiry ? null : (str(fd, "visaExpiry") || null),
+    // Roster band override — only meaningful when roles span >1 group; the form
+    // submits "" (→ null, auto-band) otherwise.
+    roster_group_id: str(fd, "rosterGroupId") || null,
   };
   const supabase = await createClient();
   if (id) {

@@ -283,6 +283,8 @@ export function StaffView({ staff, shifts, leaves, roles, groups }: StaffViewPro
         <StaffForm
           staff={editStaff}
           roleOptions={roleOptions}
+          roleDefs={roles}
+          groups={groups}
           onClose={closeStaffForm}
         />
       )}

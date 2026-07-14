@@ -5,7 +5,7 @@ const BUILDING = "wesley";
 export async function getStaff(): Promise<StaffRecord[]> {
   const supabase = await createClient();
   const { data, error } = await supabase.from("staff")
-    .select("id,name,role,roles,contract,hours,phone,start_label,status,initials,color,annual,taken,visa_type,visa_expiry")
+    .select("id,name,role,roles,contract,hours,phone,start_label,status,initials,color,annual,taken,visa_type,visa_expiry,roster_group_id")
     .eq("building_id", BUILDING).order("name");
   if (error) throw new Error(`Failed to load staff: ${error.message}`);
   return (data ?? []).map((r) => ({
@@ -16,6 +16,7 @@ export async function getStaff(): Promise<StaffRecord[]> {
     initials: r.initials ?? "", color: r.color ?? "#6E875E",
     annual: r.annual ?? 0, taken: r.taken ?? 0,
     visaType: r.visa_type ?? "", visaExpiry: r.visa_expiry ?? "",
+    rosterGroupId: r.roster_group_id ?? null,
   }));
 }
 // Shift templates for the Staff → Shift-templates tab (all buildings, so the

@@ -462,6 +462,9 @@ export interface StaffRecord {
   visaType: string;
   /** ISO date (YYYY-MM-DD) the visa expires; "" for citizens/PR or unset. */
   visaExpiry: string;
+  /** roster band override for staff whose roles span >1 group; null = auto
+   *  (earliest eligible group). Ignored when the roles map to a single group. */
+  rosterGroupId: string | null;
 }
 export interface ShiftTemplate {
   id: string; name: string; time: string; req: number; filled: number;

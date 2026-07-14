@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { saveStaff } from "@/lib/actions/staff";
 import { staffContractMeta } from "@/lib/design-meta";
 import { StaffRolePicker } from "@/components/portal/staff/staff-role-picker";
-import type { StaffRecord } from "@/types/domain";
+import type { RoleDef, RoleGroup, StaffRecord } from "@/types/domain";
 
 const CONTRACT_CHOICES = ["Full-time", "Part-time", "Casual"] as const;
 const VISA_TYPES = [
@@ -56,10 +56,14 @@ function Field({
 export function StaffForm({
   staff,
   roleOptions,
+  roleDefs,
+  groups,
   onClose,
 }: {
   staff: StaffRecord | null;
   roleOptions: string[];
+  roleDefs: RoleDef[];
+  groups: RoleGroup[];
   onClose: () => void;
 }) {
   const [state, action, pending] = useActionState(saveStaff, {});
@@ -77,6 +81,21 @@ export function StaffForm({
   const [contract, setContract] = useState(staff?.contract ?? CONTRACT_CHOICES[0]);
   const [visaType, setVisaType] = useState(staff?.visaType || VISA_TYPES[0]);
   const [visaExpiry, setVisaExpiry] = useState(staff?.visaExpiry ?? "");
+  const [rosterGroup, setRosterGroup] = useState(staff?.rosterGroupId ?? "");
+
+  // Groups the currently-selected roles map to. Only when this spans more than
+  // one group does the staffer need a roster-band choice; a single eligible
+  // group is unambiguous so the picker stays hidden and the override stays null.
+  const roleToGroup = new Map(roleDefs.map((r) => [r.name, r.groupId]));
+  const eligibleGroups = groups.filter((g) =>
+    selectedRoles.some((r) => roleToGroup.get(r) === g.id),
+  );
+  const showGroupChoice = eligibleGroups.length > 1;
+  // Keep the submitted value valid as roles toggle: fall back to the first
+  // eligible group; submit "" (→ null, auto-band) when no choice is needed.
+  const effectiveGroup = showGroupChoice
+    ? (eligibleGroups.some((g) => g.id === rosterGroup) ? rosterGroup : eligibleGroups[0].id)
+    : "";
 
   // Once a submit finishes without an error, the staffer is saved — close.
   useEffect(() => {
@@ -124,6 +143,7 @@ export function StaffForm({
             <input key={r} type="hidden" name="roles" value={r} />
           ))}
           <input type="hidden" name="contract" value={contract} />
+          <input type="hidden" name="rosterGroupId" value={effectiveGroup} />
 
           <Field
             label="Full name"
@@ -138,6 +158,24 @@ export function StaffForm({
             selectedRoles={selectedRoles}
             onToggle={toggleRole}
           />
+
+          {showGroupChoice && (
+            <label className="flex flex-col gap-[6px]">
+              <span className={labelCls}>Roster group</span>
+              <select
+                value={effectiveGroup}
+                onChange={(e) => setRosterGroup(e.target.value)}
+                className={fieldCls}
+              >
+                {eligibleGroups.map((g) => (
+                  <option key={g.id} value={g.id}>{g.label}</option>
+                ))}
+              </select>
+              <span className="text-[12px] text-ink-faint">
+                This staffer&apos;s roles span multiple groups — pick which band they sit in on the roster.
+              </span>
+            </label>
+          )}
 
           <div>
             <span className={cn(labelCls, "mb-[9px] block")}>Contract</span>

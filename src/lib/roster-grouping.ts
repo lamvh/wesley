@@ -30,15 +30,27 @@ export function groupStaffForRoster(
   const rank = new Map(groupOrder.map((g, i) => [g.id, i]));
   const roleToGroup = new Map(roles.map((r) => [r.name, r.groupId]));
 
-  // Best (earliest) group id for a staffer, or null when unassigned.
+  // Groups a staffer's roles map to (deduped), in no particular order.
+  const eligibleGroups = (s: StaffRecord): string[] => {
+    const ids = new Set<string>();
+    for (const roleName of s.roles) {
+      const gid = roleToGroup.get(roleName);
+      if (gid != null && rank.has(gid)) ids.add(gid);
+    }
+    return [...ids];
+  };
+
+  // The group a staffer bands into: an explicit roster-group override wins when
+  // it's one of the staffer's eligible groups; otherwise the earliest by sort
+  // order. Null when their roles map to no group (→ Unassigned band).
   const bandOf = (s: StaffRecord): string | null => {
+    const eligible = eligibleGroups(s);
+    if (s.rosterGroupId && eligible.includes(s.rosterGroupId)) return s.rosterGroupId;
     let best: string | null = null;
     let bestRank = Infinity;
-    for (const roleName of s.roles) {
-      const gid = roleToGroup.get(roleName) ?? null;
-      if (gid == null) continue;
-      const r = rank.get(gid);
-      if (r != null && r < bestRank) {
+    for (const gid of eligible) {
+      const r = rank.get(gid)!;
+      if (r < bestRank) {
         bestRank = r;
         best = gid;
       }

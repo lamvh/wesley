@@ -33,6 +33,8 @@ async function main() {
   await client.query(ddl);
   const ddlRolePaid = readFileSync(join(root, "supabase/migrations/0008_shift_role_paid_hours.sql"), "utf8");
   await client.query(ddlRolePaid);
+  const ddlRosterGroup = readFileSync(join(root, "supabase/migrations/0009_staff_roster_group.sql"), "utf8");
+  await client.query(ddlRosterGroup);
   console.log("Schema applied.");
 
   // Extended fields for the 10 already-seeded staff (match by name).
