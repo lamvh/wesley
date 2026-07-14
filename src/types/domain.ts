@@ -352,21 +352,6 @@ export interface ShiftType {
   border: string;
 }
 
-/** Duty category groups a staff member on the exported duty sheet. */
-export type DutyCategory = "nurse" | "ac" | "hca" | "ct" | "kitchen";
-
-/** Which building a staff member is rostered to (duty sheet splits by this). */
-export type DutyBuilding = "wesley" | "lodge";
-
-export interface RosterStaff {
-  name: string;
-  pos: string;
-  initials: string;
-  color: string;
-  duty: DutyCategory;
-  building: DutyBuilding;
-}
-
 export interface RosterDay {
   dow: string;
   date: string;
@@ -374,47 +359,6 @@ export interface RosterDay {
 
 /** grid["{rowIdx}-{colIdx}"] = list of shift-type ids for that staff/day cell */
 export type RosterGrid = Record<string, string[]>;
-
-// ---- duty roster export ----
-/** Config for the "Export duty roster" flow (modal → print preview). */
-export interface DutyForm {
-  scope: "day" | "week";
-  /** day-column index (0 = Mon) when scope is "day". */
-  day: number;
-  onCall: string;
-  chef: string;
-}
-
-/** One printed line: a shift-time segment + the staff member's name. */
-export interface DutyRow {
-  time: string;
-  name: string;
-}
-
-/** A duty category on a sheet, split into the two buildings' columns. */
-export interface DutySection {
-  label: string;
-  wesley: DutyRow[];
-  lodge: DutyRow[];
-  wEmpty: boolean;
-  lEmpty: boolean;
-}
-
-/** One A4 duty sheet (one per day; a whole-week export yields seven). */
-export interface DutySheet {
-  dateLabel: string;
-  onCall: string;
-  chef: string;
-  sections: DutySection[];
-  kitchen: DutyRow[];
-  kitchenEmpty: boolean;
-}
-
-/** `<option>` for the duty modal's day / staff selects. */
-export interface DutyOption {
-  value: string;
-  label: string;
-}
 
 // ---- stock: providers, catalog, ordering ----
 export interface Provider {

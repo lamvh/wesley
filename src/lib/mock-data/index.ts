@@ -33,16 +33,9 @@ export { getProviders, getProductCatalog } from "./stock-catalog";
 export {
   SHIFT_ORDER,
   ROSTER_WEEK_TITLE,
-  DUTY_DEFAULTS,
   getShiftDefs,
   getShiftLegend,
-  getRosterStaff,
   getRosterDays,
-  getDefaultRosterGrid,
   dailyTotals,
   totalShifts,
-  buildDutySheets,
-  getDutyDayOptions,
-  getDutyStaffOptions,
-  getDutySheetTitle,
 } from "./roster-schedule";

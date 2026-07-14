@@ -1,9 +1,9 @@
-import type { RosterDay, RosterGrid, RosterStaff, ShiftType } from "@/types/domain";
+import type { RosterDay, RosterGrid, ShiftType, StaffRecord } from "@/types/domain";
 import { PersonBadge } from "@/components/shared/person-badge";
 import { RosterCell } from "@/components/portal/roster/roster-cell";
 
 interface RosterGridProps {
-  staff: RosterStaff[];
+  staff: StaffRecord[];
   days: RosterDay[];
   grid: RosterGrid;
   defs: Record<string, ShiftType>;
@@ -16,9 +16,9 @@ interface RosterGridProps {
   onClear: (key: string) => void;
 }
 
-// The weekly scheduler table: navy header, one row per staff member with 7 day
-// cells, and a "Staff on duty" totals footer. Scrolls horizontally on narrow
-// screens via the parent overflow container (body never scrolls sideways).
+// The weekly scheduler table: navy header, one row per staff member (name only)
+// with 7 day cells, and a "Staff on duty" totals footer. Scrolls horizontally
+// on narrow screens via the parent overflow container.
 export function RosterGrid({
   staff,
   days,
@@ -34,17 +34,14 @@ export function RosterGrid({
 }: RosterGridProps) {
   return (
     <div className="mt-4 overflow-x-auto rounded-[16px] border border-line bg-cream-2">
-      <table className="w-full min-w-[860px] table-fixed border-collapse">
+      <table className="w-full min-w-[760px] table-fixed border-collapse">
         <thead>
           <tr className="bg-navy-deep">
             <th className="w-[34px] border-b border-line px-[6px] py-[11px] text-center text-[11.5px] font-bold text-sidebar-idle">
               #
             </th>
-            <th className="w-[150px] border-b border-line px-3 py-[11px] text-left text-[11.5px] font-bold uppercase tracking-[0.4px] text-toggle-track">
+            <th className="w-[180px] border-b border-line px-3 py-[11px] text-left text-[11.5px] font-bold uppercase tracking-[0.4px] text-toggle-track">
               Staff
-            </th>
-            <th className="w-[52px] border-b border-line px-1 py-[11px] text-center text-[11.5px] font-bold text-sidebar-idle">
-              Pos
             </th>
             {days.map((d) => (
               <th
@@ -59,7 +56,7 @@ export function RosterGrid({
         </thead>
         <tbody>
           {staff.map((st, ri) => (
-            <tr key={st.name} className="border-b border-line-divider">
+            <tr key={st.id} className="border-b border-line-divider">
               <td className="text-center text-[12.5px] font-semibold text-ink-faint">
                 {ri + 1}
               </td>
@@ -74,11 +71,6 @@ export function RosterGrid({
                     {st.name}
                   </span>
                 </div>
-              </td>
-              <td className="text-center">
-                <span className="rounded-full bg-toggle-track px-2 py-[3px] text-[11px] font-bold text-ink-meta">
-                  {st.pos}
-                </span>
               </td>
               {days.map((d, ci) => {
                 const cellKey = `${ri}-${ci}`;
@@ -104,7 +96,7 @@ export function RosterGrid({
           ))}
           <tr className="bg-cream">
             <td
-              colSpan={3}
+              colSpan={2}
               className="px-3 py-[10px] text-right text-[12px] font-bold uppercase tracking-[0.4px] text-ink-faint"
             >
               Staff on duty
