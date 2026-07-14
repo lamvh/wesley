@@ -20,11 +20,12 @@ export async function getRoleGroups(): Promise<RoleGroup[]> {
 export async function getRoles(): Promise<RoleDef[]> {
   const supabase = await createClient();
   const { data, error } = await supabase.from("staff_roles")
-    .select("name,color,tint,group_id")
-    .eq("building_id", BUILDING).order("name");
+    .select("name,color,tint,group_id,sort_order")
+    .eq("building_id", BUILDING).order("sort_order").order("name");
   if (error) throw new Error(`Failed to load roles: ${error.message}`);
   return (data ?? []).map((r) => ({
     name: r.name, color: r.color ?? "#5B5347",
     tint: r.tint ?? "#EFE7D7", groupId: r.group_id ?? null,
+    sortOrder: r.sort_order ?? 0,
   }));
 }

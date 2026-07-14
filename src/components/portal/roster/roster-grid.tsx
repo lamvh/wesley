@@ -46,20 +46,22 @@ export function RosterGrid({
     return acc + b.staff.length;
   }, 0);
   return (
-    <div className="mt-4 overflow-x-auto rounded-[16px] border border-line bg-cream-2">
+    <div className="mt-4 max-h-[calc(100vh-230px)] overflow-auto rounded-[16px] border border-line bg-cream-2">
       <table className="w-full min-w-[760px] table-fixed border-collapse">
         <thead>
+          {/* Weekday header sticks to the top of the scroll box so the day each
+              cell belongs to stays visible while scrolling the roster. */}
           <tr className="bg-navy-deep">
-            <th className="w-[34px] border-b border-line px-[6px] py-[11px] text-center text-[11.5px] font-bold text-sidebar-idle">
+            <th className="sticky top-0 z-30 h-[46px] w-[34px] border-b border-line bg-navy-deep px-[6px] py-[11px] text-center text-[11.5px] font-bold text-sidebar-idle">
               #
             </th>
-            <th className="w-[180px] border-b border-line px-3 py-[11px] text-left text-[11.5px] font-bold uppercase tracking-[0.4px] text-toggle-track">
+            <th className="sticky top-0 z-30 h-[46px] w-[180px] border-b border-line bg-navy-deep px-3 py-[11px] text-left text-[11.5px] font-bold uppercase tracking-[0.4px] text-toggle-track">
               Staff
             </th>
             {days.map((d) => (
               <th
                 key={`${d.dow}-${d.date}`}
-                className="border-b border-b-line border-l border-l-sidebar-border px-1 py-[9px] text-center"
+                className="sticky top-0 z-30 h-[46px] border-b border-b-line border-l border-l-sidebar-border bg-navy-deep px-1 py-[9px] text-center"
               >
                 <div className="text-[12.5px] font-bold text-cream">{d.dow}</div>
                 <div className="text-[11px] text-sidebar-muted">{d.date} {d.month}</div>
@@ -71,9 +73,11 @@ export function RosterGrid({
           {bands.map((band, bi) => (
             <Fragment key={band.id}>
               <tr>
+                {/* Group-name band header sticks just below the weekday row so
+                    the group each staffer belongs to stays visible too. */}
                 <td
                   colSpan={colSpan}
-                  className="border-b border-line-divider px-3 py-[7px]"
+                  className="sticky top-[46px] z-20 border-b border-line-divider px-3 py-[7px]"
                   style={{ background: band.tint }}
                 >
                   <span

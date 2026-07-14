@@ -39,14 +39,31 @@ export async function saveRole(_prev: RoleFormState, fd: FormData): Promise<Role
   if (!name) return { error: "Role name is required." };
   const pal = paletteFor(name);
   const supabase = await createClient();
+  // New roles are unassigned; sort them after the current unassigned roles.
+  const { data: last } = await supabase.from("staff_roles")
+    .select("sort_order").eq("building_id", BUILDING).is("group_id", null)
+    .order("sort_order", { ascending: false }).limit(1);
+  const nextOrder = (last?.[0]?.sort_order ?? -1) + 1;
   const { error } = await supabase.from("staff_roles")
-    .insert({ building_id: BUILDING, name, color: pal.color, tint: pal.tint });
+    .insert({ building_id: BUILDING, name, color: pal.color, tint: pal.tint, sort_order: nextOrder });
   if (error) {
     if (error.code === "23505") return { error: `Role "${name}" already exists.` };
     return { error: error.message };
   }
   revalidate();
   return {};
+}
+
+// Rename a role, cascading the new name across staff + shift templates via the
+// rename_role RPC (single transaction). Blocks on a duplicate name.
+export async function renameRole(oldName: string, newName: string): Promise<void> {
+  const from = oldName.trim();
+  const to = newName.trim();
+  if (!from || !to || from === to) return;
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("rename_role", { p_building: BUILDING, p_old: from, p_new: to });
+  if (error) throw new Error(error.message || `Failed to rename "${from}".`);
+  revalidate();
 }
 
 export async function deleteRole(fd: FormData): Promise<void> {
@@ -61,6 +78,38 @@ export async function deleteRole(fd: FormData): Promise<void> {
   const { error } = await supabase.from("staff_roles")
     .delete().eq("building_id", BUILDING).eq("name", name);
   if (error) throw new Error(`Failed to remove role: ${error.message}`);
+  revalidate();
+}
+
+// Reorder a role within its own group (or within the unassigned bucket) by one
+// step in `dir` (-1 up). Renormalises the group's sort_order to a distinct 0..n
+// sequence after the swap, so it stays correct even when rows shared a value.
+export async function moveRole(name: string, dir: -1 | 1): Promise<void> {
+  if (!name) return;
+  const supabase = await createClient();
+  const { data: self, error: selfErr } = await supabase.from("staff_roles")
+    .select("group_id").eq("building_id", BUILDING).eq("name", name).single();
+  if (selfErr) throw new Error(`Failed to reorder role: ${selfErr.message}`);
+  const groupId = self?.group_id ?? null;
+
+  let q = supabase.from("staff_roles")
+    .select("name,sort_order").eq("building_id", BUILDING).order("sort_order").order("name");
+  q = groupId == null ? q.is("group_id", null) : q.eq("group_id", groupId);
+  const { data, error } = await q;
+  if (error) throw new Error(`Failed to reorder role: ${error.message}`);
+
+  const roles = (data ?? []).map((r) => r.name);
+  const i = roles.indexOf(name);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= roles.length) return;
+  [roles[i], roles[j]] = [roles[j], roles[i]];
+
+  // Write the new distinct order for every role in the group.
+  for (let k = 0; k < roles.length; k++) {
+    const { error: e } = await supabase.from("staff_roles")
+      .update({ sort_order: k }).eq("building_id", BUILDING).eq("name", roles[k]);
+    if (e) throw new Error(`Failed to reorder role: ${e.message}`);
+  }
   revalidate();
 }
 

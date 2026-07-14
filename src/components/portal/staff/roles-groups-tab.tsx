@@ -6,6 +6,8 @@ import {
   deleteGroup,
   deleteRole,
   moveGroup,
+  moveRole,
+  renameRole,
   saveGroup,
   saveRole,
 } from "@/lib/actions/roles";
@@ -25,6 +27,10 @@ export function RolesGroupsTab({
 }) {
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
+  // Inline rename in the "All roles" list: the role currently being renamed and
+  // its draft value.
+  const [renaming, setRenaming] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
 
   // Fire a void server action, surfacing any thrown error in the banner.
   const run = (fn: () => Promise<void>) => {
@@ -46,6 +52,16 @@ export function RolesGroupsTab({
 
   const rolesOf = (groupId: string) => roles.filter((r) => r.groupId === groupId);
   const unassigned = roles.filter((r) => r.groupId == null);
+
+  const startRename = (name: string) => {
+    setRenaming(name);
+    setRenameValue(name);
+  };
+  const submitRename = (oldName: string) => {
+    const to = renameValue.trim();
+    setRenaming(null);
+    if (to && to !== oldName) run(() => renameRole(oldName, to));
+  };
 
   return (
     <div className="mt-6 flex flex-col gap-6">
@@ -89,8 +105,14 @@ export function RolesGroupsTab({
                   </div>
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
-                  {members.length ? members.map((r) => (
+                  {members.length ? members.map((r, ri) => (
                     <span key={r.name} className="inline-flex items-center gap-[6px] rounded-full border border-line-soft bg-cream px-[10px] py-[3px] text-[12.5px] font-medium text-ink-soft">
+                      <button type="button" aria-label={`Move ${r.name} up`} disabled={ri === 0}
+                        onClick={() => run(() => moveRole(r.name, -1))}
+                        className="text-[12px] leading-none text-ink-faint disabled:opacity-30">↑</button>
+                      <button type="button" aria-label={`Move ${r.name} down`} disabled={ri === members.length - 1}
+                        onClick={() => run(() => moveRole(r.name, 1))}
+                        className="text-[12px] leading-none text-ink-faint disabled:opacity-30">↓</button>
                       {r.name}
                       <span className="text-ink-faint">· {roleCounts[r.name] ?? 0}</span>
                       <button type="button" aria-label={`Remove ${r.name} from ${g.label}`}
@@ -154,11 +176,37 @@ export function RolesGroupsTab({
             return (
               <div key={r.name} className="flex items-center gap-3 border-b border-line-soft px-4 py-[11px] last:border-b-0">
                 <span className="size-3 rounded-[4px]" style={{ background: r.color }} />
-                <span className="text-[14px] font-semibold text-ink">{r.name}</span>
-                <span className="text-[12.5px] text-ink-faint">{group ? group.label : "Unassigned"} · {used} staff</span>
-                <button type="button" aria-label={`Delete role ${r.name}`}
-                  onClick={() => run(() => deleteRole(fd({ name: r.name })))}
-                  className="ml-auto flex size-8 items-center justify-center rounded-[8px] border border-rust/25 bg-rust-tint text-[15px] text-rust">×</button>
+                {renaming === r.name ? (
+                  <>
+                    <input
+                      autoFocus
+                      value={renameValue}
+                      onChange={(e) => setRenameValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") submitRename(r.name);
+                        if (e.key === "Escape") setRenaming(null);
+                      }}
+                      className="w-[200px] rounded-[8px] border border-line-soft bg-cream px-[10px] py-[5px] text-[14px] text-ink outline-none focus:border-navy"
+                    />
+                    <button type="button" aria-label="Save name"
+                      onClick={() => submitRename(r.name)}
+                      className="flex size-8 items-center justify-center rounded-[8px] border border-sage/30 bg-sage-tint text-[14px] font-bold text-sage">✓</button>
+                    <button type="button" aria-label="Cancel rename"
+                      onClick={() => setRenaming(null)}
+                      className="ml-auto flex size-8 items-center justify-center rounded-[8px] border border-line-soft bg-cream text-[15px] text-ink-soft">×</button>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-[14px] font-semibold text-ink">{r.name}</span>
+                    <span className="text-[12.5px] text-ink-faint">{group ? group.label : "Unassigned"} · {used} staff</span>
+                    <button type="button" aria-label={`Rename role ${r.name}`}
+                      onClick={() => startRename(r.name)}
+                      className="ml-auto flex h-8 items-center justify-center rounded-[8px] border border-line-soft bg-cream px-[11px] text-[12.5px] font-semibold text-navy">Rename</button>
+                    <button type="button" aria-label={`Delete role ${r.name}`}
+                      onClick={() => run(() => deleteRole(fd({ name: r.name })))}
+                      className="flex size-8 items-center justify-center rounded-[8px] border border-rust/25 bg-rust-tint text-[15px] text-rust">×</button>
+                  </>
+                )}
               </div>
             );
           })}

@@ -29,6 +29,18 @@ export function groupStaffForRoster(
   const groupOrder = [...groups].sort((a, b) => a.sortOrder - b.sortOrder);
   const rank = new Map(groupOrder.map((g, i) => [g.id, i]));
   const roleToGroup = new Map(roles.map((r) => [r.name, r.groupId]));
+  const roleOrder = new Map(roles.map((r) => [r.name, r.sortOrder]));
+
+  // A staffer's sort key within a band = the priority of their highest-ranked
+  // role that belongs to that group (lowest sortOrder wins, e.g. Registered
+  // Nurse above Carer). Staff with no role in the group sort last.
+  const orderInGroup = (s: StaffRecord, gid: string): number => {
+    let best = Infinity;
+    for (const roleName of s.roles) {
+      if (roleToGroup.get(roleName) === gid) best = Math.min(best, roleOrder.get(roleName) ?? 0);
+    }
+    return best;
+  };
 
   // Groups a staffer's roles map to (deduped), in no particular order.
   const eligibleGroups = (s: StaffRecord): string[] => {
@@ -73,7 +85,10 @@ export function groupStaffForRoster(
   for (const g of groupOrder) {
     const members = byGroup.get(g.id);
     if (members && members.length) {
-      bands.push({ id: g.id, label: g.label, color: g.color, tint: g.tint, staff: members });
+      // Order staff by their role priority within this group (stable sort keeps
+      // the incoming alphabetical order for staff of equal priority).
+      const ordered = [...members].sort((a, b) => orderInGroup(a, g.id) - orderInGroup(b, g.id));
+      bands.push({ id: g.id, label: g.label, color: g.color, tint: g.tint, staff: ordered });
     }
   }
   if (unassigned.length) bands.push({ ...UNASSIGNED, staff: unassigned });

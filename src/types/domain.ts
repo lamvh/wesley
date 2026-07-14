@@ -482,6 +482,9 @@ export interface ShiftTemplate {
 // unassigned).
 export interface RoleDef {
   name: string; color: string; tint: string; groupId: string | null;
+  /** order within the role's group (ascending); sequences the group's role
+   *  chips and staff within the matching roster band. */
+  sortOrder: number;
 }
 // An ordered roster band. `sortOrder` sequences the bands top-to-bottom on the
 // weekly roster and in the Roles & groups tab.
