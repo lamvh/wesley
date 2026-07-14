@@ -32,10 +32,14 @@ export { getBuildings, getBuildingById, occupancyPct } from "./buildings";
 export { getProviders, getProductCatalog } from "./stock-catalog";
 export {
   SHIFT_ORDER,
-  ROSTER_WEEK_TITLE,
   getShiftDefs,
   getShiftLegend,
   getRosterDays,
+  rosterWeekTitle,
+  weekStartOf,
+  toISODate,
+  parseISODate,
+  shiftWeek,
   dailyTotals,
   totalShifts,
 } from "./roster-schedule";

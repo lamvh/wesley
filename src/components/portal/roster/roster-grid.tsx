@@ -1,4 +1,5 @@
 import type { RosterDay, RosterGrid, ShiftType, StaffRecord } from "@/types/domain";
+import { rosterCellKey } from "@/types/domain";
 import { PersonBadge } from "@/components/shared/person-badge";
 import { RosterCell } from "@/components/portal/roster/roster-cell";
 
@@ -49,7 +50,7 @@ export function RosterGrid({
                 className="border-b border-b-line border-l border-l-sidebar-border px-1 py-[9px] text-center"
               >
                 <div className="text-[12.5px] font-bold text-cream">{d.dow}</div>
-                <div className="text-[11px] text-sidebar-muted">{d.date} Jul</div>
+                <div className="text-[11px] text-sidebar-muted">{d.date} {d.month}</div>
               </th>
             ))}
           </tr>
@@ -73,7 +74,7 @@ export function RosterGrid({
                 </div>
               </td>
               {days.map((d, ci) => {
-                const cellKey = `${ri}-${ci}`;
+                const cellKey = rosterCellKey(st.id, d.iso);
                 return (
                   <RosterCell
                     key={cellKey}

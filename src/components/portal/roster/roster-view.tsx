@@ -1,36 +1,61 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ShiftLegend } from "@/components/portal/roster/shift-legend";
 import { RosterGrid } from "@/components/portal/roster/roster-grid";
 import {
-  ROSTER_WEEK_TITLE,
   dailyTotals,
-  getRosterDays,
   getShiftDefs,
   getShiftLegend,
+  rosterWeekTitle,
+  shiftWeek,
   totalShifts,
 } from "@/lib/mock-data";
-import type { RosterGrid as RosterGridState, StaffRecord } from "@/types/domain";
+import { clearRosterCell, toggleRosterShift } from "@/lib/actions/roster";
+import type { RosterDay, RosterGrid as RosterGridState, StaffRecord } from "@/types/domain";
+
+interface RosterViewProps {
+  staff: StaffRecord[];
+  days: RosterDay[];
+  initialGrid: RosterGridState;
+  weekStartISO: string;
+}
 
 // Weekly roster scheduler: real staff × 7-day grid with an assignable shift
-// picker per cell. The grid starts empty — shifts are assigned by clicking
-// cells. Toolbar week-nav / copy / publish are inert this phase.
-export function RosterView({ staff }: { staff: StaffRecord[] }) {
-  const [grid, setGrid] = useState<RosterGridState>({});
+// picker per cell. Cell keys are `${staffId}::${dateISO}`. Assignments auto-save
+// to Supabase on every toggle (optimistic local update + server action), and the
+// visible week is navigated via ?week= so persisted data reloads per week.
+export function RosterView({ staff, days, initialGrid, weekStartISO }: RosterViewProps) {
+  const router = useRouter();
+  const [grid, setGrid] = useState<RosterGridState>(initialGrid);
   const [openCell, setOpenCell] = useState<string | null>(null);
   const [published, setPublished] = useState(false);
+  const [, startTransition] = useTransition();
 
-  const days = getRosterDays();
   const defs = getShiftDefs();
   const legend = getShiftLegend();
 
-  const totals = dailyTotals(staff.length, days.length, grid);
+  const totals = dailyTotals(
+    staff.map((s) => s.id),
+    days,
+    grid,
+  );
   const total = totalShifts(grid);
+  const weekTitle = rosterWeekTitle(days);
 
   const openRosterCell = (key: string) =>
     setOpenCell((prev) => (prev === key ? null : key));
+
+  const gotoWeek = (delta: number) =>
+    router.push(`/portal/roster?week=${shiftWeek(weekStartISO, delta)}`);
+
+  // key is `${staffId}::${dateISO}` — split back out for the server action.
+  const cellParts = (key: string) => {
+    const i = key.indexOf("::");
+    return { staffId: key.slice(0, i), dateISO: key.slice(i + 2) };
+  };
 
   const toggleShift = (key: string, shiftId: string) => {
     setGrid((prev) => {
@@ -43,6 +68,10 @@ export function RosterView({ staff }: { staff: StaffRecord[] }) {
       else next[key] = ids;
       return next;
     });
+    const { staffId, dateISO } = cellParts(key);
+    startTransition(() => {
+      void toggleRosterShift(staffId, dateISO, shiftId);
+    });
   };
 
   const clearCell = (key: string) => {
@@ -52,6 +81,10 @@ export function RosterView({ staff }: { staff: StaffRecord[] }) {
       return next;
     });
     setOpenCell(null);
+    const { staffId, dateISO } = cellParts(key);
+    startTransition(() => {
+      void clearRosterCell(staffId, dateISO);
+    });
   };
 
   return (
@@ -62,7 +95,7 @@ export function RosterView({ staff }: { staff: StaffRecord[] }) {
             Roster & shifts
           </h1>
           <p className="mt-[5px] text-[15px] text-ink-muted">
-            {ROSTER_WEEK_TITLE} · {staff.length} staff · {total} shifts assigned
+            {weekTitle} · {staff.length} staff · {total} shifts assigned
           </p>
         </div>
         <div className="flex items-center gap-[10px]">
@@ -70,14 +103,16 @@ export function RosterView({ staff }: { staff: StaffRecord[] }) {
             <button
               type="button"
               aria-label="Previous week"
-              className="border-r border-line-soft bg-cream-2 px-[13px] py-2 text-[16px] font-semibold text-ink-nav"
+              onClick={() => gotoWeek(-1)}
+              className="border-r border-line-soft bg-cream-2 px-[13px] py-2 text-[16px] font-semibold text-ink-nav hover:bg-cream"
             >
               ‹
             </button>
             <button
               type="button"
               aria-label="Next week"
-              className="bg-cream-2 px-[13px] py-2 text-[16px] font-semibold text-ink-nav"
+              onClick={() => gotoWeek(1)}
+              className="bg-cream-2 px-[13px] py-2 text-[16px] font-semibold text-ink-nav hover:bg-cream"
             >
               ›
             </button>

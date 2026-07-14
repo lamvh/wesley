@@ -1,4 +1,5 @@
 import type { RosterDay, RosterGrid, ShiftType } from "@/types/domain";
+import { rosterCellKey } from "@/types/domain";
 
 // Shift-type vocabulary keyed by id. Ordered for the legend/picker. These are
 // the shift categories a roster is built from — reference data, not demo rows.
@@ -23,12 +24,8 @@ const shiftDefs: Record<string, ShiftType> = {
   kl: { id: "kl", code: "Kit·Late", label: "Kitchen (late)", time: "16:00–19:00", color: "#6E5A2A", tint: "#F0E7CE", border: "#D8C48E" },
 };
 
-const rosterDays: RosterDay[] = [
-  { dow: "Mon", date: "13" }, { dow: "Tue", date: "14" }, { dow: "Wed", date: "15" },
-  { dow: "Thu", date: "16" }, { dow: "Fri", date: "17" }, { dow: "Sat", date: "18" }, { dow: "Sun", date: "19" },
-];
-
-export const ROSTER_WEEK_TITLE = "STAFF ROSTER · 13/07 – 19/07";
+const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 export function getShiftDefs(): Record<string, ShiftType> {
   return shiftDefs;
@@ -38,17 +35,56 @@ export function getShiftLegend(): ShiftType[] {
   return SHIFT_ORDER.map((id) => shiftDefs[id]);
 }
 
-export function getRosterDays(): RosterDay[] {
-  return rosterDays;
+/** YYYY-MM-DD in local time (avoids the UTC shift of Date.toISOString). */
+export function toISODate(d: Date): string {
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
 }
 
-/** staff-on-duty count per day column. */
-export function dailyTotals(staffCount: number, days: number, grid: RosterGrid): number[] {
-  return Array.from({ length: days }, (_, ci) => {
-    let n = 0;
-    for (let ri = 0; ri < staffCount; ri++) if ((grid[`${ri}-${ci}`] ?? []).length) n++;
-    return n;
+/** Parse a YYYY-MM-DD string as a local-midnight Date (not UTC). */
+export function parseISODate(iso: string): Date {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, (m ?? 1) - 1, d ?? 1);
+}
+
+/** Monday that starts the week containing `d`. */
+export function weekStartOf(d: Date): Date {
+  const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const day = x.getDay(); // 0 Sun .. 6 Sat
+  x.setDate(x.getDate() + (day === 0 ? -6 : 1 - day));
+  return x;
+}
+
+/** Shift a week-start ISO date by ±N weeks, returning the new ISO date. */
+export function shiftWeek(weekStartISO: string, deltaWeeks: number): string {
+  const d = parseISODate(weekStartISO);
+  d.setDate(d.getDate() + deltaWeeks * 7);
+  return toISODate(d);
+}
+
+/** The 7 Mon–Sun columns of the week starting at `weekStart`. */
+export function getRosterDays(weekStart: Date): RosterDay[] {
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + i);
+    return { dow: DOW[d.getDay()], date: String(d.getDate()), month: MON[d.getMonth()], iso: toISODate(d) };
   });
+}
+
+/** e.g. "STAFF ROSTER · 13/07 – 19/07" for the given week. */
+export function rosterWeekTitle(days: RosterDay[]): string {
+  const fmt = (day: RosterDay) => {
+    const d = parseISODate(day.iso);
+    return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+  };
+  return `STAFF ROSTER · ${fmt(days[0])} – ${fmt(days[6])}`;
+}
+
+/** staff-on-duty count per day column (one per day the staffer has ≥1 shift). */
+export function dailyTotals(staffIds: string[], days: RosterDay[], grid: RosterGrid): number[] {
+  return days.map((d) =>
+    staffIds.reduce((n, id) => n + ((grid[rosterCellKey(id, d.iso)] ?? []).length ? 1 : 0), 0),
+  );
 }
 
 export function totalShifts(grid: RosterGrid): number {

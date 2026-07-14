@@ -355,10 +355,17 @@ export interface ShiftType {
 export interface RosterDay {
   dow: string;
   date: string;
+  month: string;
+  iso: string; // YYYY-MM-DD — the calendar date this column represents
 }
 
-/** grid["{rowIdx}-{colIdx}"] = list of shift-type ids for that staff/day cell */
+/** grid["{staffId}::{YYYY-MM-DD}"] = list of shift-type ids for that staff/day cell */
 export type RosterGrid = Record<string, string[]>;
+
+/** Composite cell key: keyed by staff id + calendar date so assignments survive
+ *  staff reordering (unlike a positional row/col index). */
+export const rosterCellKey = (staffId: string, dateISO: string) =>
+  `${staffId}::${dateISO}`;
 
 // ---- stock: providers, catalog, ordering ----
 export interface Provider {
