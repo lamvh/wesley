@@ -7,7 +7,7 @@ import { useBuilding } from "@/lib/building-context";
 import { PortalPageHeader } from "@/components/shared/portal-page-header";
 import { KpiCard } from "@/components/shared/kpi-card";
 import { Button } from "@/components/ui/button";
-import { approveLeave, declineLeave, deleteStaff, deleteShiftTemplate } from "@/lib/actions/staff";
+import { approveLeave, declineLeave, deleteLeave, deleteStaff, deleteShiftTemplate } from "@/lib/actions/staff";
 import { TeamTab } from "@/components/portal/staff/team-tab";
 import { StaffForm } from "@/components/portal/staff/staff-form";
 import { RolesGroupsTab } from "@/components/portal/staff/roles-groups-tab";
@@ -170,6 +170,24 @@ export function StaffView({ staff, shifts, leaves, roles, groups }: StaffViewPro
     });
   }
 
+  function requestDeleteLeave(l: StaffLeaveRequest) {
+    setConfirmError(null);
+    setConfirmDelete({
+      label: `${l.name} · ${l.type}`,
+      onConfirm: async () => {
+        const fd = new FormData();
+        fd.set("id", l.id);
+        try {
+          await deleteLeave(fd);
+          setConfirmDelete(null);
+          setConfirmError(null);
+        } catch (e) {
+          setConfirmError(e instanceof Error ? e.message : String(e));
+        }
+      },
+    });
+  }
+
   function requestDeleteShift(t: ShiftTemplate) {
     setConfirmError(null);
     setConfirmDelete({
@@ -237,6 +255,7 @@ export function StaffView({ staff, shifts, leaves, roles, groups }: StaffViewPro
       {tab === "shifts" && (
         <ShiftTemplatesTab
           shifts={shifts}
+          roles={roles}
           onEdit={openEditShift}
           onDelete={requestDeleteShift}
           onAdd={openAddShift}
@@ -251,8 +270,10 @@ export function StaffView({ staff, shifts, leaves, roles, groups }: StaffViewPro
           )}
           <LeaveTab
             leaves={leaves}
+            staff={staff}
             onApprove={handleApproveLeave}
             onDecline={handleDeclineLeave}
+            onRemove={requestDeleteLeave}
             pendingLeaveId={pendingLeaveId}
           />
         </>
@@ -265,7 +286,7 @@ export function StaffView({ staff, shifts, leaves, roles, groups }: StaffViewPro
           onClose={closeStaffForm}
         />
       )}
-      {shiftFormOpen && <ShiftTemplateForm shift={editShift} onClose={closeShiftForm} />}
+      {shiftFormOpen && <ShiftTemplateForm shift={editShift} roles={roles} onClose={closeShiftForm} />}
       {leaveFormOpen && <LeaveForm staff={staff} onClose={() => setLeaveFormOpen(false)} />}
       <ConfirmDeleteModal
         open={confirmDelete !== null}

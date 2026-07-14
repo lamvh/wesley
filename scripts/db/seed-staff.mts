@@ -31,6 +31,8 @@ async function main() {
   await client.connect();
   const ddl = readFileSync(join(root, "supabase/migrations/0003_staff_admin.sql"), "utf8");
   await client.query(ddl);
+  const ddlRolePaid = readFileSync(join(root, "supabase/migrations/0008_shift_role_paid_hours.sql"), "utf8");
+  await client.query(ddlRolePaid);
   console.log("Schema applied.");
 
   // Extended fields for the 10 already-seeded staff (match by name).
@@ -60,20 +62,21 @@ async function main() {
     }
   }
   const shifts = [
-    ["sh1","Morning","6:45 – 15:15",4,4,"#87651A","#FCF4DC","#EAD9A4"],
-    ["sh2","Morning + Stock","6:45 – 17:15",1,1,"#8A6516","#FBEFC8","#E7CE8A"],
-    ["sh3","Afternoon","14:45 – 22:15",3,2,"#9A4A70","#F7DFEA","#E5B2CB"],
-    ["sh4","Evening (split)","8:30 – 21:00",2,2,"#A24E2A","#F7DDCC","#E8AE88"],
-    ["sh5","Night","23:45 – 8:15",2,1,"#3B4E74","#E3E8F5","#B4C1DF"],
-    ["sh6","Team Leader","8:00 – 22:45",2,2,"#2C5A6E","#D8EAF0","#9FC5D4"],
+    ["sh1","Morning","6:45 – 15:15",4,4,"#87651A","#FCF4DC","#EAD9A4","Carer",8],
+    ["sh2","Morning + Stock","6:45 – 17:15",1,1,"#8A6516","#FBEFC8","#E7CE8A","Care Taker",10],
+    ["sh3","Afternoon","14:45 – 22:15",3,2,"#9A4A70","#F7DFEA","#E5B2CB","Carer",7.5],
+    ["sh4","Evening (split)","8:30 – 21:00",2,2,"#A24E2A","#F7DDCC","#E8AE88","Registered Nurse",8],
+    ["sh5","Night","23:45 – 8:15",2,1,"#3B4E74","#E3E8F5","#B4C1DF","Registered Nurse",8],
+    ["sh6","Team Leader","8:00 – 22:45",2,2,"#2C5A6E","#D8EAF0","#9FC5D4","Team Leader",8],
   ];
-  for (const [id,name,time,req,filled,c,t,b] of shifts) {
+  for (const [id,name,time,req,filled,c,t,b,role,paid] of shifts) {
     await client.query(
-      `insert into public.shift_templates (id, building_id, name, time_label, req, filled, color, tint, border)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+      `insert into public.shift_templates (id, building_id, name, time_label, req, filled, color, tint, border, role, paid_hours)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
        on conflict (id) do update set name=excluded.name, time_label=excluded.time_label, req=excluded.req,
-         filled=excluded.filled, color=excluded.color, tint=excluded.tint, border=excluded.border`,
-      [id,B,name,time,req,filled,c,t,b]);
+         filled=excluded.filled, color=excluded.color, tint=excluded.tint, border=excluded.border,
+         role=excluded.role, paid_hours=excluded.paid_hours`,
+      [id,B,name,time,req,filled,c,t,b,role,paid]);
   }
   // leave requests (staff_id resolved by name)
   await client.query(`delete from public.leave_requests where building_id=$1`, [B]);

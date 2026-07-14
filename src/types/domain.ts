@@ -350,6 +350,9 @@ export interface ShiftType {
   color: string;
   tint: string;
   border: string;
+  /** registry role this shift is for; "" if unrestricted. The roster cell
+   *  picker only offers a shift to staff sharing this role's group. */
+  role: string;
 }
 
 export interface RosterDay {
@@ -366,6 +369,29 @@ export type RosterGrid = Record<string, string[]>;
  *  staff reordering (unlike a positional row/col index). */
 export const rosterCellKey = (staffId: string, dateISO: string) =>
   `${staffId}::${dateISO}`;
+
+// ---- duty roster export (print document) ----
+/** Config for the "Export duty roster" flow (modal → print preview). */
+export interface DutyForm {
+  scope: "day" | "week";
+  /** index into the visible week's days when scope is "day". */
+  day: number;
+  onCall: string;
+  chef: string;
+}
+/** One printed line on a duty sheet: a shift time segment + a staff name. */
+export interface DutyRow { time: string; name: string; }
+/** A role band on the sheet with its assigned lines for the day. */
+export interface DutySection { label: string; color: string; rows: DutyRow[]; }
+/** One A4 duty sheet (one per day; a whole-week export yields up to seven). */
+export interface DutySheet {
+  dateLabel: string;
+  onCall: string;
+  chef: string;
+  sections: DutySection[];
+}
+/** `<option>` for the duty modal's day / staff selects. */
+export interface DutyOption { value: string; label: string; }
 
 // ---- stock: providers, catalog, ordering ----
 export interface Provider {
@@ -440,6 +466,13 @@ export interface StaffRecord {
 export interface ShiftTemplate {
   id: string; name: string; time: string; req: number; filled: number;
   color: string; tint: string; border: string;
+  /** registry role name this shift is for; "" if unset. Constrains the roster
+   *  picker (only staff sharing the role's group are offered the shift). */
+  role: string;
+  /** paid hours per shift, fed into wage calculations; 0 if unset. */
+  paidHours: number;
+  /** building id the template belongs to (groups the Shift-templates tab). */
+  building: string;
 }
 // A role in the registry (Staff → Roles & groups). `name` is the label held in
 // StaffRecord.roles; `groupId` is the group it bands into on the roster (null =

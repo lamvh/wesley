@@ -9,7 +9,7 @@ const BUILDING = "wesley";
 // legend and cell picker consume. The template name doubles as both the short
 // code chip and the descriptive label.
 export async function getRosterShiftTypes(): Promise<ShiftType[]> {
-  const templates = await getShiftTemplates();
+  const templates = await getShiftTemplates(BUILDING);
   return templates.map((t) => ({
     id: t.id,
     code: t.name,
@@ -18,6 +18,7 @@ export async function getRosterShiftTypes(): Promise<ShiftType[]> {
     color: t.color,
     tint: t.tint,
     border: t.border,
+    role: t.role,
   }));
 }
 

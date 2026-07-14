@@ -10,7 +10,8 @@ interface RosterGridProps {
   days: RosterDay[];
   grid: RosterGrid;
   defs: Record<string, ShiftType>;
-  pickerDefs: ShiftType[];
+  /** staffId -> the shifts that staffer may be assigned (role-constrained). */
+  pickers: Record<string, ShiftType[]>;
   totals: number[];
   openCell: string | null;
   onOpen: (key: string) => void;
@@ -28,7 +29,7 @@ export function RosterGrid({
   days,
   grid,
   defs,
-  pickerDefs,
+  pickers,
   totals,
   openCell,
   onOpen,
@@ -112,7 +113,7 @@ export function RosterGrid({
                           colIndex={ci}
                           ids={grid[cellKey] ?? []}
                           defs={defs}
-                          pickerDefs={pickerDefs}
+                          pickerDefs={pickers[st.id] ?? []}
                           staffName={st.name}
                           dayLabel={`${d.dow} ${d.date}`}
                           isOpen={openCell === cellKey}

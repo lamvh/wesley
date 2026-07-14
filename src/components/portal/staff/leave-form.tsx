@@ -4,7 +4,13 @@ import { useActionState, useEffect, useRef } from "react";
 import { saveLeave } from "@/lib/actions/staff";
 import type { StaffRecord } from "@/types/domain";
 
-const LEAVE_TYPES = ["Annual leave", "Sick leave", "Shift swap"] as const;
+const LEAVE_TYPES = [
+  "Annual leave",
+  "Sick leave",
+  "Shift swap",
+  "Bereavement",
+  "Unpaid leave",
+] as const;
 
 const fieldCls =
   "rounded-[11px] border border-input bg-cream-2 px-[14px] py-[10px] text-[14.5px] text-ink outline-none focus:border-navy";

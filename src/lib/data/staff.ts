@@ -18,13 +18,20 @@ export async function getStaff(): Promise<StaffRecord[]> {
     visaType: r.visa_type ?? "", visaExpiry: r.visa_expiry ?? "",
   }));
 }
-export async function getShiftTemplates(): Promise<ShiftTemplate[]> {
+// Shift templates for the Staff → Shift-templates tab (all buildings, so the
+// tab can group them by building). Pass a buildingId to scope to one building —
+// the roster uses this to only offer its own building's shifts.
+export async function getShiftTemplates(buildingId?: string): Promise<ShiftTemplate[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("shift_templates")
-    .select("id,name,time_label,req,filled,color,tint,border").eq("building_id", BUILDING).order("id");
+  let query = supabase.from("shift_templates")
+    .select("id,name,time_label,req,filled,color,tint,border,role,paid_hours,building_id")
+    .order("building_id").order("id");
+  if (buildingId) query = query.eq("building_id", buildingId);
+  const { data, error } = await query;
   if (error) throw new Error(`Failed to load shift templates: ${error.message}`);
   return (data ?? []).map((r) => ({ id: r.id, name: r.name, time: r.time_label ?? "",
-    req: r.req, filled: r.filled, color: r.color ?? "#87651A", tint: r.tint ?? "#FCF4DC", border: r.border ?? "#EAD9A4" }));
+    req: r.req, filled: r.filled, color: r.color ?? "#87651A", tint: r.tint ?? "#FCF4DC", border: r.border ?? "#EAD9A4",
+    role: r.role ?? "", paidHours: r.paid_hours != null ? Number(r.paid_hours) : 0, building: r.building_id ?? BUILDING }));
 }
 export async function getLeaveRequests(): Promise<StaffLeaveRequest[]> {
   const supabase = await createClient();

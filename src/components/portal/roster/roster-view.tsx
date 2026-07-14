@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ShiftLegend } from "@/components/portal/roster/shift-legend";
 import { RosterGrid } from "@/components/portal/roster/roster-grid";
+import { DutyRosterModal } from "@/components/portal/roster/duty-roster-modal";
+import { DutyRosterPreview } from "@/components/portal/roster/duty-roster-preview";
 import {
   dailyTotals,
   rosterWeekTitle,
@@ -12,8 +14,16 @@ import {
   totalShifts,
 } from "@/lib/mock-data";
 import { clearRosterCell, toggleRosterShift } from "@/lib/actions/roster";
-import { groupStaffForRoster } from "@/lib/roster-grouping";
+import { groupStaffForRoster, rosterPickersFor } from "@/lib/roster-grouping";
+import {
+  DUTY_DEFAULTS,
+  buildDutySheets,
+  dutyDayOptions,
+  dutySheetTitle,
+  dutyStaffOptions,
+} from "@/lib/duty-roster";
 import type {
+  DutyForm,
   RoleDef,
   RoleGroup,
   RosterDay,
@@ -30,6 +40,8 @@ interface RosterViewProps {
   roles: RoleDef[];
   groups: RoleGroup[];
   weekStartISO: string;
+  /** open the duty-roster print preview on mount (roster?duty=1 deep-link). */
+  initialDutyPreview?: boolean;
 }
 
 // Weekly roster scheduler: real staff × 7-day grid with an assignable shift
@@ -44,12 +56,24 @@ export function RosterView({
   roles,
   groups,
   weekStartISO,
+  initialDutyPreview = false,
 }: RosterViewProps) {
   const router = useRouter();
   const [grid, setGrid] = useState<RosterGridState>(initialGrid);
   const [openCell, setOpenCell] = useState<string | null>(null);
   const [published, setPublished] = useState(false);
   const [, startTransition] = useTransition();
+
+  // "Export duty roster" flow: config modal -> full-screen A4 print preview.
+  // On-call / chef default to the first two staff so the selects are populated.
+  const [dutyOpen, setDutyOpen] = useState(false);
+  const [dutyPreview, setDutyPreview] = useState(initialDutyPreview);
+  const [dutyForm, setDutyForm] = useState<DutyForm>({
+    ...DUTY_DEFAULTS,
+    onCall: staff[0]?.name ?? "",
+    chef: staff[staff.length - 1]?.name ?? staff[0]?.name ?? "",
+  });
+  const patchDuty = (patch: Partial<DutyForm>) => setDutyForm((prev) => ({ ...prev, ...patch }));
 
   // Legend/picker vocabulary is the real shift templates. `defs` indexes them
   // by id for the grid cells; `legend` is the ordered list for the legend bar
@@ -61,6 +85,10 @@ export function RosterView({
   // so the roster reads by role, not a flat alphabetical list.
   const bands = groupStaffForRoster(staff, roles, groups);
 
+  // Per-staff shift picker: each cell only offers shifts matching the staff
+  // member's role group (see rosterPickersFor).
+  const pickers = rosterPickersFor(staff, roles, shiftTypes);
+
   const totals = dailyTotals(
     staff.map((s) => s.id),
     days,
@@ -68,6 +96,15 @@ export function RosterView({
   );
   const total = totalShifts(grid);
   const weekTitle = rosterWeekTitle(days);
+
+  // Duty sheets rebuild whenever the grid or export config changes.
+  const dutySheets = useMemo(
+    () => buildDutySheets(bands, days, grid, shiftTypes, dutyForm),
+    [bands, days, grid, shiftTypes, dutyForm],
+  );
+  const dutyTitle = dutySheetTitle(days, dutyForm);
+  const dayOptions = dutyDayOptions(days);
+  const staffOptions = dutyStaffOptions(staff);
 
   const openRosterCell = (key: string) =>
     setOpenCell((prev) => (prev === key ? null : key));
@@ -143,9 +180,10 @@ export function RosterView({
           </div>
           <Button
             variant="outline"
+            onClick={() => setDutyOpen(true)}
             className="h-auto rounded-[11px] border-line-soft bg-cream-2 px-[15px] py-[9px] text-[14px] font-semibold text-ink-nav hover:bg-cream"
           >
-            Copy last week
+            Export duty roster
           </Button>
           <Button
             onClick={() => setPublished(true)}
@@ -168,7 +206,7 @@ export function RosterView({
           days={days}
           grid={grid}
           defs={defs}
-          pickerDefs={legend}
+          pickers={pickers}
           totals={totals}
           openCell={openCell}
           onOpen={openRosterCell}
@@ -177,6 +215,29 @@ export function RosterView({
           onClear={clearCell}
         />
       )}
+
+      <DutyRosterModal
+        open={dutyOpen}
+        form={dutyForm}
+        dayOptions={dayOptions}
+        staffOptions={staffOptions}
+        onScope={(scope) => patchDuty({ scope })}
+        onDay={(day) => patchDuty({ day })}
+        onOnCall={(onCall) => patchDuty({ onCall })}
+        onChef={(chef) => patchDuty({ chef })}
+        onCancel={() => setDutyOpen(false)}
+        onGenerate={() => {
+          setDutyOpen(false);
+          setDutyPreview(true);
+        }}
+      />
+      <DutyRosterPreview
+        open={dutyPreview}
+        sheets={dutySheets}
+        title={dutyTitle}
+        onPrint={() => window.print()}
+        onClose={() => setDutyPreview(false)}
+      />
     </div>
   );
 }

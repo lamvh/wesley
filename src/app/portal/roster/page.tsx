@@ -10,9 +10,9 @@ import { getRosterDays, parseISODate, toISODate, weekStartOf } from "@/lib/mock-
 export default async function RosterPage({
   searchParams,
 }: {
-  searchParams: Promise<{ week?: string }>;
+  searchParams: Promise<{ week?: string; duty?: string }>;
 }) {
-  const { week } = await searchParams;
+  const { week, duty } = await searchParams;
   const weekStart = weekStartOf(week ? parseISODate(week) : new Date());
   const weekStartISO = toISODate(weekStart);
   const days = getRosterDays(weekStart);
@@ -35,6 +35,7 @@ export default async function RosterPage({
       roles={roles}
       groups={groups}
       weekStartISO={weekStartISO}
+      initialDutyPreview={duty === "1"}
     />
   );
 }

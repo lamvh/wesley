@@ -1,4 +1,4 @@
-import type { RoleDef, RoleGroup, StaffRecord } from "@/types/domain";
+import type { RoleDef, RoleGroup, ShiftType, StaffRecord } from "@/types/domain";
 
 export interface RosterBand {
   id: string;
@@ -66,4 +66,34 @@ export function groupStaffForRoster(
   }
   if (unassigned.length) bands.push({ ...UNASSIGNED, staff: unassigned });
   return bands;
+}
+
+// Which shift templates each staff member may be assigned on the roster: a
+// shift is offered only to staff who hold a role in the same group as the
+// shift's role. Shifts with no role (or a role that maps to no group) are
+// unrestricted and offered to everyone. A staffer whose roles match no shift
+// falls back to the full list so a cell is never un-assignable.
+export function rosterPickersFor(
+  staff: StaffRecord[],
+  roles: RoleDef[],
+  shiftTypes: ShiftType[],
+): Record<string, ShiftType[]> {
+  const roleToGroup = new Map(roles.map((r) => [r.name, r.groupId]));
+
+  // Group a shift's role maps to (null = unrestricted: no role, or role has no group).
+  const shiftGroup = (st: ShiftType): string | null =>
+    st.role ? roleToGroup.get(st.role) ?? null : null;
+
+  const pickers: Record<string, ShiftType[]> = {};
+  for (const s of staff) {
+    const myGroups = new Set(
+      s.roles.map((r) => roleToGroup.get(r)).filter((g): g is string => g != null),
+    );
+    const allowed = shiftTypes.filter((st) => {
+      const g = shiftGroup(st);
+      return g == null || myGroups.has(g);
+    });
+    pickers[s.id] = allowed.length ? allowed : shiftTypes;
+  }
+  return pickers;
 }
