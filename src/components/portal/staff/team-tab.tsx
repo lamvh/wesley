@@ -4,15 +4,32 @@ import { staffContractMeta, staffStatusMeta } from "@/lib/design-meta";
 import type { StaffRecord } from "@/types/domain";
 import { cn } from "@/lib/utils";
 
-const COLS = "grid-cols-[2fr_1fr_1fr_0.7fr_1fr_1fr_88px]";
+const COLS = "grid-cols-[2fr_1fr_1fr_1.1fr_0.7fr_1fr_1fr_88px]";
 
 // Fallback swatches for any contract/status value outside the known sets —
 // keeps the table rendering instead of erroring on unexpected data.
 const FALLBACK_CONTRACT = { badge: "bg-muted text-ink-muted", text: "text-ink-muted", dot: "bg-ink-muted" };
 const FALLBACK_STATUS = { text: "text-ink-muted", dot: "bg-ink-muted" };
 
-// Team directory: avatar+name+tenure, role, contract pill (+ weekly
-// hours), leave balance, phone, status dot, and edit/delete actions.
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+// Visa expiry chip: red if expired, amber within 60 days, else green. Null when
+// the visa type has no expiry (citizen/PR) or no date is recorded. Date is
+// formatted manually (no locale) so SSR and client hydration agree.
+function visaPill(visaType: string, visaExpiry: string): { text: string; cls: string } | null {
+  const needsExp = visaType && visaType !== "NZ Citizen" && visaType !== "Permanent Resident";
+  if (!needsExp || !visaExpiry) return null;
+  const dd = new Date(`${visaExpiry}T00:00:00`);
+  if (Number.isNaN(dd.getTime())) return null;
+  const days = Math.round((dd.getTime() - Date.now()) / 86400000);
+  const lab = `${String(dd.getDate()).padStart(2, "0")} ${MONTHS[dd.getMonth()]} ${dd.getFullYear()}`;
+  if (days < 0) return { text: `Expired ${lab}`, cls: "bg-rust-tint text-rust" };
+  if (days <= 60) return { text: `Expires ${lab}`, cls: "bg-gold-tint text-gold-text" };
+  return { text: lab, cls: "bg-sage-tint text-sage" };
+}
+
+// Team directory: avatar+name+tenure, role, contract pill (+ weekly hours),
+// visa (type + expiry chip), leave balance, phone, status dot, edit/delete.
 // Filtering/search stays out of scope here — StaffView passes the full list.
 export function TeamTab({
   staff,
@@ -25,7 +42,7 @@ export function TeamTab({
 }) {
   return (
     <div className="mt-6 overflow-x-auto rounded-2xl border border-line bg-cream-2">
-      <div className="min-w-[900px]">
+      <div className="min-w-[980px]">
         <div
           className={cn(
             "grid gap-[14px] border-b border-line-divider px-[22px] py-[14px] text-[12px] font-bold uppercase tracking-[0.4px] text-ink-faint",
@@ -35,6 +52,7 @@ export function TeamTab({
           <div>Name</div>
           <div>Role</div>
           <div>Contract</div>
+          <div>Visa</div>
           <div>Leave</div>
           <div>Contact</div>
           <div>Status</div>
@@ -44,6 +62,7 @@ export function TeamTab({
         {staff.map((s) => {
           const contract = staffContractMeta[s.contract] ?? FALLBACK_CONTRACT;
           const status = staffStatusMeta[s.status] ?? FALLBACK_STATUS;
+          const pill = visaPill(s.visaType, s.visaExpiry);
           return (
             <div
               key={s.id}
@@ -71,6 +90,15 @@ export function TeamTab({
                   {s.contract}
                 </span>
                 <div className="mt-[3px] text-[11.5px] text-ink-faint">{s.hours} hrs/wk</div>
+              </div>
+
+              <div className="min-w-0">
+                <div className="truncate text-[13px] text-ink-soft">{s.visaType || "—"}</div>
+                {pill && (
+                  <span className={cn("mt-[3px] inline-block rounded-full px-[8px] py-[2px] text-[11px] font-semibold", pill.cls)}>
+                    {pill.text}
+                  </span>
+                )}
               </div>
 
               <div className="text-[13.5px] text-ink-soft">

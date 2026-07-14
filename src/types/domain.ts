@@ -425,6 +425,10 @@ export interface StaffRecord {
   contract: string; hours: number; phone: string; start: string;
   status: string; initials: string; color: string;
   annual: number; taken: number;
+  /** work-visa type (e.g. "Work Visa"); "" if unset. */
+  visaType: string;
+  /** ISO date (YYYY-MM-DD) the visa expires; "" for citizens/PR or unset. */
+  visaExpiry: string;
 }
 export interface ShiftTemplate {
   id: string; name: string; time: string; req: number; filled: number;

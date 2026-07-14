@@ -14,16 +14,18 @@ Header (title + building sub + tab-specific action button) → 4 KPI cards (tota
 | Tab | Component | Notes |
 |-----|-----------|-------|
 | Header | inline | sub = `{active building} · manage your team and shift coverage`; action button swaps per tab (`+ Add staff` / `+ Add shift` / `+ Add leave`) |
-| Team | `team-tab` | Directory table: avatar+name+"Since {start}", role, wing, contract pill + weekly hours, **Leave** column (`taken/annual`), phone, status dot, edit/delete actions |
+| Team | `team-tab` | Directory table: avatar+name+"Since {start}", role, contract pill + weekly hours, **Visa** (type + colored expiry chip: red expired / amber ≤60d / green), **Leave** column (`taken/annual`), phone, status dot, edit/delete actions |
 | Shift templates | `shift-templates-tab` | Two-column cards: swatch + name + time, gap badge ("N open" vs "Fully staffed"), **coverage bar** (`filled/req`, sage when staffed / terracotta when short), edit action |
 | Leave requests | `leave-tab` | Row list: avatar + name·type, date range + day count, optional note, status pill; **Approve/Decline** actions only on `Pending` rows (Approved/Declined rows are read-only history) |
 
 Shared modals (owned by `StaffView`): `staff-form` (add/edit team member), `shift-template-form` (add/edit shift template), `leave-form` (add-only leave request), `confirm-delete-modal` (reused from Stock, staff removal only).
 
+**Staff form fields:** name, **role** (CRUD via `staff-role-picker` — select a chip, add a new role, delete a role via its `×` when it's not the last one and not assigned to any staff), contract, phone, **work visa type** (`NZ Citizen / Permanent Resident / Work Visa / Student Visa / Working Holiday / Essential Skills`), **visa expiry date** (shown only when the type has an expiry; cleared for citizens/PR). Role options seed from the base four (`Carer / Registered Nurse / Team Leader / Activities`) ∪ any role already assigned; added-but-unassigned roles are session-only (not persisted). The **Wing** field was removed — staff are not wing-scoped.
+
 ## Data flow (Supabase)
 RSC `page.tsx` calls `src/lib/data/staff.ts` (`getStaff`, `getShiftTemplates`, `getLeaveRequests`) and passes the results into `<StaffView>` as props — no client-side fetching for initial load. Writes go through Server Actions in `src/lib/actions/staff.ts`:
 
-- `saveStaff` / `deleteStaff` — upsert/delete `staff` profile fields (name, role, wing, contract → derived `hours`, phone). Edit never touches `annual`/`taken` — those are only adjusted via `approve_leave`, so re-saving a profile can't clobber balances. New rows seed `annual: 20, taken: 0`.
+- `saveStaff` / `deleteStaff` — upsert/delete `staff` profile fields (name, role, contract → derived `hours`, phone, `visa_type`, `visa_expiry`). `visa_expiry` is forced null for `NZ Citizen`/`Permanent Resident`. Edit never touches `annual`/`taken` — those are only adjusted via `approve_leave`, so re-saving a profile can't clobber balances. New rows seed `annual: 20, taken: 0`. **Requires migration `0004_staff_visa.sql`** (adds `visa_type text`, `visa_expiry date`).
 - `saveShiftTemplate` / `deleteShiftTemplate` — upsert/delete `shift_templates`; a chosen base color resolves to its matching tint/border pair from a fixed 6-entry palette.
 - `saveLeave` — insert a `leave_requests` row (`status: "Pending"`).
 - `approveLeave` — calls the `approve_leave(p_id)` RPC: sets `status = "Approved"`, and for `Annual leave`/`Sick leave` types atomically debits `staff.taken` by the request's `days`. No-op if already approved.

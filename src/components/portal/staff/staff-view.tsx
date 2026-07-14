@@ -60,6 +60,12 @@ export function StaffView({ staff, shifts, leaves }: StaffViewProps) {
   // editStaff stays null for "+ Add staff".
   const [staffFormOpen, setStaffFormOpen] = useState(false);
   const [editStaff, setEditStaff] = useState<StaffRecord | null>(null);
+  // Role picker options = the base roles plus any custom role already in use;
+  // usedRoles blocks deleting a role that staff are still assigned to.
+  const usedRoles = Array.from(new Set(staff.map((s) => s.role).filter(Boolean)));
+  const roleOptions = Array.from(
+    new Set(["Carer", "Registered Nurse", "Team Leader", "Activities", ...usedRoles]),
+  );
   // Shift-template form: same add/edit pattern as the staff form.
   const [shiftFormOpen, setShiftFormOpen] = useState(false);
   const [editShift, setEditShift] = useState<ShiftTemplate | null>(null);
@@ -240,7 +246,14 @@ export function StaffView({ staff, shifts, leaves }: StaffViewProps) {
         </>
       )}
 
-      {staffFormOpen && <StaffForm staff={editStaff} onClose={closeStaffForm} />}
+      {staffFormOpen && (
+        <StaffForm
+          staff={editStaff}
+          roleOptions={roleOptions}
+          usedRoles={usedRoles}
+          onClose={closeStaffForm}
+        />
+      )}
       {shiftFormOpen && <ShiftTemplateForm shift={editShift} onClose={closeShiftForm} />}
       {leaveFormOpen && <LeaveForm staff={staff} onClose={() => setLeaveFormOpen(false)} />}
       <ConfirmDeleteModal

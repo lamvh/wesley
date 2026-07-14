@@ -20,10 +20,15 @@ export async function saveStaff(_prev: StaffFormState, fd: FormData): Promise<St
   const name = str(fd, "name");
   if (!name) return { error: "Name is required." };
   const contract = str(fd, "contract");
+  const visaType = str(fd, "visaType");
+  // Citizens / permanent residents have no visa to expire.
+  const noExpiry = visaType === "NZ Citizen" || visaType === "Permanent Resident";
   const fields = {
     name, role: str(fd, "role") || null,
     contract: contract || null, hours: CONTRACT_HOURS[contract] ?? 0,
     phone: str(fd, "phone") || null, initials: initialsOf(name),
+    visa_type: visaType || null,
+    visa_expiry: noExpiry ? null : (str(fd, "visaExpiry") || null),
   };
   const supabase = await createClient();
   if (id) {
