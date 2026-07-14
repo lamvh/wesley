@@ -7,9 +7,10 @@ const BUILDING = "wesley";
 // The roster legend/picker vocabulary, sourced from the real shift_templates
 // (Staff → Shift templates) and mapped to the ShiftType view shape the grid,
 // legend and cell picker consume. The template name doubles as both the short
-// code chip and the descriptive label.
+// code chip and the descriptive label. All buildings' templates are offered so
+// the picker can assign any shift (e.g. The Lodge) regardless of building.
 export async function getRosterShiftTypes(): Promise<ShiftType[]> {
-  const templates = await getShiftTemplates(BUILDING);
+  const templates = await getShiftTemplates();
   return templates.map((t) => ({
     id: t.id,
     code: t.name,
