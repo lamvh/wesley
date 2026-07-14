@@ -5,7 +5,7 @@
 - **Render:** RSC page fetches Supabase data → client `StaffView` (tabs, forms are stateful)
 
 ## Purpose
-Manage the team roster (employment + leave-balance record), define shift-coverage templates, and review/approve leave requests — for the **active building** (`wesley`, constant this phase). Three tabs: **Team**, **Shift templates**, **Leave requests**.
+Manage the team roster (employment + leave-balance record), organise roles into groups, define shift-coverage templates, and review/approve leave requests — for the **active building** (`wesley`, constant this phase). Four tabs: **Team**, **Roles & groups**, **Shift templates**, **Leave requests**.
 
 ## Layout
 Header (title + building sub + tab-specific action button) → 4 KPI cards (total staff / on shift today / on leave / pending requests) → pill tabs → active tab body.
@@ -13,17 +13,18 @@ Header (title + building sub + tab-specific action button) → 4 KPI cards (tota
 ## Sections & components
 | Tab | Component | Notes |
 |-----|-----------|-------|
-| Header | inline | sub = `{active building} · manage your team and shift coverage`; action button swaps per tab (`+ Add staff` / `+ Add shift` / `+ Add leave`) |
-| Team | `team-tab` | Directory table: avatar+name+"Since {start}", **roles** (one or more chips), contract pill + weekly hours, **Visa** (type + colored expiry chip: red expired / amber ≤60d / green), **Leave** column (`taken/annual`), phone, status dot, edit/delete actions |
+| Header | inline | sub = `{active building} · manage your team and shift coverage`; action button swaps per tab (`+ Add staff` / `+ Add shift` / `+ Add leave`; **no button on Roles & groups** — add is inline there) |
+| Team | `team-tab` | Directory table: avatar+name+"Since {start}", **roles** (one or more chips), contract pill + weekly hours, **Visa** (type + colored expiry chip: red expired / amber ≤60d / green), **Leave** column (`taken/annual`), phone, status dot, edit/delete actions. **Client search** (name/role/contract/visa/phone/status) + **pagination** (6/page): search box + "X–Y of Z" count above the table, numbered pager (‹ 1 2 … ›) below; searching resets to page 1 |
+| Roles & groups | `roles-groups-tab` | **Role registry CRUD** + **ordered groups** that band/sort the roster. Groups list (reorder ↑/↓, rename via add-form, delete → members fall back to Unassigned) with member-role chips (removable) + "+ Add role…" select + staff-count pill; an **Unassigned roles** bucket (assign-to-group select); an **All roles** list (color swatch, group, staff count, delete — blocked while assigned) + "Add role" form. Admin only |
 | Shift templates | `shift-templates-tab` | Two-column cards: swatch + name + time, gap badge ("N open" vs "Fully staffed"), **coverage bar** (`filled/req`, sage when staffed / terracotta when short), edit action |
 | Leave requests | `leave-tab` | Row list: avatar + name·type, date range + day count, optional note, status pill; **Approve/Decline** actions only on `Pending` rows (Approved/Declined rows are read-only history) |
 
 Shared modals (owned by `StaffView`): `staff-form` (add/edit team member), `shift-template-form` (add/edit shift template), `leave-form` (add-only leave request), `confirm-delete-modal` (reused from Stock, staff removal only).
 
-**Staff form fields:** name, **roles** (MULTI-select CRUD via `staff-role-picker` — a staffer can hold several roles; toggle one or more chips, add a new role option, delete an option via its `×` when it's not the last one and not assigned to any staff; **at least one role required**), contract, phone, **work visa type** (`NZ Citizen / Permanent Resident / Work Visa / Student Visa / Working Holiday / Essential Skills`), **visa expiry date** (shown only when the type has an expiry; cleared for citizens/PR). Role options seed from the base four (`Carer / Registered Nurse / Team Leader / Activities`) ∪ any role already assigned; added-but-unassigned roles are session-only (not persisted). The **Wing** field was removed — staff are not wing-scoped.
+**Staff form fields:** name, **roles** (MULTI-**select** via `staff-role-picker` — a staffer can hold several roles; toggle one or more chips; **at least one role required**), contract, phone, **work visa type** (`NZ Citizen / Permanent Resident / Work Visa / Student Visa / Working Holiday / Essential Skills`), **visa expiry date** (shown only when the type has an expiry; cleared for citizens/PR). Role options come from the **registry** (`getRoles()`); a staffer's existing roles are always shown even if later removed from the registry. **Role creation/deletion is no longer inline** — it lives only in the Roles & groups tab (the picker shows a "managed in Roles & groups" note). The **Wing** field was removed — staff are not wing-scoped.
 
 ## Data flow (Supabase)
-RSC `page.tsx` calls `src/lib/data/staff.ts` (`getStaff`, `getShiftTemplates`, `getLeaveRequests`) and passes the results into `<StaffView>` as props — no client-side fetching for initial load. Writes go through Server Actions in `src/lib/actions/staff.ts`:
+RSC `page.tsx` calls `src/lib/data/staff.ts` (`getStaff`, `getShiftTemplates`, `getLeaveRequests`) **and `src/lib/data/roles.ts` (`getRoles`, `getRoleGroups`)**, passing the results into `<StaffView>` as props — no client-side fetching for initial load. Role/group writes go through `src/lib/actions/roles.ts` (`saveRole`, `deleteRole`, `assignRoleToGroup`, `saveGroup`, `deleteGroup`, `moveGroup`) — each `revalidatePath` both `/portal/staff` and `/portal/roster` (roles/groups drive the roster banding too). `deleteRole` is blocked while any staffer still holds the role. Other writes go through Server Actions in `src/lib/actions/staff.ts`:
 
 - `saveStaff` / `deleteStaff` — upsert/delete `staff` profile fields (name, `roles text[]` + `role` = primary/`roles[0]`, contract → derived `hours`, phone, `visa_type`, `visa_expiry`). At least one role required. `visa_expiry` is forced null for `NZ Citizen`/`Permanent Resident`. Edit never touches `annual`/`taken` — those are only adjusted via `approve_leave`, so re-saving a profile can't clobber balances. New rows seed `annual: 20, taken: 0`. **Requires migrations `0004_staff_visa.sql`** (visa columns) **and `0005_staff_multi_role.sql`** (adds `roles text[]`, backfills from `role`).
 - `saveShiftTemplate` / `deleteShiftTemplate` — upsert/delete `shift_templates`; a chosen base color resolves to its matching tint/border pair from a fixed 6-entry palette.
@@ -34,7 +35,9 @@ RSC `page.tsx` calls `src/lib/data/staff.ts` (`getStaff`, `getShiftTemplates`, `
 All actions `revalidatePath("/portal/staff")` on success. RLS: `{table}_read`/`{table}_write` policies, authenticated-only (see `docs/03-data-model.md`).
 
 ## Variants & states (client)
-- `tab` ∈ {team, shifts, leave}.
+- `tab` ∈ {team, roles, shifts, leave}.
+- Team tab: local `query` (search) + `page` (pagination, 6/page), clamped to the filtered result count.
+- Roles & groups tab: server-action driven (optimistic via `useTransition`), inline error banner on any rejection (e.g. deleting a role still in use).
 - Staff form: add mode (`editStaff` = null) vs edit mode (populated).
 - Shift-template form: same add/edit pattern (`editShift`).
 - Leave form: add-only — requests are resolved via Approve/Decline, never edited.

@@ -49,18 +49,17 @@ function Field({
   );
 }
 
-// Add/edit staff modal. Role is CRUD-managed inline (see StaffRolePicker) and
-// mirrored to a hidden field; visa type/expiry persist via the form action.
-// Same reset-via-remount idiom as StockItemForm — parent mounts fresh per target.
+// Add/edit staff modal. Roles are chosen from the registry (managed in Staff →
+// Roles & groups) and mirrored to hidden fields; visa type/expiry persist via
+// the form action. Same reset-via-remount idiom as StockItemForm — parent mounts
+// fresh per target.
 export function StaffForm({
   staff,
   roleOptions,
-  usedRoles,
   onClose,
 }: {
   staff: StaffRecord | null;
   roleOptions: string[];
-  usedRoles: string[];
   onClose: () => void;
 }) {
   const [state, action, pending] = useActionState(saveStaff, {});
@@ -68,12 +67,13 @@ export function StaffForm({
   const editing = Boolean(staff);
 
   // Role/contract are choice-grids, not native inputs, so their value is
-  // tracked in state and mirrored to hidden fields for the form action.
-  const [roles, setRoles] = useState<string[]>(roleOptions);
+  // tracked in state and mirrored to hidden fields for the form action. Any role
+  // still on an existing staffer is shown even if it was later removed from the
+  // registry, so editing never silently drops it.
+  const roles = Array.from(new Set([...roleOptions, ...(staff?.roles ?? [])]));
   const [selectedRoles, setSelectedRoles] = useState<string[]>(
     staff?.roles?.length ? staff.roles : roleOptions[0] ? [roleOptions[0]] : [],
   );
-  const [newRole, setNewRole] = useState("");
   const [contract, setContract] = useState(staff?.contract ?? CONTRACT_CHOICES[0]);
   const [visaType, setVisaType] = useState(staff?.visaType || VISA_TYPES[0]);
   const [visaExpiry, setVisaExpiry] = useState(staff?.visaExpiry ?? "");
@@ -86,20 +86,8 @@ export function StaffForm({
     wasPending.current = pending;
   }, [pending, state.error, onClose]);
 
-  function addRole() {
-    const v = newRole.trim();
-    if (!v) return;
-    setNewRole("");
-    setRoles((prev) => (prev.includes(v) ? prev : [...prev, v]));
-  }
-
   function toggleRole(r: string) {
     setSelectedRoles((prev) => (prev.includes(r) ? prev.filter((x) => x !== r) : [...prev, r]));
-  }
-
-  function removeRoleOption(r: string) {
-    setRoles((prev) => prev.filter((x) => x !== r));
-    setSelectedRoles((prev) => prev.filter((x) => x !== r));
   }
 
   return (
@@ -148,12 +136,7 @@ export function StaffForm({
           <StaffRolePicker
             roles={roles}
             selectedRoles={selectedRoles}
-            usedRoles={usedRoles}
-            newRole={newRole}
             onToggle={toggleRole}
-            onRemove={removeRoleOption}
-            onNewRoleChange={setNewRole}
-            onAdd={addRole}
           />
 
           <div>

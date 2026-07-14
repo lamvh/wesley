@@ -10,17 +10,21 @@ import { Button } from "@/components/ui/button";
 import { approveLeave, declineLeave, deleteStaff, deleteShiftTemplate } from "@/lib/actions/staff";
 import { TeamTab } from "@/components/portal/staff/team-tab";
 import { StaffForm } from "@/components/portal/staff/staff-form";
+import { RolesGroupsTab } from "@/components/portal/staff/roles-groups-tab";
 import { ShiftTemplatesTab } from "@/components/portal/staff/shift-templates-tab";
 import { ShiftTemplateForm } from "@/components/portal/staff/shift-template-form";
 import { LeaveTab } from "@/components/portal/staff/leave-tab";
 import { LeaveForm } from "@/components/portal/staff/leave-form";
 import { ConfirmDeleteModal } from "@/components/portal/stock/confirm-delete-modal";
-import type { StaffRecord, ShiftTemplate, StaffLeaveRequest, Kpi } from "@/types/domain";
+import type {
+  StaffRecord, ShiftTemplate, StaffLeaveRequest, RoleDef, RoleGroup, Kpi,
+} from "@/types/domain";
 
-type Tab = "team" | "shifts" | "leave";
+type Tab = "team" | "roles" | "shifts" | "leave";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "team", label: "Team" },
+  { key: "roles", label: "Roles & groups" },
   { key: "shifts", label: "Shift templates" },
   { key: "leave", label: "Leave requests" },
 ];
@@ -29,9 +33,11 @@ interface StaffViewProps {
   staff: StaffRecord[];
   shifts: ShiftTemplate[];
   leaves: StaffLeaveRequest[];
+  roles: RoleDef[];
+  groups: RoleGroup[];
 }
 
-export function StaffView({ staff, shifts, leaves }: StaffViewProps) {
+export function StaffView({ staff, shifts, leaves, roles, groups }: StaffViewProps) {
   const { buildingId } = useBuilding();
   const buildingName = getBuildingById(buildingId).name;
 
@@ -60,12 +66,13 @@ export function StaffView({ staff, shifts, leaves }: StaffViewProps) {
   // editStaff stays null for "+ Add staff".
   const [staffFormOpen, setStaffFormOpen] = useState(false);
   const [editStaff, setEditStaff] = useState<StaffRecord | null>(null);
-  // Role picker options = the base roles plus any custom role already in use;
-  // usedRoles blocks deleting a role that staff are still assigned to.
-  const usedRoles = Array.from(new Set(staff.flatMap((s) => s.roles).filter(Boolean)));
-  const roleOptions = Array.from(
-    new Set(["Carer", "Registered Nurse", "Team Leader", "Activities", ...usedRoles]),
-  );
+  // Staff-form role choices come from the registry (managed in the Roles &
+  // groups tab). roleCounts drives the per-role staff tallies on that tab.
+  const roleOptions = roles.map((r) => r.name);
+  const roleCounts = staff.reduce<Record<string, number>>((acc, s) => {
+    for (const r of s.roles) acc[r] = (acc[r] ?? 0) + 1;
+    return acc;
+  }, {});
   // Shift-template form: same add/edit pattern as the staff form.
   const [shiftFormOpen, setShiftFormOpen] = useState(false);
   const [editShift, setEditShift] = useState<ShiftTemplate | null>(null);
@@ -188,12 +195,14 @@ export function StaffView({ staff, shifts, leaves }: StaffViewProps) {
         title="Staff"
         sub={`${buildingName} · manage your team and shift coverage`}
         actions={
-          <Button
-            onClick={onHeaderAction}
-            className="h-auto rounded-[11px] bg-navy px-4 py-[9px] text-[14px] font-semibold text-cream hover:bg-navy/90"
-          >
-            {tab === "shifts" ? "+ Add shift" : tab === "leave" ? "+ Add leave" : "+ Add staff"}
-          </Button>
+          tab === "roles" ? undefined : (
+            <Button
+              onClick={onHeaderAction}
+              className="h-auto rounded-[11px] bg-navy px-4 py-[9px] text-[14px] font-semibold text-cream hover:bg-navy/90"
+            >
+              {tab === "shifts" ? "+ Add shift" : tab === "leave" ? "+ Add leave" : "+ Add staff"}
+            </Button>
+          )
         }
       />
 
@@ -221,6 +230,9 @@ export function StaffView({ staff, shifts, leaves }: StaffViewProps) {
 
       {tab === "team" && (
         <TeamTab staff={staff} onEdit={openEditStaff} onDelete={requestDeleteStaff} />
+      )}
+      {tab === "roles" && (
+        <RolesGroupsTab roles={roles} groups={groups} roleCounts={roleCounts} />
       )}
       {tab === "shifts" && (
         <ShiftTemplatesTab
@@ -250,7 +262,6 @@ export function StaffView({ staff, shifts, leaves }: StaffViewProps) {
         <StaffForm
           staff={editStaff}
           roleOptions={roleOptions}
-          usedRoles={usedRoles}
           onClose={closeStaffForm}
         />
       )}

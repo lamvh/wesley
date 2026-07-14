@@ -1,3 +1,6 @@
+"use client";
+
+import { useMemo, useState } from "react";
 import { PersonBadge } from "@/components/shared/person-badge";
 import { Icon } from "@/components/shared/icons";
 import { staffContractMeta, staffStatusMeta } from "@/lib/design-meta";
@@ -5,6 +8,7 @@ import type { StaffRecord } from "@/types/domain";
 import { cn } from "@/lib/utils";
 
 const COLS = "grid-cols-[2fr_1fr_1fr_1.1fr_0.7fr_1fr_1fr_88px]";
+const PAGE_SIZE = 6;
 
 // Fallback swatches for any contract/status value outside the known sets —
 // keeps the table rendering instead of erroring on unexpected data.
@@ -30,7 +34,7 @@ function visaPill(visaType: string, visaExpiry: string): { text: string; cls: st
 
 // Team directory: avatar+name+tenure, role, contract pill (+ weekly hours),
 // visa (type + expiry chip), leave balance, phone, status dot, edit/delete.
-// Filtering/search stays out of scope here — StaffView passes the full list.
+// Searchable (name/role/contract/visa/phone/status) and paginated client-side.
 export function TeamTab({
   staff,
   onEdit,
@@ -40,8 +44,46 @@ export function TeamTab({
   onEdit: (s: StaffRecord) => void;
   onDelete: (s: StaffRecord) => void;
 }) {
+  const [query, setQuery] = useState("");
+  const [page, setPage] = useState(0);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return staff;
+    return staff.filter((s) =>
+      [s.name, s.roles.join(" "), s.contract, s.visaType, s.phone, s.status]
+        .join(" ")
+        .toLowerCase()
+        .includes(q),
+    );
+  }, [staff, query]);
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const curPage = Math.min(page, pageCount - 1);
+  const start = curPage * PAGE_SIZE;
+  const rows = filtered.slice(start, start + PAGE_SIZE);
+  const showing = filtered.length
+    ? `${start + 1}–${Math.min(start + PAGE_SIZE, filtered.length)} of ${filtered.length}`
+    : `0 of ${staff.length}`;
+
   return (
-    <div className="mt-6 overflow-x-auto rounded-2xl border border-line bg-cream-2">
+    <div className="mt-6">
+      <div className="mb-3 flex flex-wrap items-center gap-3">
+        <div className="relative min-w-[240px] flex-1 max-w-[380px]">
+          <input
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setPage(0);
+            }}
+            placeholder="Search staff by name, role, contract…"
+            className="w-full rounded-[11px] border border-line-soft bg-cream-2 px-[14px] py-[10px] text-[14px] text-ink outline-none focus:border-navy"
+          />
+        </div>
+        <span className="text-[13px] text-ink-faint">{showing}</span>
+      </div>
+
+      <div className="overflow-x-auto rounded-2xl border border-line bg-cream-2">
       <div className="min-w-[980px]">
         <div
           className={cn(
@@ -59,7 +101,7 @@ export function TeamTab({
           <div />
         </div>
 
-        {staff.map((s) => {
+        {rows.map((s) => {
           const contract = staffContractMeta[s.contract] ?? FALLBACK_CONTRACT;
           const status = staffStatusMeta[s.status] ?? FALLBACK_STATUS;
           const pill = visaPill(s.visaType, s.visaExpiry);
@@ -147,12 +189,51 @@ export function TeamTab({
           );
         })}
 
-        {staff.length === 0 && (
+        {filtered.length === 0 && (
           <div className="px-[22px] py-10 text-center text-[14px] text-ink-faint">
-            No staff members yet.
+            {staff.length === 0 ? "No staff members yet." : "No staff match your search."}
           </div>
         )}
       </div>
+      </div>
+
+      {pageCount > 1 && (
+        <div className="mt-3 flex items-center justify-end gap-[6px]">
+          <button
+            type="button"
+            aria-label="Previous page"
+            disabled={curPage <= 0}
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            className="flex size-9 items-center justify-center rounded-[9px] border border-line-soft bg-cream-2 text-[16px] text-ink-soft disabled:cursor-not-allowed disabled:text-line-strong"
+          >
+            ‹
+          </button>
+          {Array.from({ length: pageCount }, (_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setPage(i)}
+              className={cn(
+                "min-w-9 rounded-[9px] border px-[10px] py-[7px] text-[13.5px] font-semibold",
+                i === curPage
+                  ? "border-navy bg-navy text-cream"
+                  : "border-line-soft bg-cream-2 text-ink-soft",
+              )}
+            >
+              {i + 1}
+            </button>
+          ))}
+          <button
+            type="button"
+            aria-label="Next page"
+            disabled={curPage >= pageCount - 1}
+            onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+            className="flex size-9 items-center justify-center rounded-[9px] border border-line-soft bg-cream-2 text-[16px] text-ink-soft disabled:cursor-not-allowed disabled:text-line-strong"
+          >
+            ›
+          </button>
+        </div>
+      )}
     </div>
   );
 }

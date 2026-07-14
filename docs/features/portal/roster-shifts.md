@@ -5,7 +5,7 @@
 - **Render:** RSC page reads `?week=YYYY-MM-DD` (defaults to the current Mon–Sun week), loads `getStaff()` + `getRosterAssignments()` → client `RosterView` (editable weekly grid, keyed per week)
 
 ## Purpose
-Plan the week's shifts as a **real-staff × 7-day** grid. Each staff member (pulled live from the staff directory) gets a row; assign one or more shift types per staff/day and see daily staffing totals.
+Plan the week's shifts as a **real-staff × 7-day** grid. Each staff member (pulled live from the staff directory) gets a row, **banded and ordered by role group** (Nurses & HCAs → Care Takers → Kitchen, defined in Staff → Roles & groups); assign one or more shift types per staff/day and see daily staffing totals.
 
 ## Layout
 Header (title + week nav + Copy last week + Publish) → shift-type legend bar → the scheduler table. The grid **starts empty** — there is no pre-filled/mock schedule.
@@ -15,12 +15,12 @@ Header (title + week nav + Copy last week + Publish) → shift-type legend bar �
 |---------|-----------|-------|
 | Header | inline in `roster-view` | sub = `{week title} · {n} staff · {n} shifts assigned`; ‹ › week nav (navigate `?week=`, working), "Copy last week" (inert), **Publish roster** → "Published ✓" on click |
 | Shift legend | `shift-legend` | one swatch + code + time per shift type — the **real** shift templates (Supabase `shift_templates`, managed in Staff → Shift templates) |
-| Scheduler | `roster-grid` | `<table>`: navy header (# / Staff / 7 days) · one row per real staff (name only) · totals footer "Staff on duty" |
+| Scheduler | `roster-grid` | `<table>`: navy header (# / Staff / 7 days) · staff rows **banded by role group** (each band led by a coloured header row: group label + member count, in group order, "Unassigned" band last) with continuous row numbering · totals footer "Staff on duty" |
 | Day cell | `roster-cell` | shift chips (code+time) or faint "+"; click opens popover picker (toggle shift types, "Day off" clears) |
 | Empty state | inline in `roster-view` | when no staff exist, a dashed card points to the Staff screen |
 
 ## Data consumed
-- **Staff rows:** `getStaff()` (Supabase `staff`, `StaffRecord`) — name/initials/color only on the grid.
+- **Staff rows:** `getStaff()` (Supabase `staff`, `StaffRecord`) — name/initials/color on the grid; roles + groups (`getRoles()` / `getRoleGroups()`, `lib/data/roles.ts`) drive the banding via `groupStaffForRoster()` (`lib/roster-grouping.ts`).
 - **Saved assignments:** `getRosterAssignments(weekStartISO, weekEndISO)` (`lib/data/roster.ts`) → Supabase `roster_shifts` rows for the visible week, folded into a `RosterGrid`.
 - **Shift vocabulary:** `getRosterShiftTypes()` (`lib/data/roster.ts`) → maps the real Supabase `shift_templates` (via `getShiftTemplates()`) into the `ShiftType` shape the legend/picker/grid consume. Cells reference these template ids; an assignment whose template was deleted is skipped rather than crashing.
 - **Scaffold/helpers:** `getRosterDays(weekStart)`, `dailyTotals()`, `totalShifts()`, `rosterWeekTitle()`, week helpers (`weekStartOf`, `toISODate`, `parseISODate`, `shiftWeek`) from `roster-schedule.ts`.

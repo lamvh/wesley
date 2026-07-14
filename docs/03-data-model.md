@@ -183,6 +183,26 @@ One RPC keeps approval and the leave balance atomic (`security invoker`, RLS app
 
 Data layer: `src/lib/data/staff.ts` (`getStaff`, `getShiftTemplates`, `getLeaveRequests`) reads; `src/lib/actions/staff.ts` (`saveStaff`, `deleteStaff`, `saveShiftTemplate`, `deleteShiftTemplate`, `saveLeave`, `approveLeave`, `declineLeave`) writes — all scoped `building_id = 'wesley'` (constant this phase), each write action `revalidatePath("/portal/staff")`. `saveStaff` edits never touch `annual`/`taken` (balance-only mutation path is `approve_leave`).
 
+## Roles & groups — LIVE (`supabase/migrations/0007_role_groups.sql`)
+
+Roles become first-class, admin-managed entities (Staff → **Roles & groups**) instead of free strings assembled from the staff list. Groups band and order the weekly roster.
+
+```sql
+role_groups(id text, building_id, label, color, tint, sort_order int,
+            primary key (building_id, id))
+staff_roles(building_id, name text, color, tint,
+            group_id text,              -- null = unassigned
+            sort_order int,
+            primary key (building_id, name),
+            foreign key (building_id, group_id)
+              references role_groups(building_id, id) on delete set null)
+```
+
+- `staff_roles.name` matches the strings in `staff.roles` (no staff rows rewritten). The migration seeds three ordered groups (**Nurses & HCAs → Care Takers → Kitchen**), auto-registers every role already held by staff (+ base roles), and applies a default role→group mapping — all editable in-app afterward.
+- **Roster banding:** each staffer lands in the earliest group (by `sort_order`) that any of their roles maps to; unmapped staff fall into a trailing "Unassigned" band. Pure helper: `src/lib/roster-grouping.ts` `groupStaffForRoster(staff, roles, groups)`.
+- RLS: `{table}_read` (select, authenticated) / `{table}_write` (all, authenticated) on both tables.
+- Data layer: `src/lib/data/roles.ts` (`getRoleGroups`, `getRoles`) reads; `src/lib/actions/roles.ts` (`saveRole`, `deleteRole`, `assignRoleToGroup`, `saveGroup`, `deleteGroup`, `moveGroup`) writes — each revalidates both `/portal/staff` and `/portal/roster`. `deleteRole` is blocked while any staffer still holds the role.
+
 Types: `StaffRecord`, `ShiftTemplate`, `StaffLeaveRequest` (`src/types/domain.ts`) — distinct from the pre-existing mock-data `StaffMember`/`LeaveRequest` types still used by Roster's read-only leave list (`components/portal/roster/leave-request-row.tsx`), which is unaffected by this screen.
 
 ## Future Supabase mapping (deferred — not this phase)

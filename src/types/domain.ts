@@ -441,6 +441,17 @@ export interface ShiftTemplate {
   id: string; name: string; time: string; req: number; filled: number;
   color: string; tint: string; border: string;
 }
+// A role in the registry (Staff → Roles & groups). `name` is the label held in
+// StaffRecord.roles; `groupId` is the group it bands into on the roster (null =
+// unassigned).
+export interface RoleDef {
+  name: string; color: string; tint: string; groupId: string | null;
+}
+// An ordered roster band. `sortOrder` sequences the bands top-to-bottom on the
+// weekly roster and in the Roles & groups tab.
+export interface RoleGroup {
+  id: string; label: string; color: string; tint: string; sortOrder: number;
+}
 export interface StaffLeaveRequest {
   id: string; staffId: string; name: string; initials: string; color: string;
   type: string; from: string; to: string; days: number; status: string; note: string;

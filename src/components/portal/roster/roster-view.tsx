@@ -12,7 +12,10 @@ import {
   totalShifts,
 } from "@/lib/mock-data";
 import { clearRosterCell, toggleRosterShift } from "@/lib/actions/roster";
+import { groupStaffForRoster } from "@/lib/roster-grouping";
 import type {
+  RoleDef,
+  RoleGroup,
   RosterDay,
   RosterGrid as RosterGridState,
   ShiftType,
@@ -24,6 +27,8 @@ interface RosterViewProps {
   days: RosterDay[];
   initialGrid: RosterGridState;
   shiftTypes: ShiftType[];
+  roles: RoleDef[];
+  groups: RoleGroup[];
   weekStartISO: string;
 }
 
@@ -36,6 +41,8 @@ export function RosterView({
   days,
   initialGrid,
   shiftTypes,
+  roles,
+  groups,
   weekStartISO,
 }: RosterViewProps) {
   const router = useRouter();
@@ -49,6 +56,10 @@ export function RosterView({
   // and the per-cell picker.
   const legend = shiftTypes;
   const defs = Object.fromEntries(shiftTypes.map((s) => [s.id, s]));
+
+  // Staff are banded into their role group (Nurses & HCAs → Care Takers → …)
+  // so the roster reads by role, not a flat alphabetical list.
+  const bands = groupStaffForRoster(staff, roles, groups);
 
   const totals = dailyTotals(
     staff.map((s) => s.id),
@@ -153,7 +164,7 @@ export function RosterView({
         </div>
       ) : (
         <RosterGrid
-          staff={staff}
+          bands={bands}
           days={days}
           grid={grid}
           defs={defs}
