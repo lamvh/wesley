@@ -485,6 +485,8 @@ export interface RoleDef {
   /** order within the role's group (ascending); sequences the group's role
    *  chips and staff within the matching roster band. */
   sortOrder: number;
+  /** hourly pay rate (NZD) for this role; drives the Payroll tab. 0 if unset. */
+  hourlyRate: number;
 }
 // An ordered roster band. `sortOrder` sequences the bands top-to-bottom on the
 // weekly roster and in the Roles & groups tab.

@@ -15,18 +15,21 @@ import { ShiftTemplatesTab } from "@/components/portal/staff/shift-templates-tab
 import { ShiftTemplateForm } from "@/components/portal/staff/shift-template-form";
 import { LeaveTab } from "@/components/portal/staff/leave-tab";
 import { LeaveForm } from "@/components/portal/staff/leave-form";
+import { PayrollTab } from "@/components/portal/staff/payroll-tab";
 import { ConfirmDeleteModal } from "@/components/portal/stock/confirm-delete-modal";
+import type { PayrollHours } from "@/lib/data/payroll";
 import type {
   StaffRecord, ShiftTemplate, StaffLeaveRequest, RoleDef, RoleGroup, Kpi,
 } from "@/types/domain";
 
-type Tab = "team" | "roles" | "shifts" | "leave";
+type Tab = "team" | "roles" | "shifts" | "leave" | "payroll";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "team", label: "Team" },
   { key: "roles", label: "Roles & groups" },
   { key: "shifts", label: "Shift templates" },
   { key: "leave", label: "Leave requests" },
+  { key: "payroll", label: "Payroll" },
 ];
 
 interface StaffViewProps {
@@ -35,13 +38,19 @@ interface StaffViewProps {
   leaves: StaffLeaveRequest[];
   roles: RoleDef[];
   groups: RoleGroup[];
+  payrollHours: Record<string, PayrollHours>;
+  weekStartISO: string;
+  weekLabel: string;
+  initialTab?: Tab;
 }
 
-export function StaffView({ staff, shifts, leaves, roles, groups }: StaffViewProps) {
+export function StaffView({
+  staff, shifts, leaves, roles, groups, payrollHours, weekStartISO, weekLabel, initialTab,
+}: StaffViewProps) {
   const { buildingId } = useBuilding();
   const buildingName = getBuildingById(buildingId).name;
 
-  const [tab, setTab] = useState<Tab>("team");
+  const [tab, setTab] = useState<Tab>(initialTab ?? "team");
 
   const kpis: Kpi[] = [
     { label: "Total staff", value: String(staff.length), sub: "on the team" },
@@ -213,7 +222,7 @@ export function StaffView({ staff, shifts, leaves, roles, groups }: StaffViewPro
         title="Staff"
         sub={`${buildingName} · manage your team and shift coverage`}
         actions={
-          tab === "roles" ? undefined : (
+          tab === "roles" || tab === "payroll" ? undefined : (
             <Button
               onClick={onHeaderAction}
               className="h-auto rounded-[11px] bg-navy px-4 py-[9px] text-[14px] font-semibold text-cream hover:bg-navy/90"
@@ -277,6 +286,16 @@ export function StaffView({ staff, shifts, leaves, roles, groups }: StaffViewPro
             pendingLeaveId={pendingLeaveId}
           />
         </>
+      )}
+      {tab === "payroll" && (
+        <PayrollTab
+          staff={staff}
+          roles={roles}
+          payrollHours={payrollHours}
+          buildingName={buildingName}
+          weekStartISO={weekStartISO}
+          weekLabel={weekLabel}
+        />
       )}
 
       {staffFormOpen && (

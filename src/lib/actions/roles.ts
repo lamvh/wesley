@@ -123,6 +123,18 @@ export async function assignRoleToGroup(name: string, groupId: string | null): P
   revalidate();
 }
 
+// Set a role's hourly pay rate (NZD) from the Payroll tab. Negative/NaN inputs
+// are clamped to 0.
+export async function saveRoleRate(name: string, rate: number): Promise<void> {
+  if (!name) return;
+  const safe = Number.isFinite(rate) && rate > 0 ? rate : 0;
+  const supabase = await createClient();
+  const { error } = await supabase.from("staff_roles")
+    .update({ hourly_rate: safe }).eq("building_id", BUILDING).eq("name", name);
+  if (error) throw new Error(`Failed to save rate: ${error.message}`);
+  revalidate();
+}
+
 // ---- groups ----
 export async function saveGroup(_prev: RoleFormState, fd: FormData): Promise<RoleFormState> {
   const label = str(fd, "label");

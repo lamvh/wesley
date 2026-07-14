@@ -12,10 +12,11 @@ function DutyLine({ time, name }: DutyRow) {
   );
 }
 
+// Left-aligned section header: label on the left, rule filling to the right, so
+// every department (incl. Kitchen) reads the same way (U33 theme polish).
 function SectionRule({ label, color }: { label: string; color: string }) {
   return (
     <div className="flex items-center gap-4">
-      <span className="h-px flex-1 bg-duty-rule" />
       <span className="text-[13px] font-bold uppercase tracking-[3px]" style={{ color }}>
         {label}
       </span>
@@ -30,7 +31,9 @@ function SectionRule({ label, color }: { label: string; color: string }) {
 export function DutyRosterSheet({ sheet }: { sheet: DutySheet }) {
   return (
     <div className="duty-sheet relative flex min-h-[1123px] w-[794px] max-w-full flex-col bg-white px-[60px] pb-[44px] pt-[56px] text-duty-ink shadow-[0_24px_60px_-20px_rgba(0,0,0,0.5)]">
+      {/* Navy + gold header rule (U33 theme polish). */}
       <div className="absolute left-0 top-0 h-[5px] w-full bg-navy-deep" />
+      <div className="absolute left-0 top-[5px] h-[2px] w-full bg-gold-deep" />
 
       <div className="text-center">
         <div className="text-[11.5px] font-semibold uppercase tracking-[5px] text-bronze-text">
@@ -38,6 +41,10 @@ export function DutyRosterSheet({ sheet }: { sheet: DutySheet }) {
         </div>
         <div className="mt-2 font-serif text-[66px] font-medium leading-none tracking-[0.5px] text-navy-deep">
           Duty Roster
+        </div>
+        {/* Italic date subtitle. */}
+        <div className="mt-[10px] font-serif text-[19px] italic text-bronze-text">
+          {sheet.dateLabel}
         </div>
       </div>
 
