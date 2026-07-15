@@ -50,7 +50,9 @@ insert into public.shift_templates (id, building_id, name, time_label, req, fill
   ('sh3','wesley','Afternoon','14:45 – 22:15',3,2,'#9A4A70','#F7DFEA','#E5B2CB'),
   ('sh4','wesley','Evening (split)','8:30 – 21:00',2,2,'#A24E2A','#F7DDCC','#E8AE88'),
   ('sh5','wesley','Night','23:45 – 8:15',2,1,'#3B4E74','#E3E8F5','#B4C1DF'),
-  ('sh6','wesley','Team Leader','8:00 – 22:45',2,2,'#2C5A6E','#D8EAF0','#9FC5D4')
+  ('sh6','wesley','Team Leader','8:00 – 22:45',2,2,'#2C5A6E','#D8EAF0','#9FC5D4'),
+  ('lo1','lodge','Lodge Day','7:00 – 15:30',2,2,'#3d6b74','#DEEAEC','#AECBD1'),
+  ('lo2','lodge','Lodge Late','14:30 – 22:00',2,1,'#5b8f9a','#E1EAEC','#B9D2D7')
 on conflict (id) do update set name=excluded.name, time_label=excluded.time_label, req=excluded.req,
   filled=excluded.filled, color=excluded.color, tint=excluded.tint, border=excluded.border;
 

@@ -1,6 +1,7 @@
 import type {
   DutyForm,
   DutyOption,
+  DutyRow,
   DutySheet,
   RosterDay,
   RosterGrid,
@@ -24,6 +25,13 @@ function dayLabel(d: RosterDay): string {
   return `${d.dow} ${d.date} ${d.month}`;
 }
 
+// Print-sheet date stamp: "MON 13/07/26" (caps day-of-week + dd/mm/yy off the ISO
+// date), distinct from the friendly dayLabel used in the modal selects/toolbar.
+function sheetDateLabel(d: RosterDay): string {
+  const [y, m, day] = d.iso.split("-");
+  return `${d.dow.toUpperCase()} ${day}/${m}/${y.slice(2)}`;
+}
+
 // Build one print-ready duty sheet per day in the chosen scope, off the live
 // roster: each role band lists the staff assigned that day with their shift
 // time. On-call + chef names come from the export form. Empty bands are dropped.
@@ -39,23 +47,33 @@ export function buildDutySheets(
     form.scope === "day" ? [days[form.day] ?? days[0]].filter(Boolean) : days;
 
   return scopeDays.map((day) => ({
-    dateLabel: dayLabel(day),
+    dateLabel: sheetDateLabel(day),
     onCall: form.onCall,
     chef: form.chef,
     sections: bands
       .map((band) => {
-        const rows = band.staff
-          .flatMap((st) => {
-            const ids = grid[rosterCellKey(st.id, day.iso)] ?? [];
-            return ids
-              .map((id) => defs[id])
-              .filter(Boolean)
-              .map((d) => ({ time: d.time || d.label, name: st.name }));
-          })
-          .sort((a, b) => startMinutes(a.time) - startMinutes(b.time));
-        return { label: band.label, color: band.color, rows };
+        const wesley: DutyRow[] = [];
+        const lodge: DutyRow[] = [];
+        for (const st of band.staff) {
+          const ids = grid[rosterCellKey(st.id, day.iso)] ?? [];
+          for (const id of ids) {
+            const d = defs[id];
+            if (!d) continue;
+            // A dual-segment shift ("6:45 – 15:15 + 18:00 – 21:00") prints as one
+            // line per segment, matching how the sheet reads on paper. Each line
+            // lands in the column of the shift's building (Lodge right, else left).
+            const col = d.building === "lodge" ? lodge : wesley;
+            for (const tm of String(d.time || d.label).split(" + ")) {
+              col.push({ time: tm, name: st.name });
+            }
+          }
+        }
+        const byStart = (a: DutyRow, b: DutyRow) => startMinutes(a.time) - startMinutes(b.time);
+        wesley.sort(byStart);
+        lodge.sort(byStart);
+        return { label: band.label, wesley, lodge };
       })
-      .filter((s) => s.rows.length > 0),
+      .filter((s) => s.wesley.length > 0 || s.lodge.length > 0),
   }));
 }
 

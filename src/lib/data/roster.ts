@@ -20,6 +20,7 @@ export async function getRosterShiftTypes(): Promise<ShiftType[]> {
     tint: t.tint,
     border: t.border,
     role: t.role,
+    building: t.building,
   }));
 }
 

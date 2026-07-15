@@ -353,6 +353,9 @@ export interface ShiftType {
   /** registry role this shift is for; "" if unrestricted. The roster cell
    *  picker only offers a shift to staff sharing this role's group. */
   role: string;
+  /** building id the shift belongs to ("wesley" | "lodge"); splits the duty
+   *  sheet into per-building columns. */
+  building: string;
 }
 
 export interface RosterDay {
@@ -381,8 +384,9 @@ export interface DutyForm {
 }
 /** One printed line on a duty sheet: a shift time segment + a staff name. */
 export interface DutyRow { time: string; name: string; }
-/** A role band on the sheet with its assigned lines for the day. */
-export interface DutySection { label: string; color: string; rows: DutyRow[]; }
+/** A role band on the sheet, its assigned lines split into per-building columns
+ *  (Wesley left, The Lodge right) by the building each shift belongs to. */
+export interface DutySection { label: string; wesley: DutyRow[]; lodge: DutyRow[]; }
 /** One A4 duty sheet (one per day; a whole-week export yields up to seven). */
 export interface DutySheet {
   dateLabel: string;
