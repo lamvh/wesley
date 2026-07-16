@@ -7,6 +7,7 @@ Every screen/feature doc in `docs/features/**` follows this. Fill every section 
 ```markdown
 # <Screen name>
 
+- **Code:** `<claude-design code, e.g. P1>` · **Version:** `<claude-design version>`
 - **Route:** `<url>` — `app/<path>/page.tsx`
 - **Section:** Marketing | Portal · **Access:** both | admin
 - **Source:** lines `<a>–<b>`
@@ -41,4 +42,8 @@ Buttons/features present visually but inert (submit, search, mutate). List them.
 
 ## Definition of Done
 Screen-specific acceptance beyond the global DoD (00-rules §11).
+
+## Changelog
+Code + version from Claude Design (see 00-rules §12). Newest first; one line per re-pull.
+- `<version>` — <what changed / initial port>
 ```

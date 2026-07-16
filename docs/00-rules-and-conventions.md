@@ -77,7 +77,18 @@ Semantic HTML (`header/nav/main/section/footer`, real `button`/`a`), alt text on
 5. RSC/client split correct; `pnpm build` + `pnpm lint` clean.
 6. Responsive: no horizontal body scroll; sensible stacking on narrow widths (design is desktop-first — degrade gracefully).
 7. Out-of-scope stubs noted in the doc.
+8. Screen **code + version** recorded in the doc header and in [screen-registry.md](./screen-registry.md), with a Changelog line for this change (see §12).
 
-## 12. Git
+## 12. Screen code & version (Claude Design provenance)
+
+Every screen ported from Claude Design carries the **code** and **version** that Claude Design assigns to it. We record them so a later changelog review reads from one place — no tracing component by component.
+
+- **Code + version are supplied by Claude Design** — copy them verbatim, never invent them. The code is the stable per-screen identifier (e.g. `P1`); the version identifies which design revision this screen was pulled from.
+- **Feature doc header** records both: `- **Code:** <code> · **Version:** <version>` (see [feature-doc-template.md](./feature-doc-template.md)).
+- **Central registry** [screen-registry.md](./screen-registry.md) is the single source of truth: one row per screen — code · screen · route · current version · doc link — plus a per-screen Changelog.
+- **On every re-pull from Claude Design:** if the design version changed, bump the version in the doc header **and** the registry row, and append a `Changelog` line (`<version> — <what changed>`) in both the doc and the registry. Unchanged screens keep their version.
+- Code/version are **design provenance, not plan artifacts** — recording them does not violate the "no plan refs in code" rule (§4); they live in docs only, never in code/comments/filenames.
+
+## 13. Git
 
 Do **not** branch or commit unless explicitly asked. Leave changes as working-tree edits. Conventional commit style when asked; no AI references; no plan refs in messages.

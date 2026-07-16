@@ -13,6 +13,7 @@ Frontend build of the **Victoria at Mt Eden** product for Wesley Home & Care —
 | [02-architecture.md](./02-architecture.md) | Routing map, folder structure, RSC/client boundaries, role model, image strategy. |
 | [03-data-model.md](./03-data-model.md) | Entity interfaces, mock-data layer, future Supabase mapping. |
 | [feature-doc-template.md](./feature-doc-template.md) | Template every feature/screen doc follows. |
+| [screen-registry.md](./screen-registry.md) | Screen code + version (from Claude Design) per route + changelog — the one place to review what changed. |
 | [implementation-guide.md](./implementation-guide.md) | Deferred-phase reference: Supabase/DB + auth setup (not built this phase). |
 
 ## Screen & component docs
