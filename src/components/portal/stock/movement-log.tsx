@@ -5,7 +5,7 @@ import type { Provider, StockMovement } from "@/types/domain";
 // Global movement ledger (all products): date/actor, item, +/- pill, a
 // details line (provider for IN, room/person + receiver for OUT), the
 // resulting on-hand balance, and a delete/undo action. Private to the
-// movements tab — StockView owns the shared delete-confirm modal.
+// movements tab - StockView owns the shared delete-confirm modal.
 
 const GRID = "grid-cols-[104px_1.4fr_78px_1.9fr_92px_44px]";
 

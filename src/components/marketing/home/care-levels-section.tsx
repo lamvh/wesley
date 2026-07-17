@@ -18,7 +18,7 @@ export function CareLevelsSection() {
             </h2>
           </div>
           <p className="max-w-[340px] text-[15.5px] leading-[1.65] text-ink-muted">
-            Choose the room that suits you best — whichever you pick, the same
+            Choose the room that suits you best - whichever you pick, the same
             warm, registered-nurse-led team looks after you.
           </p>
         </div>

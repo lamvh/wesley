@@ -9,7 +9,7 @@ const familyFeed: FamilyPost[] = [
     initials: "PW",
     color: "#6E875E",
     photoSlot: "vme-feed1",
-    text: "Peggy joined the garden group this morning and picked the first of the sweet peas — she was absolutely thrilled. She ate a good lunch and is resting comfortably this afternoon. 🌿",
+    text: "Peggy joined the garden group this morning and picked the first of the sweet peas - she was absolutely thrilled. She ate a good lunch and is resting comfortably this afternoon. 🌿",
   },
   {
     resident: "George Aleki",
@@ -40,7 +40,7 @@ const visits: Visit[] = [
 ];
 
 const messages: Message[] = [
-  { from: "David W. (Peggy’s son)", time: "1h ago", text: "Thank you for the update — she looks so happy in the photo!" },
+  { from: "David W. (Peggy’s son)", time: "1h ago", text: "Thank you for the update - she looks so happy in the photo!" },
   { from: "Katherine R.", time: "Yesterday", text: "Could we bring Joan’s birthday cake on Monday? Around 15 people." },
   { from: "Aleki whānau", time: "2 days ago", text: "Confirming pick-up at 11 on Wednesday. Thank you all." },
 ];

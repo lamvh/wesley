@@ -120,12 +120,12 @@ export const userRoleMeta: Record<UserRole, Swatch & { label: string; desc: stri
   super_admin: {
     ...swatch("text-navy", "bg-navy-tint", "bg-navy"),
     label: "Super Admin",
-    desc: "Full system control — users, roles and every module.",
+    desc: "Full system control - users, roles and every module.",
   },
   admin: {
     ...swatch("text-rust", "bg-rust-tint", "bg-rust"),
     label: "Admin",
-    desc: "Facility manager — runs the home day to day.",
+    desc: "Facility manager - runs the home day to day.",
   },
   nurse: {
     ...swatch("text-cat-craft", "bg-cat-craft-tint", "bg-cat-craft"),

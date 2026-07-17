@@ -50,7 +50,7 @@ function Field({
   );
 }
 
-// Add/edit provider modal. Same reset-via-remount idiom as StockItemForm —
+// Add/edit provider modal. Same reset-via-remount idiom as StockItemForm -
 // the parent mounts this fresh per provider (or blank for "add"), which
 // resets both the uncontrolled fields and the useActionState result.
 export function ProviderForm({
@@ -64,11 +64,11 @@ export function ProviderForm({
   const wasPending = useRef(false);
   const editing = Boolean(provider);
 
-  // Preferred/Approved is a segmented control, not a native input — its
+  // Preferred/Approved is a segmented control, not a native input - its
   // value is tracked in state and mirrored to a hidden field for the action.
   const [preferred, setPreferred] = useState(provider?.pref ?? false);
 
-  // Once a submit finishes without an error, the provider is saved — close.
+  // Once a submit finishes without an error, the provider is saved - close.
   useEffect(() => {
     if (wasPending.current && !pending && !state.error) {
       onClose();

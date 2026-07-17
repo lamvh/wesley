@@ -58,7 +58,7 @@ function Field({
 }
 
 // Add/edit shift-template modal. Same reset-via-remount idiom as the other
-// portal forms — the parent mounts this fresh per template (or blank for
+// portal forms - the parent mounts this fresh per template (or blank for
 // "add"), which resets both uncontrolled fields and the useActionState result.
 export function ShiftTemplateForm({
   shift,
@@ -74,13 +74,13 @@ export function ShiftTemplateForm({
   const editing = Boolean(shift);
   const buildings = getBuildings();
 
-  // Colour, role and building are swatch/button pickers, not native inputs —
+  // Colour, role and building are swatch/button pickers, not native inputs -
   // tracked in state and mirrored to hidden fields for the form action.
   const [color, setColor] = useState(shift?.color ?? SHIFT_COLORS[0]);
   const [role, setRole] = useState(shift?.role ?? roles[0]?.name ?? "");
   const [building, setBuilding] = useState(shift?.building ?? buildings[0]?.id ?? "");
 
-  // Once a submit finishes without an error, the template is saved — close.
+  // Once a submit finishes without an error, the template is saved - close.
   useEffect(() => {
     if (wasPending.current && !pending && !state.error) {
       onClose();

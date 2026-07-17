@@ -1,22 +1,22 @@
 # Login (sign in)
 
-- **Route:** `/login` — `app/login/page.tsx` (standalone, no marketing/portal chrome)
+- **Route:** `/login` - `app/login/page.tsx` (standalone, no marketing/portal chrome)
 - **Section:** Auth · **Access:** public
 - **Source:** design screenshot `screenshots/login-mobile.png` (mobile mockup); built on the Wesley design system
 - **Render:** thin RSC page (`Suspense` boundary) → client `LoginView`
 
 ## Purpose
-Mobile-first entry point to the portal. One screen for both **Staff** and **Family**; the audience toggle changes only the destination and helper copy. Backed by **Supabase Auth** (email/password) — a successful sign-in sets the session cookie and redirects into the app.
+Mobile-first entry point to the portal. One screen for both **Staff** and **Family**; the audience toggle changes only the destination and helper copy. Backed by **Supabase Auth** (email/password) - a successful sign-in sets the session cookie and redirects into the app.
 
 ## Layout
 Full-height `cream` screen, centered `max-w-[400px]` column:
-1. Brand — `56px` navy "W" tile (gold, Newsreader) + "Welcome back" (serif `30px`) + sub.
-2. Audience toggle — segmented Staff / Family pill (`toggle-track`), active = `cream-2` + shadow.
-3. Form — Email, Password (with show/hide via `lock`/`close` icon), "Forgot password?" (inert), disabled-until-filled **Sign in** (navy).
+1. Brand - `56px` navy "W" tile (gold, Newsreader) + "Welcome back" (serif `30px`) + sub.
+2. Audience toggle - segmented Staff / Family pill (`toggle-track`), active = `cream-2` + shadow.
+3. Form - Email, Password (with show/hide via `lock`/`close` icon), "Forgot password?" (inert), disabled-until-filled **Sign in** (navy).
 4. Contextual helper line (Family → "Contact the home"; Staff → "Ask your manager") + "← Back to website".
 
 ## Variants & states (client)
-- `audience` ∈ {staff, family} — preselect from `?as=family` (used by the marketing "Family login" CTA).
+- `audience` ∈ {staff, family} - preselect from `?as=family` (used by the marketing "Family login" CTA).
 - `email` / `password` controlled; `showPw` toggles field type.
 - **Submit gating:** button disabled (50% opacity) until both fields non-empty, or while a sign-in request is in flight ("Signing in…").
 - Submit → `supabase.auth.signInWithPassword`. On error: inline alert (`bg-high-tint`). On success: redirect to `?next=` (when it targets `/portal`), else `/portal` (staff) or `/portal/family` (family).

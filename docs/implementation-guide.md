@@ -1,4 +1,4 @@
-# Implementation Guide — Next.js Web App (Auth + DB via Supabase)
+# Implementation Guide - Next.js Web App (Auth + DB via Supabase)
 
 > Document build source từ đầu. Stack: **Next.js 16 (App Router + RSC)** · **TypeScript** · **Tailwind CSS v4** · **shadcn/ui** · **Supabase (Postgres + Auth)**.
 > Design UI sẽ được cung cấp sau (Claude design) → plug vào phần `Component Layer` / `app/(routes)`.
@@ -11,7 +11,7 @@
 |------|---------|------|
 | Node.js | `>= 20.9` (LTS 24 khuyến nghị) | `node -v` |
 | Package manager | `pnpm >= 9` | nhanh, disk-efficient. `npm i -g pnpm` |
-| Supabase account | — | project + API keys |
+| Supabase account | - | project + API keys |
 | Supabase CLI | latest | migrations + local dev. `pnpm add -g supabase` |
 
 Env cần chuẩn bị (lấy từ Supabase Dashboard → Project Settings → API):
@@ -38,7 +38,7 @@ pnpm dlx shadcn@latest init
 - Base color: chờ design → tạm chọn `neutral`.
 - CSS variables: **yes** (dễ theming theo design tokens sau).
 
-Cài component khi cần (không cài trước tràn lan — YAGNI):
+Cài component khi cần (không cài trước tràn lan - YAGNI):
 ```bash
 pnpm dlx shadcn@latest add button input card form label dropdown-menu avatar sonner
 ```
@@ -71,10 +71,10 @@ pnpm add -D supabase
 wesley/
 ├── src/
 │   ├── app/
-│   │   ├── (auth)/                    # route group — không auth
+│   │   ├── (auth)/                    # route group - không auth
 │   │   │   ├── login/page.tsx
 │   │   │   └── signup/page.tsx
-│   │   ├── (protected)/               # route group — yêu cầu session
+│   │   ├── (protected)/               # route group - yêu cầu session
 │   │   │   ├── layout.tsx             # guard: redirect nếu chưa login
 │   │   │   └── dashboard/page.tsx
 │   │   ├── auth/
@@ -105,13 +105,13 @@ wesley/
 └── ...
 ```
 
-Quy ước: file kebab-case, mô tả rõ nghĩa. Mỗi file code < 200 dòng — tách module khi vượt.
+Quy ước: file kebab-case, mô tả rõ nghĩa. Mỗi file code < 200 dòng - tách module khi vượt.
 
 ---
 
 ## 4. Supabase Integration Layer
 
-### 4.1 Browser client — `src/lib/supabase/client.ts`
+### 4.1 Browser client - `src/lib/supabase/client.ts`
 ```ts
 import { createBrowserClient } from "@supabase/ssr";
 
@@ -123,7 +123,7 @@ export function createClient() {
 }
 ```
 
-### 4.2 Server client — `src/lib/supabase/server.ts`
+### 4.2 Server client - `src/lib/supabase/server.ts`
 ```ts
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
@@ -142,7 +142,7 @@ export async function createClient() {
               cookieStore.set(name, value, options),
             );
           } catch {
-            // gọi từ Server Component — bỏ qua, middleware sẽ refresh session
+            // gọi từ Server Component - bỏ qua, middleware sẽ refresh session
           }
         },
       },
@@ -151,7 +151,7 @@ export async function createClient() {
 }
 ```
 
-### 4.3 Middleware session refresh — `src/lib/supabase/middleware.ts` + `src/middleware.ts`
+### 4.3 Middleware session refresh - `src/lib/supabase/middleware.ts` + `src/middleware.ts`
 
 `src/lib/supabase/middleware.ts`:
 ```ts
@@ -206,7 +206,7 @@ export const config = {
 
 ## 5. Auth Flow
 
-### 5.1 Server-side guard — `src/app/(protected)/layout.tsx`
+### 5.1 Server-side guard - `src/app/(protected)/layout.tsx`
 ```tsx
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -221,12 +221,12 @@ export default async function ProtectedLayout({
 }
 ```
 
-### 5.2 Login — Server Action pattern
+### 5.2 Login - Server Action pattern
 - Form ở `(auth)/login/page.tsx` (design plug vào).
 - Action gọi `supabase.auth.signInWithPassword(...)` hoặc `signInWithOtp` / OAuth.
 - Sau login: `revalidatePath("/", "layout")` + `redirect("/dashboard")`.
 
-### 5.3 OAuth / magic-link callback — `src/app/auth/callback/route.ts`
+### 5.3 OAuth / magic-link callback - `src/app/auth/callback/route.ts`
 ```ts
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
@@ -248,7 +248,7 @@ export async function GET(request: Request) {
 Auth methods hỗ trợ (bật trong Supabase Dashboard → Authentication):
 - Email + Password
 - Magic link / OTP
-- OAuth (Google, GitHub…) — set redirect URL = `<site>/auth/callback`
+- OAuth (Google, GitHub…) - set redirect URL = `<site>/auth/callback`
 
 ---
 
@@ -264,7 +264,7 @@ supabase db push
 ```
 
 ### 6.2 Schema conventions
-- Mọi bảng user-data bật **Row Level Security (RLS)** — bắt buộc.
+- Mọi bảng user-data bật **Row Level Security (RLS)** - bắt buộc.
 - Naming migration: domain slug, KHÔNG dùng số phase. VD `000001_init_schema.sql`, `000002_profiles.sql`.
 - Ví dụ policy:
 ```sql
@@ -346,14 +346,14 @@ Thêm vào `.gitignore`: `.env*.local`.
 
 ## 10. Build Order (checklist triển khai)
 
-- [ ] **P1 — Setup**: scaffold, shadcn init, deps, env, `.gitignore`
-- [ ] **P2 — Supabase layer**: `client.ts`, `server.ts`, `middleware.ts`, `src/middleware.ts`
-- [ ] **P3 — DB schema**: migration init + RLS + gen types
-- [ ] **P4 — Auth**: login/signup pages, server actions, callback route, protected layout
-- [ ] **P5 — Design integration**: tokens → components → pages (khi có design)
-- [ ] **P6 — Feature modules**: theo yêu cầu nghiệp vụ
-- [ ] **P7 — Testing**: unit (zod/actions), e2e auth flow (Playwright)
-- [ ] **P8 — Deploy**: Vercel + env vars + Supabase redirect URLs
+- [ ] **P1 - Setup**: scaffold, shadcn init, deps, env, `.gitignore`
+- [ ] **P2 - Supabase layer**: `client.ts`, `server.ts`, `middleware.ts`, `src/middleware.ts`
+- [ ] **P3 - DB schema**: migration init + RLS + gen types
+- [ ] **P4 - Auth**: login/signup pages, server actions, callback route, protected layout
+- [ ] **P5 - Design integration**: tokens → components → pages (khi có design)
+- [ ] **P6 - Feature modules**: theo yêu cầu nghiệp vụ
+- [ ] **P7 - Testing**: unit (zod/actions), e2e auth flow (Playwright)
+- [ ] **P8 - Deploy**: Vercel + env vars + Supabase redirect URLs
 
 ---
 

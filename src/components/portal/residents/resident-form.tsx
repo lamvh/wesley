@@ -91,7 +91,7 @@ export function ResidentForm({ resident }: { resident?: Resident }) {
             name="note"
             defaultValue={resident?.note}
             rows={4}
-            placeholder="A short profile — interests, routines, family…"
+            placeholder="A short profile - interests, routines, family…"
             className={fieldCls + " resize-y"}
           />
         </label>

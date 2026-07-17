@@ -87,7 +87,7 @@ export async function recordMovement(_p: StockFormState, fd: FormData): Promise<
   }
   if (qty <= 0) return { error: "Quantity must be greater than zero." };
 
-  // Block issuing more than is on hand — keeps on-hand non-negative and makes
+  // Block issuing more than is on hand - keeps on-hand non-negative and makes
   // delete-movement reversals exact (no phantom stock).
   if (dir === "out") {
     const { data: lvl } = await supabase
@@ -98,7 +98,7 @@ export async function recordMovement(_p: StockFormState, fd: FormData): Promise<
       .maybeSingle();
     const onHand = lvl?.qty_now ?? 0;
     if (qty > onHand) {
-      return { error: `Cannot issue ${qty} — only ${onHand} in stock.` };
+      return { error: `Cannot issue ${qty} - only ${onHand} in stock.` };
     }
   }
 

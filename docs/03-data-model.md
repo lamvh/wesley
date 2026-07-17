@@ -4,9 +4,9 @@ All screen content comes from `src/lib/mock-data/`. Types in `src/types/domain.t
 
 ## Conventions
 
-- One file per entity: `residents.ts`, `rooms.ts`, `staff-shifts.ts`, `meals.ts`, `activities.ts`, `incidents.ts`, `family.ts`, `dashboard.ts`, `marketing-content.ts`, `photos.ts`. (Stock is Supabase-backed — see "Stock, providers & ordering" below; `stock-catalog.ts` remains only as its DB seed source.)
+- One file per entity: `residents.ts`, `rooms.ts`, `staff-shifts.ts`, `meals.ts`, `activities.ts`, `incidents.ts`, `family.ts`, `dashboard.ts`, `marketing-content.ts`, `photos.ts`. (Stock is Supabase-backed - see "Stock, providers & ordering" below; `stock-catalog.ts` remains only as its DB seed source.)
 - Each exports typed data + accessors: `getResidents()`, `getResidentBySlug(slug)`, `getRooms()`, `getRoomByNum(num)`, etc.
-- **Presentation values are derived, not stored** — care-tier colors, severity tints, stock status, initials, occupancy % come from pure helpers (`lib/utils.ts` / accessor layer), keyed off the semantic scales in [01-design-system.md](./01-design-system.md). Raw data stores only the domain fact (e.g. `status: 'Occupied'`), not its hex.
+- **Presentation values are derived, not stored** - care-tier colors, severity tints, stock status, initials, occupancy % come from pure helpers (`lib/utils.ts` / accessor layer), keyed off the semantic scales in [01-design-system.md](./01-design-system.md). Raw data stores only the domain fact (e.g. `status: 'Occupied'`), not its hex.
 
 ## Core entities
 
@@ -64,7 +64,7 @@ interface OccupancyWing { name: string; filled: number; total: number; colorKey:
 
 ## Dashboard (role-dependent)
 
-`getDashboard(role)` returns `{ greeting, sub, kpis, alerts, todaySchedule, wings, familyPosts, birthdays }`. Admin vs staff differ in greeting/sub/kpis/alerts (lines 1124–1148). Static values — no computation of "today".
+`getDashboard(role)` returns `{ greeting, sub, kpis, alerts, todaySchedule, wings, familyPosts, birthdays }`. Admin vs staff differ in greeting/sub/kpis/alerts (lines 1124–1148). Static values - no computation of "today".
 
 ## Marketing content
 
@@ -77,7 +77,7 @@ interface OccupancyWing { name: string; filled: number; total: number; colorKey:
 - `careTierMeta`, `severityMeta`, `roomStatusMeta`, `activityCatMeta` → `{ colorToken, tintToken }` per semantic scale.
 - `slugify(name)`, `initials(name)`.
 
-## Users, roles & permissions — RBAC (`lib/mock-data/users.ts`)
+## Users, roles & permissions - RBAC (`lib/mock-data/users.ts`)
 
 Backs the **Users & access** screen. Types in `types/domain.ts`: `User`, `UserRole`, `UserStatus`, `AppModule`, `ModuleKey`, `Permission`, `PermissionMatrix`.
 
@@ -93,8 +93,8 @@ type PermissionMatrix = Record<UserRole, Record<ModuleKey, Permission>>;
 ```
 
 - 6 roles, 10 modules, 4 actions ⇒ matrix of `6 × 10 × 4` grants. `super_admin` is implicit-all and immutable (never store editable rows for it).
-- Accessors: `getUsers()`, `getModules()`, `getDefaultPermissions()` (seed matrix), `countGranted()`, `ROLE_KEYS`. Role/status colors derive in `design-meta.ts` (`userRoleMeta`, `userStatusMeta`) — not stored.
-- **`scope`** is free-text today (e.g. "Rātā wing", "Peggy W. · Rātā 12"). For the DB, model it as a typed FK (wing or resident) — see below.
+- Accessors: `getUsers()`, `getModules()`, `getDefaultPermissions()` (seed matrix), `countGranted()`, `ROLE_KEYS`. Role/status colors derive in `design-meta.ts` (`userRoleMeta`, `userStatusMeta`) - not stored.
+- **`scope`** is free-text today (e.g. "Rātā wing", "Peggy W. · Rātā 12"). For the DB, model it as a typed FK (wing or resident) - see below.
 
 ## Meal intake logs (`lib/mock-data/meal-report.ts`)
 
@@ -127,9 +127,9 @@ interface RosterStaff { name; pos; initials; color }
 interface RosterDay { dow; date }
 type RosterGrid = Record<string, string[]>;   // grid["{rowIdx}-{colIdx}"] = shiftId[]
 ```
-Date/week accessors (`roster-schedule.ts`): `getRosterDays()`, `dailyTotals(staffIds, days, grid)`, `totalShifts(grid)`, `rosterWeekTitle(days)`, week helpers. The **shift-type vocabulary is real data** — `getRosterShiftTypes()` (`lib/data/roster.ts`) maps Supabase `shift_templates` into `ShiftType`; there is no hardcoded shift lookup. A cell can hold multiple shift ids. Shift-type colors are stored per template, rendered via inline style.
+Date/week accessors (`roster-schedule.ts`): `getRosterDays()`, `dailyTotals(staffIds, days, grid)`, `totalShifts(grid)`, `rosterWeekTitle(days)`, week helpers. The **shift-type vocabulary is real data** - `getRosterShiftTypes()` (`lib/data/roster.ts`) maps Supabase `shift_templates` into `ShiftType`; there is no hardcoded shift lookup. A cell can hold multiple shift ids. Shift-type colors are stored per template, rendered via inline style.
 
-## Stock, providers & ordering — LIVE (`supabase/migrations/0002_stock_procurement.sql`)
+## Stock, providers & ordering - LIVE (`supabase/migrations/0002_stock_procurement.sql`)
 
 Backs the **Stock** tabs (Inventory / Stock in/out / Place order / Providers). Applied + seeded (`scripts/db/seed-stock.mts`).
 
@@ -149,13 +149,13 @@ Two RPCs keep on-hand and the ledger atomic (`security invoker`, RLS applies):
 - `record_stock_movement(p_product_id, p_building_id, p_direction, p_qty, p_unit, p_provider_id, p_unit_price, p_dests, p_receiver, p_note, p_actor_id, p_move_date)` → adjusts `stock_levels.qty_now` (clamped ≥0), then inserts the `stock_movements` row.
 - `delete_stock_movement(p_id)` → reverses the balance, then deletes the row.
 
-Data layer: `src/lib/data/stock.ts` (`getProviders`, `getProducts`, `getMovements`, `getMovementsForProduct`, `getOrders`) reads; `src/lib/actions/stock.ts` (`saveProduct`, `deleteProduct`, `saveProvider`, `deleteProvider`, `recordMovement`, `deleteMovement`, `placeOrder`, `getItemHistory`) writes — all scoped `building_id = 'wesley'` (constant this phase), each write action `revalidatePath("/portal/stock")`. Orders split the draft cart **by provider** into one `orders` row + `order_lines` per PO. Stock status derives client-side via `stockLevel(qtyNow, par)`.
+Data layer: `src/lib/data/stock.ts` (`getProviders`, `getProducts`, `getMovements`, `getMovementsForProduct`, `getOrders`) reads; `src/lib/actions/stock.ts` (`saveProduct`, `deleteProduct`, `saveProvider`, `deleteProvider`, `recordMovement`, `deleteMovement`, `placeOrder`, `getItemHistory`) writes - all scoped `building_id = 'wesley'` (constant this phase), each write action `revalidatePath("/portal/stock")`. Orders split the draft cart **by provider** into one `orders` row + `order_lines` per PO. Stock status derives client-side via `stockLevel(qtyNow, par)`.
 
-`lib/mock-data/stock-catalog.ts` (`getProviders()`, `getProductCatalog()`) is retained **only** as the seed source for `scripts/db/seed-stock.mts` — the live screen reads Supabase, not this mock.
+`lib/mock-data/stock-catalog.ts` (`getProviders()`, `getProductCatalog()`) is retained **only** as the seed source for `scripts/db/seed-stock.mts` - the live screen reads Supabase, not this mock.
 
-## Staff administration — LIVE (`supabase/migrations/0003_staff_admin.sql`)
+## Staff administration - LIVE (`supabase/migrations/0003_staff_admin.sql`)
 
-Backs the **Staff** screen (Team / Shift templates / Leave requests). **Schema defined; DB apply/seed deferred** until the DB is reachable from the build env (same handoff as core/Stock — run the migration, then `npx tsx scripts/db/seed-staff.mts`).
+Backs the **Staff** screen (Team / Shift templates / Leave requests). **Schema defined; DB apply/seed deferred** until the DB is reachable from the build env (same handoff as core/Stock - run the migration, then `npx tsx scripts/db/seed-staff.mts`).
 
 ```sql
 -- extends the existing `staff` table (from 0001_core_schema.sql)
@@ -181,9 +181,9 @@ RLS: `{table}_read` (select, authenticated) / `{table}_write` (all, authenticate
 One RPC keeps approval and the leave balance atomic (`security invoker`, RLS applies):
 - `approve_leave(p_id)` → sets the request `status = 'Approved'`; if `type` is Annual/Sick leave, also debits `staff.taken` by the request's `days`. No-op if already approved.
 
-Data layer: `src/lib/data/staff.ts` (`getStaff`, `getShiftTemplates`, `getLeaveRequests`) reads; `src/lib/actions/staff.ts` (`saveStaff`, `deleteStaff`, `saveShiftTemplate`, `deleteShiftTemplate`, `saveLeave`, `approveLeave`, `declineLeave`) writes — all scoped `building_id = 'wesley'` (constant this phase), each write action `revalidatePath("/portal/staff")`. `saveStaff` edits never touch `annual`/`taken` (balance-only mutation path is `approve_leave`).
+Data layer: `src/lib/data/staff.ts` (`getStaff`, `getShiftTemplates`, `getLeaveRequests`) reads; `src/lib/actions/staff.ts` (`saveStaff`, `deleteStaff`, `saveShiftTemplate`, `deleteShiftTemplate`, `saveLeave`, `approveLeave`, `declineLeave`) writes - all scoped `building_id = 'wesley'` (constant this phase), each write action `revalidatePath("/portal/staff")`. `saveStaff` edits never touch `annual`/`taken` (balance-only mutation path is `approve_leave`).
 
-## Roles & groups — LIVE (`supabase/migrations/0007_role_groups.sql`)
+## Roles & groups - LIVE (`supabase/migrations/0007_role_groups.sql`)
 
 Roles become first-class, admin-managed entities (Staff → **Roles & groups**) instead of free strings assembled from the staff list. Groups band and order the weekly roster.
 
@@ -198,21 +198,21 @@ staff_roles(building_id, name text, color, tint,
               references role_groups(building_id, id) on delete set null)
 ```
 
-- `staff_roles.name` matches the strings in `staff.roles` (no staff rows rewritten). The migration seeds three ordered groups (**Nurses & HCAs → Care Takers → Kitchen**), auto-registers every role already held by staff (+ base roles), and applies a default role→group mapping — all editable in-app afterward.
+- `staff_roles.name` matches the strings in `staff.roles` (no staff rows rewritten). The migration seeds three ordered groups (**Nurses & HCAs → Care Takers → Kitchen**), auto-registers every role already held by staff (+ base roles), and applies a default role→group mapping - all editable in-app afterward.
 - **Roster banding:** each staffer lands in the earliest group (by `sort_order`) that any of their roles maps to; unmapped staff fall into a trailing "Unassigned" band. Pure helper: `src/lib/roster-grouping.ts` `groupStaffForRoster(staff, roles, groups)`.
 - RLS: `{table}_read` (select, authenticated) / `{table}_write` (all, authenticated) on both tables.
-- Data layer: `src/lib/data/roles.ts` (`getRoleGroups`, `getRoles`) reads; `src/lib/actions/roles.ts` (`saveRole`, `deleteRole`, `assignRoleToGroup`, `saveGroup`, `deleteGroup`, `moveGroup`) writes — each revalidates both `/portal/staff` and `/portal/roster`. `deleteRole` is blocked while any staffer still holds the role.
+- Data layer: `src/lib/data/roles.ts` (`getRoleGroups`, `getRoles`) reads; `src/lib/actions/roles.ts` (`saveRole`, `deleteRole`, `assignRoleToGroup`, `saveGroup`, `deleteGroup`, `moveGroup`) writes - each revalidates both `/portal/staff` and `/portal/roster`. `deleteRole` is blocked while any staffer still holds the role.
 
-Types: `StaffRecord`, `ShiftTemplate`, `StaffLeaveRequest` (`src/types/domain.ts`) — distinct from the pre-existing mock-data `StaffMember`/`LeaveRequest` types still used by Roster's read-only leave list (`components/portal/roster/leave-request-row.tsx`), which is unaffected by this screen.
+Types: `StaffRecord`, `ShiftTemplate`, `StaffLeaveRequest` (`src/types/domain.ts`) - distinct from the pre-existing mock-data `StaffMember`/`LeaveRequest` types still used by Roster's read-only leave list (`components/portal/roster/leave-request-row.tsx`), which is unaffected by this screen.
 
-## Future Supabase mapping (deferred — not this phase)
+## Future Supabase mapping (deferred - not this phase)
 
-> **Status:** the **core subset is LIVE in the DB** — `supabase/migrations/0001_core_schema.sql` (tables `roles`, `role_permissions`, `buildings`, `building_wings`, `app_users`, `staff`, `residents`, all with RLS) applied + seeded from the mocks (`scripts/db/seed-core-schema.mts`, or paste-ready `supabase/seed/0001_core_seed.sql`). Row counts: roles 6, role_permissions 240 (6×10×4), buildings 2, app_users 11, staff 10, residents 9. `app_users` already gates portal access + role (verified end-to-end). **Stock & procurement is also LIVE** — `supabase/migrations/0002_stock_procurement.sql` (tables `providers`, `products`, `stock_levels`, `stock_movements`, `orders`, `order_lines`, all with RLS + two RPCs) applied + seeded; see "Stock, providers & ordering" above. **Staff administration schema is also defined** (`0003_staff_admin.sql`, extended `staff` columns + `shift_templates` + `leave_requests` + `approve_leave` RPC) but DB apply/seed is deferred — see "Staff administration" above. Other screens still read mock data — swapping accessors to Supabase queries is the next step. The remaining tables below are still deferred.
+> **Status:** the **core subset is LIVE in the DB** - `supabase/migrations/0001_core_schema.sql` (tables `roles`, `role_permissions`, `buildings`, `building_wings`, `app_users`, `staff`, `residents`, all with RLS) applied + seeded from the mocks (`scripts/db/seed-core-schema.mts`, or paste-ready `supabase/seed/0001_core_seed.sql`). Row counts: roles 6, role_permissions 240 (6×10×4), buildings 2, app_users 11, staff 10, residents 9. `app_users` already gates portal access + role (verified end-to-end). **Stock & procurement is also LIVE** - `supabase/migrations/0002_stock_procurement.sql` (tables `providers`, `products`, `stock_levels`, `stock_movements`, `orders`, `order_lines`, all with RLS + two RPCs) applied + seeded; see "Stock, providers & ordering" above. **Staff administration schema is also defined** (`0003_staff_admin.sql`, extended `staff` columns + `shift_templates` + `leave_requests` + `approve_leave` RPC) but DB apply/seed is deferred - see "Staff administration" above. Other screens still read mock data - swapping accessors to Supabase queries is the next step. The remaining tables below are still deferred.
 
 Accessors become async queries; screens unchanged (already `await` accessors where practical). The shapes below keep the mock layer DB-compatible so the swap is mechanical. RLS on every table.
 
 ### Care/ops tables (existing screens)
-`residents`, `rooms`, `shifts` (+ `shift_staff` join), `incidents`, `meal_services`, `activities`, `family_posts`, `visits`, `messages`, `birthdays`. (Stock's tables are LIVE — see "Stock, providers & ordering" above. `staff`'s extended columns, `shift_templates`, and `leave_requests` are schema-defined — see "Staff administration" above; neither is deferred anymore.)
+`residents`, `rooms`, `shifts` (+ `shift_staff` join), `incidents`, `meal_services`, `activities`, `family_posts`, `visits`, `messages`, `birthdays`. (Stock's tables are LIVE - see "Stock, providers & ordering" above. `staff`'s extended columns, `shift_templates`, and `leave_requests` are schema-defined - see "Staff administration" above; neither is deferred anymore.)
 
 ### RBAC tables (Users & access)
 ```sql
@@ -251,7 +251,7 @@ buildings(id text pk,                 -- 'wesley' | 'lodge'
 building_wings(building_id text references buildings(id), name text,
                primary key (building_id, name))
 ```
-**Every care/ops table gains a `building_id` FK** (residents, rooms, staff, roster, stock_levels, incidents…). suites/occupied/staff counts on the Buildings card become aggregate queries per building. The active building (topbar switcher) becomes a query filter and — with auth — an RLS scoping dimension (a user only sees buildings they're assigned to).
+**Every care/ops table gains a `building_id` FK** (residents, rooms, staff, roster, stock_levels, incidents…). suites/occupied/staff counts on the Buildings card become aggregate queries per building. The active building (topbar switcher) becomes a query filter and - with auth - an RLS scoping dimension (a user only sees buildings they're assigned to).
 
 ### Roster scheduling
 ```sql

@@ -45,7 +45,7 @@ export function MealReportView() {
             Meal report
           </h1>
           <p className="mt-[6px] text-[15.5px] text-ink-muted">
-            Log every resident&rsquo;s intake for each meal today — flag anyone eating poorly.
+            Log every resident&rsquo;s intake for each meal today - flag anyone eating poorly.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -69,7 +69,7 @@ export function MealReportView() {
           <div className="mt-[5px] text-[12.5px] text-ink-faint">{summary.pct}% complete</div>
         </div>
         <SummaryTile label="Ate well" value={summary.well} valueClass="text-sage" sub="All or most eaten" />
-        <SummaryTile label="Poor intake" value={summary.low} valueClass="text-gold-text" sub="Some or less — monitor" />
+        <SummaryTile label="Poor intake" value={summary.low} valueClass="text-gold-text" sub="Some or less - monitor" />
         <SummaryTile label="Refused" value={summary.refused} valueClass="text-rust" sub="Escalate to RN" />
       </div>
 

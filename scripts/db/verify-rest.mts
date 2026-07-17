@@ -1,6 +1,6 @@
 /**
  * Verifies the Stock + Staff seed landed, via the Supabase REST API (service-role,
- * bypasses RLS) — works even where the direct Postgres port is unreachable (IPv6).
+ * bypasses RLS) - works even where the direct Postgres port is unreachable (IPv6).
  * Run: npx tsx scripts/db/verify-rest.mts
  */
 import { readFileSync } from "node:fs";

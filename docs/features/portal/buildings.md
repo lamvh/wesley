@@ -1,6 +1,6 @@
 # Buildings
 
-- **Route:** `/portal/buildings` — `app/portal/buildings/page.tsx`
+- **Route:** `/portal/buildings` - `app/portal/buildings/page.tsx`
 - **Section:** Portal · **Access:** admin only
 - **Source:** `.design-src/victoria-all-screens-v3.html` lines 1019–1051 (screen), 1519–1527 + 1904–1913 (data), 519–527 (topbar switcher)
 - **Render:** RSC page → client `BuildingsView` (reads/writes the shared building selection)
@@ -25,7 +25,7 @@ Header (title + Add building) → 2-col grid of building cards.
 - Shared selection also drives the **topbar `BuildingSwitch`** (admin) and the Stock header ("{building} · inventory…").
 
 ## Interactions
-- Select building (card / "View this site") — client state via context. Add building — inert.
+- Select building (card / "View this site") - client state via context. Add building - inert.
 
 ## Tokens
 Per-building `color`/`tint` are data (inline style on the avatar/border, sanctioned). Card surfaces `bg-cream-2`, `border-line`; stats `font-serif`; occupancy number `text-sage`.

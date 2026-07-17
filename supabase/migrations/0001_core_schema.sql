@@ -105,7 +105,7 @@ on conflict (id) do nothing;
 -- ─────────────────────────── RLS ────────────────────────────
 -- Every table is RLS-protected. Reference + directory data is readable by any
 -- signed-in user; writes to operational data are allowed to signed-in users
--- for now (self-registration is impossible — accounts are invite-only). Tighten
+-- for now (self-registration is impossible - accounts are invite-only). Tighten
 -- to per-role policies once the role claim is on the JWT.
 alter table public.roles            enable row level security;
 alter table public.role_permissions enable row level security;

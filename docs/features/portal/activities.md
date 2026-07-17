@@ -1,16 +1,16 @@
 # Activities
 
-- **Route:** `/portal/activities` — `app/portal/activities/page.tsx`
+- **Route:** `/portal/activities` - `app/portal/activities/page.tsx`
 - **Section:** Portal · **Access:** both
 - **Source:** lines `941–1029` (markup); data `1335–1352`
-- **Render:** RSC (+ client islands: none — `+ Add activity` / `View gallery` inert)
+- **Render:** RSC (+ client islands: none - `+ Add activity` / `View gallery` inert)
 
 ## Purpose
 The home's activities hub: a featured celebration story with photos, upcoming resident birthdays, a gallery of recent highlights, and the full seven-day programme colour-coded by category. Used by activities/care staff and admin to see and share what's on.
 
 ## Layout
 Centered column (`max-width:1180px`). Top-to-bottom:
-1. Header row — title + programme-week subline left, `+ Add activity` button right.
+1. Header row - title + programme-week subline left, `+ Add activity` button right.
 2. Two-column feature row (`grid-template-columns:1.55fr 1fr`, gap `16px`): featured celebration card + upcoming-birthdays card.
 3. "Recent highlights" section: heading + `View gallery` link, then a 4-card image gallery (`repeat(4,1fr)`).
 4. "This week's programme" section: heading + category colour legend, then a 7-column day grid (`repeat(7,minmax(0,1fr))`).
@@ -20,7 +20,7 @@ Centered column (`max-width:1180px`). Top-to-bottom:
 | Section | Component | Notes |
 |---------|-----------|-------|
 | Header (title, week, add) | `activities-header` | Title `Activities` (Newsreader 32px); subline `This week's programme · 7–13 July`; `+ Add activity` = accent primary button |
-| Featured celebration card | `celebration-card` | Photo mosaic (238px): 1 large + 2 stacked, via **direct `assets/` images** (`act-podiatry-1.jpeg`, `birthday-candles.jpeg`, `birthday-portrait.jpeg`) — not `<Photo slot>`. Body: `Celebration` gold pill + `Yesterday · Kōwhai lounge` meta, Newsreader headline, paragraph. Static content (not from a list accessor). |
+| Featured celebration card | `celebration-card` | Photo mosaic (238px): 1 large + 2 stacked, via **direct `assets/` images** (`act-podiatry-1.jpeg`, `birthday-candles.jpeg`, `birthday-portrait.jpeg`) - not `<Photo slot>`. Body: `Celebration` gold pill + `Yesterday · Kōwhai lounge` meta, Newsreader headline, paragraph. Static content (not from a list accessor). |
 | Upcoming birthdays card | `birthday-list` + `birthday-row` | Cake-icon tile + title. Each row: 36px avatar (initials on `b.color`), `name`, `room` meta, right-aligned gold `badge` (e.g. `90th`) + `date`. |
 | Recent highlights gallery | `highlight-card` (×4) | Card = cream-2 + border, radius `14px`. 150px `assets/act-*.jpeg` / `birthday-*.jpeg` image, then category eyebrow (`Wellbeing · Tue`, colour by category) + title. Direct asset images, static. |
 | Weekly programme grid | `activity-week` → `activity-day` → `activity-chip` | 7 day columns (`min-height:280px`). Day header shows `dow` + `date`; today's header tinted (`d.today`). Each `activity-chip`: category tint bg (`a.tint`), `time` (in `a.color`), `title`, `where`. |
@@ -32,20 +32,20 @@ Grids: feature row `1.55fr 1fr`; highlights `repeat(4,1fr)`; week `repeat(7,minm
 From `lib/mock-data/activities.ts` (see 03-data-model.md):
 - `getActivityWeek()` → `ActivityDay[]`: `dow`, `date`, `isToday` (drives today header tint), `items[]`. Each `Activity`: `time`, `title`, `where`, `category` (`garden`|`music`|`move`|`social`|`craft`|`care`|`faith`). Chip `tint` + `color` derived from `category` via the activity-category scale helper (`catTint` map), not stored raw.
 - `birthdays` (`getBirthdays()`) → `Birthday[]`: `name`, `room`, `date`, `initials`, `colorKey`, `badge`.
-- **Featured celebration + recent highlights are static** (headline, meta, paragraph, and the highlight cards' captions/categories are literal in the design, not list-driven) — colocate as small typed constants in `activities.ts` rather than inline in JSX.
+- **Featured celebration + recent highlights are static** (headline, meta, paragraph, and the highlight cards' captions/categories are literal in the design, not list-driven) - colocate as small typed constants in `activities.ts` rather than inline in JSX.
 
-**Image strategy note:** this screen uses **direct `assets/` files** copied to `public/images/` (`act-podiatry-1/2/3`, `act-birthday-cakes`, `act-birthday-group`, `birthday-candles`, `birthday-portrait`) rendered via `next/image` — distinct from the marketing/family `<Photo slot="…">` slot-mapping pattern. No `image-slot` placeholders here.
+**Image strategy note:** this screen uses **direct `assets/` files** copied to `public/images/` (`act-podiatry-1/2/3`, `act-birthday-cakes`, `act-birthday-group`, `birthday-candles`, `birthday-portrait`) rendered via `next/image` - distinct from the marketing/family `<Photo slot="…">` slot-mapping pattern. No `image-slot` placeholders here.
 
 ## Variants & states
 - **Role:** identical for admin and staff (access `both`); no role-gated content.
 - **Today highlight:** the day whose `isToday` is true gets a tinted header (`#E7E9F5`); others transparent. Friday 11 is "today" in mock data.
-- **Category-driven styling:** every chip's background/text colour comes from its `category` — seven fixed tints; legend pairs each colour with a text label (colour never sole signal).
-- **Empty state:** a day with no `items` renders an empty column body; a card with zero birthdays would show only the header — not exercised (all populated).
+- **Category-driven styling:** every chip's background/text colour comes from its `category` - seven fixed tints; legend pairs each colour with a text label (colour never sole signal).
+- **Empty state:** a day with no `items` renders an empty column body; a card with zero birthdays would show only the header - not exercised (all populated).
 - Chip count per day varies (2–5); columns are equal width, height grows with content over the `280px` min.
 
 ## Interactions
-- `+ Add activity` — inert stub (would open an add-activity flow). No-op.
-- `View gallery` link — inert stub (would open a photo gallery). No-op.
+- `+ Add activity` - inert stub (would open an add-activity flow). No-op.
+- `View gallery` link - inert stub (would open a photo gallery). No-op.
 - Highlight cards / chips / birthday rows are non-interactive (no detail route this phase).
 
 ## Tokens

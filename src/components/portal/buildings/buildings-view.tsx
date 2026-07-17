@@ -18,7 +18,7 @@ export function BuildingsView() {
         <div>
           <h1 className="font-serif text-[32px] font-medium">Buildings</h1>
           <p className="mt-[5px] text-[15px] text-ink-muted">
-            Manage your care homes — wings, capacity and site managers
+            Manage your care homes - wings, capacity and site managers
           </p>
         </div>
         <button

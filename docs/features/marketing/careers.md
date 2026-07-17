@@ -1,6 +1,6 @@
 # Careers
 
-- **Route:** `/careers` — `app/(marketing)/careers/page.tsx`
+- **Route:** `/careers` - `app/(marketing)/careers/page.tsx`
 - **Section:** Marketing · **Access:** both
 - **Source:** lines `339–377` (data `1445–1455`)
 - **Render:** RSC (no client islands)
@@ -28,14 +28,14 @@ Reused: `MarketingPageHeader`. New: `BenefitCard`, `RoleRow`, note block.
 
 ## Data consumed
 Accessor `getMarketingContent()` (`lib/mock-data/marketing-content.ts`):
-- `benefits` — 3× `{ title, desc }` (source `1451–1455`).
-- `roles` — 4× `{ title, type, desc }`; `type` = employment/wing line e.g. "Full-time · Kōwhai wing" (source `1445–1450`).
+- `benefits` - 3× `{ title, desc }` (source `1451–1455`).
+- `roles` - 4× `{ title, type, desc }`; `type` = employment/wing line e.g. "Full-time · Kōwhai wing" (source `1445–1450`).
 
 Header copy ("Come and do work that matters") and note copy are static screen content.
 
 ## Variants & states
-- No role/auth differences — public page.
-- No empty states — `benefits` (3) and `roles` (4) always present. (If `roles` were empty, the no-role note still stands as the fallback CTA.)
+- No role/auth differences - public page.
+- No empty states - `benefits` (3) and `roles` (4) always present. (If `roles` were empty, the no-role note still stands as the fallback CTA.)
 - Hover: benefit/role cards static; "Apply now" + "get in touch" get pointer + button/link hover per token.
 
 ## Interactions
@@ -47,7 +47,7 @@ Header copy ("Come and do work that matters") and note copy are static screen co
 `cream-2` (header + all card surfaces) · `border` (card borders; dashed variant on note) · `bronze-text` (eyebrow) · `navy` (Apply button bg, "get in touch" link accent) · `cream` (Apply button label) · `ink` (role/benefit titles) · `muted` (body) · `muted-2` (role `type` meta). Newsreader: H1 `46px`, H2 `30px`, role title `20px`, benefit title `21px`. Radius: benefit card `16px`, role row + note `14px`, button `11px`. Section pad `56px/28px`, `max-width:1200px`.
 
 ## Out of scope (this phase)
-- No application form / job-detail pages — "Apply now" only navigates to `/contact`; no ATS, upload, or mutation.
+- No application form / job-detail pages - "Apply now" only navigates to `/contact`; no ATS, upload, or mutation.
 - No filtering/search of roles.
 
 ## Definition of Done

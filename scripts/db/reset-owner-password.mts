@@ -1,6 +1,6 @@
 /**
  * Resets the owner account's password to a clean, easy-to-type value and then
- * verifies sign-in works with it (via the anon client — the same path the app
+ * verifies sign-in works with it (via the anon client - the same path the app
  * uses). Run: npx tsx scripts/db/reset-owner-password.mts
  */
 import { readFileSync } from "node:fs";

@@ -1,5 +1,5 @@
 /**
- * Reads staff data directly via pg (no RLS session — mirrors seed-staff.mts's
+ * Reads staff data directly via pg (no RLS session - mirrors seed-staff.mts's
  * connection pattern since no VERIFY_EMAIL/VERIFY_PASSWORD owner account is
  * configured in .env.local yet). Run: npx tsx scripts/db/verify-staff-read.mts
  */
@@ -39,6 +39,6 @@ async function main() {
   console.log("✓ leave_request+staff join ok:", JSON.stringify(joinCheck.rows[0]));
 
   await client.end();
-  console.log("✓ PASS — staff reads work");
+  console.log("✓ PASS - staff reads work");
 }
 main().catch((e) => { console.error(e.message ?? e); process.exit(1); });

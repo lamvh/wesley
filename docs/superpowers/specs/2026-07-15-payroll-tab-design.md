@@ -1,7 +1,7 @@
-# Payroll tab (Staff · Payroll) — Design
+# Payroll tab (Staff · Payroll) - Design
 
 **Date:** 2026-07-15
-**Screen:** design item **U34** — "Staff · Payroll (rates + totals)" from the Victoria admin dashboard.
+**Screen:** design item **U34** - "Staff · Payroll (rates + totals)" from the Victoria admin dashboard.
 **Status:** design approved; ready for implementation plan.
 
 ## Purpose
@@ -14,9 +14,9 @@ and gross pay, with per-building subtotals and a total weekly wage bill.
 
 | Topic | Decision |
 |-------|----------|
-| Rate storage | **Persist to DB** — new `staff_roles.hourly_rate` column + server action. |
+| Rate storage | **Persist to DB** - new `staff_roles.hourly_rate` column + server action. |
 | Pay week | **Week navigator** like the roster (`?week=YYYY-MM-DD`, default current week). |
-| Grouping | **By building** (staff `building_id`) — Wesley now; The Lodge only if staff exist there. |
+| Grouping | **By building** (staff `building_id`) - Wesley now; The Lodge only if staff exist there. |
 | Rate used for gross | The staffer's **primary role** (`roles[0]`) rate. |
 | Gating | **Admin-only**, lives as a 5th tab inside the existing Staff page. |
 | Compute split | **Server** computes immutable paid-hours from the roster; **client** owns editable rates + live gross. |
@@ -51,10 +51,10 @@ StaffPage (RSC)
 
 ## Data layer
 
-**`src/lib/data/roles.ts` — extend `getRoles`**
+**`src/lib/data/roles.ts` - extend `getRoles`**
 - select adds `hourly_rate`; map to `hourlyRate: Number(r.hourly_rate ?? 0)`.
 
-**`src/types/domain.ts` — `RoleDef`** gains `hourlyRate: number`.
+**`src/types/domain.ts` - `RoleDef`** gains `hourlyRate: number`.
 
 **`src/lib/data/payroll.ts` (NEW)**
 - `getPayrollHours(weekStartISO, weekEndISO): Promise<Record<string, { hours: number; shiftCount: number }>>`
@@ -64,7 +64,7 @@ StaffPage (RSC)
 
 ## Server action
 
-**`src/lib/actions/roles.ts` — `saveRoleRate(name, rate)`**
+**`src/lib/actions/roles.ts` - `saveRoleRate(name, rate)`**
 - Validate `rate >= 0`; `update staff_roles set hourly_rate = rate where building_id='wesley' and name=…`.
 - `revalidatePath('/portal/staff')` and `/portal/roster` (roles shared) on success.
 
@@ -91,17 +91,17 @@ StaffPage (RSC)
 **State:** `rates: Record<roleName, number>` seeded from `roles`; `rateError: string | null`.
 
 **Layout (top→bottom), matching the design:**
-1. **Hourly rates card** — title "Hourly rates" + helper "Rate per role in NZD…", a week
+1. **Hourly rates card** - title "Hourly rates" + helper "Rate per role in NZD…", a week
    badge (`weekLabel`), and one editor chip per role: swatch + role name + `$` `<input
    type=number min=0 step=0.25>`. On change → update local `rates` (live recompute) + call
    `saveRoleRate` (persist; onBlur/debounced). Failure → inline banner, keep local edit.
    Week nav `‹ ›` buttons here → `router.push('/portal/staff?staffTab=payroll&week=…')`.
-2. **4 KPI cards** — Weekly wage bill (Σ gross), Paid hours (Σ hours), Rostered staff
+2. **4 KPI cards** - Weekly wage bill (Σ gross), Paid hours (Σ hours), Rostered staff
    (count hours>0), Avg hours / person.
-3. **Per-building sections** — for each building with staff, a header (name + "{n} rostered"),
+3. **Per-building sections** - for each building with staff, a header (name + "{n} rostered"),
    then a table: **Staff | Role | Shifts | Hours | Rate/hr | Gross pay**; rows sorted by role
    order then name; a **subtotal** row (building hours + gross).
-4. **Total footer bar** (navy) — Paid hours + Gross pay totals.
+4. **Total footer bar** (navy) - Paid hours + Gross pay totals.
 
 **Computation (client):**
 - Per staffer: `role = roles[0]`, `rate = rates[role] ?? 0`, `hours = payrollHours[id]?.hours ?? 0`,
@@ -121,7 +121,7 @@ StaffPage (RSC)
 
 Reuse existing tokens: cards `bg-cream-2` + `border-line`; figures/headings `font-serif`
 (Newsreader); gold pills (`bg-gold-tint` / `text-bronze-text`); navy footer (`bg-navy-deep`).
-Role swatch/pill colours come from the role registry (data, inline — sanctioned).
+Role swatch/pill colours come from the role registry (data, inline - sanctioned).
 
 ## Definition of Done
 
@@ -134,7 +134,7 @@ Role swatch/pill colours come from the role registry (data, inline — sanctione
 
 ## Open questions
 
-1. **Seed rates** — the seed values above are placeholders drawn from the design's role
+1. **Seed rates** - the seed values above are placeholders drawn from the design's role
    codes mapped to our role names; confirm real rates or start all at 0.
-2. **Multi-role staff** — gross uses the primary role (`roles[0]`) rate per the design; if a
+2. **Multi-role staff** - gross uses the primary role (`roles[0]`) rate per the design; if a
    staffer's shifts span roles with different rates, that nuance is not reflected (matches design).

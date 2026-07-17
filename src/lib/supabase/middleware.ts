@@ -6,7 +6,7 @@ import { NextResponse, type NextRequest } from "next/server";
 // headed via ?next=), and signed-in users are bounced off /login.
 //
 // The response object returned here MUST be the one whose cookies Supabase
-// wrote to — creating a fresh NextResponse without copying those cookies would
+// wrote to - creating a fresh NextResponse without copying those cookies would
 // silently log users out. Redirects below copy the refreshed cookies across.
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -15,7 +15,7 @@ export async function updateSession(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  // Misconfigured env must not take the whole site down — let the request
+  // Misconfigured env must not take the whole site down - let the request
   // through rather than throwing a middleware invocation error.
   if (!supabaseUrl || !supabaseKey) {
     return supabaseResponse;
@@ -40,7 +40,7 @@ export async function updateSession(request: NextRequest) {
       },
     });
 
-    // Do not run code between createServerClient and getUser() — it keeps the
+    // Do not run code between createServerClient and getUser() - it keeps the
     // session fresh and avoids hard-to-debug logout bugs.
     const result = await supabase.auth.getUser();
     user = result.data.user;

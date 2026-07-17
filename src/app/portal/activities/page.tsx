@@ -6,7 +6,7 @@ import { UpcomingBirthdays } from "@/components/portal/activities/upcoming-birth
 import { Button } from "@/components/ui/button";
 import { getActivityWeek, getBirthdays } from "@/lib/mock-data";
 
-// Recent-highlight gallery cards — static literal content from the design.
+// Recent-highlight gallery cards - static literal content from the design.
 const highlights = [
   {
     slot: "act-birthday-cakes",

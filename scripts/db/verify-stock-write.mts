@@ -1,5 +1,5 @@
 /**
- * Exercises stock writes directly via pg (no RLS session — mirrors
+ * Exercises stock writes directly via pg (no RLS session - mirrors
  * verify-stock-read.mts's connection pattern since no VERIFY_EMAIL/
  * VERIFY_PASSWORD owner account is configured in .env.local yet):
  * record_stock_movement in/out (balance math), delete_stock_movement
@@ -75,6 +75,6 @@ async function main() {
   await client.query(`delete from public.stock_levels where product_id=$1`, [P]);
   await client.query(`delete from public.products where id=$1`, [P]);
   await client.end();
-  console.log("✓ PASS — RPC in/out, reversal, cleanup all work");
+  console.log("✓ PASS - RPC in/out, reversal, cleanup all work");
 }
 main().catch((e) => { console.error(e.message ?? e); process.exit(1); });

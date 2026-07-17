@@ -1,6 +1,6 @@
 /**
  * End-to-end check of the RBAC lookup: sign in as the owner with the anon key
- * (exactly what the app does), then read app_users under that session (RLS) —
+ * (exactly what the app does), then read app_users under that session (RLS) -
  * mirroring getCurrentUser(). Run: npx tsx scripts/db/verify-rbac-login.mts
  */
 import { readFileSync } from "node:fs";
@@ -38,7 +38,7 @@ async function main() {
 
   console.log("✓ RBAC lookup under session (RLS):", data);
   const ok = data?.role_id === "super_admin" && data?.status === "Active";
-  console.log(ok ? "✓ PASS — owner resolves to active super_admin → portal grants access" : "✗ FAIL");
+  console.log(ok ? "✓ PASS - owner resolves to active super_admin → portal grants access" : "✗ FAIL");
 }
 
 main().catch((e) => {

@@ -14,7 +14,7 @@ import type { MovementDest, MovementDir, Product, Provider } from "@/types/domai
 // server action via hidden inputs whose values track that state on every
 // render. On a successful submit the parent remounts this panel via `key`
 // (see stock-item-form.tsx for the same reset-via-effect-callback idiom) so
-// all local state — controlled and uncontrolled — starts fresh.
+// all local state - controlled and uncontrolled - starts fresh.
 
 const fieldCls =
   "w-full rounded-[11px] border border-input bg-cream px-3 py-[11px] text-[14px] text-ink outline-none focus:border-navy";
@@ -37,12 +37,12 @@ export function RecordMovementPanel({
   const [dir, setDir] = useState<MovementDir>("in");
   const [productId, setProductId] = useState(products[0]?.id ?? "");
 
-  // Row ids are only for React keys (add/remove stability) — start at 1
+  // Row ids are only for React keys (add/remove stability) - start at 1
   // since the initial row below is hardcoded as id 0.
   const rowId = useRef(1);
   const [dests, setDests] = useState<DestRow[]>([{ id: 0, room: "", person: "", qty: 0 }]);
 
-  // Fresh state on a successful (error-free) submit — reported to the
+  // Fresh state on a successful (error-free) submit - reported to the
   // parent, which remounts this component via `key` instead of us calling
   // local setState from inside an effect.
   const wasPending = useRef(false);

@@ -2,7 +2,7 @@
 
 ## Route map
 
-### Marketing — `(marketing)` group, shared `MarketingLayout` (announcement + sticky nav + footer)
+### Marketing - `(marketing)` group, shared `MarketingLayout` (announcement + sticky nav + footer)
 
 | URL | File | Screen |
 |-----|------|--------|
@@ -13,7 +13,7 @@
 | `/careers` | `app/(marketing)/careers/page.tsx` | Careers |
 | `/contact` | `app/(marketing)/contact/page.tsx` | Contact |
 
-### Portal — `/portal`, shared `PortalLayout` (sidebar + topbar + role toggle)
+### Portal - `/portal`, shared `PortalLayout` (sidebar + topbar + role toggle)
 
 | URL | File | Screen | Access |
 |-----|------|--------|--------|
@@ -82,7 +82,7 @@ Pages, layouts, cards, lists, tables = RSC reading mock-data accessors.
 - **Admin-only nav** (Rooms, Buildings, Incidents, Users & access) hidden when `role === 'staff'`. Stock & Meal report are visible to all staff.
 - **Active building** (`BuildingProvider` / `useBuilding`, client): topbar `BuildingSwitch` (admin) selects the care home; shared with the Buildings screen + Stock header. Visual scoping this phase; becomes a real per-building data filter + RLS dimension with the DB.
 - **Permission model** (Users & access): a `role → module → action` matrix (`PermissionMatrix`, see 03-data-model.md). UI-editable this phase; becomes the server-side authorization source (RLS) with real auth.
-- **Dashboard** renders admin vs staff variant (greeting, KPIs, alerts differ — lines 1124–1148).
+- **Dashboard** renders admin vs staff variant (greeting, KPIs, alerts differ - lines 1124–1148).
 - Topbar shows role pill toggle + identity: admin = Sarah Beckett / Facility Manager / SB / `#BE7350`; staff = Aroha Ngata / Registered Nurse · Rātā / AN / `#6E875E` (lines 1408–1411). Console name: admin "Admin Console", staff "Care Station".
 - Admin-only screens: if visited as staff, show a simple "Admin only" empty state (no hard guard/redirect this phase).
 
@@ -96,7 +96,7 @@ Pages, layouts, cards, lists, tables = RSC reading mock-data accessors.
 
 - Download ~30 uploaded photos from the design project into `public/images/`.
 - `<Photo slot="vme-hero" alt="..." />` (`components/shared/photo.tsx`) maps slot ID → file via `next/image`; unmapped slot → labelled placeholder (design uses `image-slot` with a placeholder string; keep that string as fallback label).
-- Slot→file mapping lives in `lib/mock-data/photos.ts` (built by cross-referencing `screenshots/*.png` in the design project). Activities screen uses direct `assets/act-*.jpeg` / `assets/birthday-*.jpeg` (lines 951–1000) — copy those too.
+- Slot→file mapping lives in `lib/mock-data/photos.ts` (built by cross-referencing `screenshots/*.png` in the design project). Activities screen uses direct `assets/act-*.jpeg` / `assets/birthday-*.jpeg` (lines 951–1000) - copy those too.
 
 ## Responsive / mobile
 
@@ -106,9 +106,9 @@ The design is one responsive layout (desktop-first) that reflows at phone width 
 - **Portal sidebar** (`portal-sidebar`): below 1024px auto-collapses to a slim **icon rail** (68px, still visible + navigable) via `useMediaQuery`; the expand/collapse toggle only shows on desktop.
 - **Topbar**: wraps on mobile; building switch + date hidden below `md`; search hidden below `sm`.
 - **Grids** stack (`max-md:grid-cols-1`, KPI rows `grid-cols-4 max-md:grid-cols-2`).
-- **Wide tables** (roster grid, meal-report, users, incidents, permission matrix) live in an `overflow-x-auto` wrapper with a `min-w-[…]` inner so they scroll internally — the page body never scrolls horizontally.
+- **Wide tables** (roster grid, meal-report, users, incidents, permission matrix) live in an `overflow-x-auto` wrapper with a `min-w-[…]` inner so they scroll internally - the page body never scrolls horizontally.
 
-The "Victoria - Mobile" design file is a canvas board rendering these same screens at 390px — no separate mobile screens.
+The "Victoria - Mobile" design file is a canvas board rendering these same screens at 390px - no separate mobile screens.
 
 ## Providers (root layout)
 

@@ -14,7 +14,7 @@ export function RoomCard({ room }: { room: Room }) {
       href={`/portal/rooms/${room.num}`}
       className="relative block overflow-hidden rounded-[14px] border border-line bg-cream-2 px-4 py-[15px] transition-all hover:border-line-strong hover:shadow-[0_8px_20px_-12px_rgba(0,0,0,0.18)]"
     >
-      {/* status left strip — dot bg class from the room-status scale */}
+      {/* status left strip - dot bg class from the room-status scale */}
       <span className={cn("absolute inset-y-0 left-0 w-1", meta.dot)} aria-hidden />
       <div className="flex items-start justify-between gap-2">
         <div>

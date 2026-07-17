@@ -2,22 +2,22 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Stand up the full Postgres/Supabase schema for the Wesley aged-care portal — tenancy, RBAC, care domain, operations, family portal — with soft-delete + audit columns and full RLS, all verified by pgTAP tests.
+**Goal:** Stand up the full Postgres/Supabase schema for the Wesley aged-care portal - tenancy, RBAC, care domain, operations, family portal - with soft-delete + audit columns and full RLS, all verified by pgTAP tests.
 
 **Architecture:** Single Postgres DB on Supabase, single shared schema, tenant isolation by row via `org_id` on every tenant-owned table (SaaS-ready seam). Migrations are plain SQL under `supabase/migrations/`, ordered so no forward references occur. Tests are pgTAP SQL under `supabase/tests/`, run by `supabase test db` against the local stack. RBAC uses Approach C: identity in JWT claims, fine-grained grants checked live by a `SECURITY DEFINER authorize()` function.
 
-**Tech Stack:** Supabase CLI (local stack via Docker), Postgres 15, pgTAP, SQL migrations. No app code changes in this plan — the `lib/mock-data/*` swap is a later phase.
+**Tech Stack:** Supabase CLI (local stack via Docker), Postgres 15, pgTAP, SQL migrations. No app code changes in this plan - the `lib/mock-data/*` swap is a later phase.
 
 **Source spec:** [`docs/superpowers/specs/2026-07-13-supabase-scalable-schema-design.md`](../specs/2026-07-13-supabase-scalable-schema-design.md)
 
 ## Global Constraints
 
-- **Repo git policy:** Do NOT create branches or run `git commit` unless the human explicitly asks. The `git commit` steps below mark the intended commit boundaries — stage the files and leave the actual commit to the human unless told otherwise.
+- **Repo git policy:** Do NOT create branches or run `git commit` unless the human explicitly asks. The `git commit` steps below mark the intended commit boundaries - stage the files and leave the actual commit to the human unless told otherwise.
 - **Postgres version:** 15 (Supabase default local stack).
 - **Every tenant-owned table** carries: `org_id uuid not null references organizations(id)` + audit columns `created_at`, `updated_at`, `created_by`, `updated_by`, `deleted_at`.
 - **PKs:** `uuid` via `gen_random_uuid()`. Human-readable identifiers are separate `slug`/`code` unique columns.
 - **Colors** are never stored except config rows (`shift_types`, `care_tiers`), which store a **semantic token** (e.g. `sage`, `gold`), never hex.
-- **`age` is never stored** — derived from `residents.dob`.
+- **`age` is never stored** - derived from `residents.dob`.
 - **Enums** (universal fixed sets): `permission_action`, `user_status`, `staff_role`, `room_status`, `severity`, `incident_status`, `meal_slot`, `intake_level`, `activity_category`.
 - **Lookup tables** (org-customizable): `wings`, `care_types`, `care_tiers`, `shift_types`, `roles`.
 - **Open questions resolved to defaults:** generic `audit_log` deferred; `staff` and `app_users` stay separate; no medication table; `super_admin` is org-bound.
@@ -129,7 +129,7 @@ rollback;
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pnpm db:test 2>&1 | grep 001_enums`
-Expected: FAIL — types/extensions do not exist yet.
+Expected: FAIL - types/extensions do not exist yet.
 
 - [ ] **Step 3: Write the migration**
 
@@ -173,7 +173,7 @@ git commit -m "feat: add postgres extensions and domain enum types"
 - Consumes: enums from Task 2 (`user_status`, `permission_action`).
 - Produces: tables `organizations`, `roles`, `care_tiers`, `care_types`, `app_users`, `buildings`, `wings`, `user_building_scopes`, `role_permissions`. Later tasks reference `organizations(id)`, `app_users(id)`, `buildings(id)`, `wings(id)`, `care_types(id)`, `care_tiers(id)`, `roles(id)`.
 
-**Note on ordering:** create in this order to avoid forward references — `organizations → roles → care_tiers → care_types → app_users → buildings → wings → user_building_scopes → role_permissions`. `care_tiers`/`care_types` live here (not in the care-domain task) because `wings.care_tier_id` depends on `care_tiers`.
+**Note on ordering:** create in this order to avoid forward references - `organizations → roles → care_tiers → care_types → app_users → buildings → wings → user_building_scopes → role_permissions`. `care_tiers`/`care_types` live here (not in the care-domain task) because `wings.care_tier_id` depends on `care_tiers`.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -191,7 +191,7 @@ select col_has_default('residents_placeholder_skip', 'id', 'skip')::text is not 
 select * from finish();
 rollback;
 ```
-Then replace the 7th assertion line with a real one (the placeholder above is only to keep the count honest — delete it and use this instead):
+Then replace the 7th assertion line with a real one (the placeholder above is only to keep the count honest - delete it and use this instead):
 ```sql
 select has_column('app_users', 'deleted_at', 'app_users has soft-delete column');
 ```
@@ -200,7 +200,7 @@ Final plan count stays `select plan(7);`.
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pnpm db:test 2>&1 | grep 002_identity`
-Expected: FAIL — tables do not exist.
+Expected: FAIL - tables do not exist.
 
 - [ ] **Step 3: Write the migration**
 
@@ -358,7 +358,7 @@ rollback;
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pnpm db:test 2>&1 | grep 003_care`
-Expected: FAIL — tables do not exist.
+Expected: FAIL - tables do not exist.
 
 - [ ] **Step 3: Write the migration**
 
@@ -474,7 +474,7 @@ rollback;
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pnpm db:test 2>&1 | grep 004_operations`
-Expected: FAIL — tables do not exist.
+Expected: FAIL - tables do not exist.
 
 - [ ] **Step 3: Write the migration**
 
@@ -703,7 +703,7 @@ rollback;
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pnpm db:test 2>&1 | grep 005_family`
-Expected: FAIL — tables do not exist.
+Expected: FAIL - tables do not exist.
 
 - [ ] **Step 3: Write the migration**
 
@@ -807,7 +807,7 @@ rollback;
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pnpm db:test 2>&1 | grep 006_functions`
-Expected: FAIL — functions do not exist.
+Expected: FAIL - functions do not exist.
 
 - [ ] **Step 3: Write the migration**
 
@@ -936,7 +936,7 @@ git commit -m "feat: add auth helpers, authorize function and updated_at trigger
 
 **Interfaces:**
 - Consumes: helper functions from Task 7; all tables.
-- Produces: RLS enabled + FORCE on every tenant table, with policies per spec §7. This is the security core — the test proves cross-tenant and cross-resident isolation actually holds.
+- Produces: RLS enabled + FORCE on every tenant table, with policies per spec §7. This is the security core - the test proves cross-tenant and cross-resident isolation actually holds.
 
 **Policy pattern per tenant table** (applied to all): tenant isolation `org_id = auth_org_id()` on every command; building-scoped tables also require `building_id = any(auth_building_ids()) or auth_role() in ('admin','super_admin')`; family tables require the resident be in the caller's `user_resident_scopes`; write commands additionally gate on `authorize(<module>, <action>)`.
 
@@ -990,7 +990,7 @@ $$;
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pnpm db:test 2>&1 | grep 007_rls`
-Expected: FAIL — RLS not enabled, org-A caller sees both residents.
+Expected: FAIL - RLS not enabled, org-A caller sees both residents.
 
 - [ ] **Step 3: Write the migration**
 
@@ -1104,7 +1104,7 @@ create policy residents_delete on public.residents for delete
 - [ ] **Step 4: Reset and run the isolation test**
 
 Run: `pnpm db:reset && pnpm db:test 2>&1 | grep 007_rls`
-Expected: PASS (3 assertions) — org-A caller sees exactly one resident, never Bob.
+Expected: PASS (3 assertions) - org-A caller sees exactly one resident, never Bob.
 
 - [ ] **Step 5: Add a family-scope negative test**
 
@@ -1144,7 +1144,7 @@ rollback;
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pnpm db:test 2>&1 | grep 008_views`
-Expected: FAIL — views do not exist.
+Expected: FAIL - views do not exist.
 
 - [ ] **Step 3: Write the migration**
 
@@ -1156,7 +1156,7 @@ create view rooms_live     as select * from rooms     where deleted_at is null;
 create view staff_live     as select * from staff     where deleted_at is null;
 create view incidents_live as select * from incidents where deleted_at is null;
 
--- Derived: stock status (In stock / Low / Reorder) from qty vs par — never stored.
+-- Derived: stock status (In stock / Low / Reorder) from qty vs par - never stored.
 create view stock_status as
 select sl.id, sl.org_id, sl.building_id, sl.product_id, p.name, p.par, sl.qty_now,
        case
@@ -1169,7 +1169,7 @@ from stock_levels sl
 join products p on p.id = sl.product_id
 where sl.deleted_at is null;
 
--- Derived: building occupancy (filled/total) from rooms — replaces denormalized counts.
+-- Derived: building occupancy (filled/total) from rooms - replaces denormalized counts.
 create view building_occupancy as
 select b.id as building_id, b.org_id, b.name,
        count(*) filter (where r.status = 'occupied') as filled,
@@ -1221,7 +1221,7 @@ rollback;
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pnpm db:test 2>&1 | grep 009_seed`
-Expected: FAIL — no seed data.
+Expected: FAIL - no seed data.
 
 - [ ] **Step 3: Write the index migration**
 
@@ -1306,7 +1306,7 @@ Expected: PASS (3 assertions).
 - [ ] **Step 6: Run the whole suite**
 
 Run: `pnpm db:test`
-Expected: all test files pass — `All tests successful.`
+Expected: all test files pass - `All tests successful.`
 
 - [ ] **Step 7: Commit**
 
@@ -1327,7 +1327,7 @@ git commit -m "feat: add performance indexes and seed data"
 
 - [ ] **Step 1: Update the mapping section**
 
-In `docs/03-data-model.md`, replace the "Future Supabase mapping (deferred — not this phase)" heading with "Supabase schema (implemented)" and add a line under it:
+In `docs/03-data-model.md`, replace the "Future Supabase mapping (deferred - not this phase)" heading with "Supabase schema (implemented)" and add a line under it:
 ```markdown
 Implemented in `supabase/migrations/000001`–`000009`. See the design spec at
 `docs/superpowers/specs/2026-07-13-supabase-scalable-schema-design.md` and the
@@ -1357,11 +1357,11 @@ git commit -m "docs: mark supabase schema as implemented"
 - §8 scaling (indexes, derived aggregates) → Task 10 indexes + Task 9 views; partitioning documented as deferred in spec. ✓
 - §9 migration sequence → Tasks 2–10 map 1:1 to migrations 000001–000009. ✓
 
-**Placeholder scan:** The only intentional deferral is the write-policy table→module map in Task 8 Step 3, which gives the exact 3-policy shape + the complete table→module mapping to expand — not a vague "add policies". Acceptable; an executor has everything needed. No `TBD`/`TODO`/"handle edge cases".
+**Placeholder scan:** The only intentional deferral is the write-policy table→module map in Task 8 Step 3, which gives the exact 3-policy shape + the complete table→module mapping to expand - not a vague "add policies". Acceptable; an executor has everything needed. No `TBD`/`TODO`/"handle edge cases".
 
 **Type consistency:** Helper signatures declared in Task 7 (`auth_org_id`, `auth_uid`, `auth_role`, `auth_building_ids`, `authorize(text, permission_action)`) are used verbatim in Task 8 policies. Enum names match between Task 2 and all consumers. `org_id`/`building_id`/`resident_id` FK names consistent across tables.
 
 **Known executor watch-points:**
-- Postgres ORs multiple permissive `SELECT` policies. Task 8 handles this by dropping the generic `tenant_select` before adding the narrower building/resident policy — do not leave both on the same table, or the narrow one is defeated.
+- Postgres ORs multiple permissive `SELECT` policies. Task 8 handles this by dropping the generic `tenant_select` before adding the narrower building/resident policy - do not leave both on the same table, or the narrow one is defeated.
 - `order_lines` and `meal_service_items` have no `org_id`; their write policies must gate via the parent row (noted in Task 8).
 - The access-token hook requires the `[auth.hook.custom_access_token]` config block (Task 7 Step 5) or claims won't be populated and every RLS check fails closed.

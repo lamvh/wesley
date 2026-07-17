@@ -19,7 +19,7 @@ export interface CurrentUser {
   appUser: AppUserRecord | null;
   /**
    * Whether the app_users lookup actually ran. false = the table/infra isn't
-   * available yet (pre-migration) or the query errored — callers should fail
+   * available yet (pre-migration) or the query errored - callers should fail
    * OPEN in that case so the portal isn't bricked before the schema is applied.
    */
   provisioningReady: boolean;
@@ -42,7 +42,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
       .maybeSingle();
 
     if (error) {
-      // Table missing (pre-migration) or transient — fail open, don't lock out.
+      // Table missing (pre-migration) or transient - fail open, don't lock out.
       return {
         authId: user.id,
         email: user.email ?? "",
@@ -58,7 +58,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
       provisioningReady: true,
     };
   } catch {
-    // Never let an auth/network error crash the portal — fail open.
+    // Never let an auth/network error crash the portal - fail open.
     return null;
   }
 }

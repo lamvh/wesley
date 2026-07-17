@@ -7,7 +7,7 @@ import { ConfirmDeleteModal } from "@/components/portal/stock/confirm-delete-mod
 import { deleteMovement } from "@/lib/actions/stock";
 import type { Product, Provider, StockMovement } from "@/types/domain";
 
-// Stock in/out tab: 3 rolling-7-day KPIs, then a two-column grid — the
+// Stock in/out tab: 3 rolling-7-day KPIs, then a two-column grid - the
 // global movement log (left) and the record-movement panel (right). Deletes
 // go through the same confirm modal StockView uses for products/providers.
 
@@ -47,7 +47,7 @@ export function MovementsTab({
   products: Product[];
   providers: Provider[];
 }) {
-  // Bumped after a successful record — remounts the panel so its local
+  // Bumped after a successful record - remounts the panel so its local
   // state (direction, dest rows, uncontrolled fields) starts fresh.
   const [panelKey, setPanelKey] = useState(0);
   const [confirmDelete, setConfirmDelete] = useState<{ label: string; onConfirm: () => void } | null>(null);

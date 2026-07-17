@@ -14,7 +14,7 @@ export default function HomePage() {
       <WelcomeSection />
       <CareLevelsSection />
 
-      {/* Life at Wesley — centered header + 3×2 feature grid */}
+      {/* Life at Wesley - centered header + 3×2 feature grid */}
       <section className="mx-auto max-w-[1200px] px-7 py-[86px]">
         <div className="mx-auto max-w-[620px] text-center">
           <div className="text-[13px] font-bold uppercase tracking-[2px] text-bronze-text">

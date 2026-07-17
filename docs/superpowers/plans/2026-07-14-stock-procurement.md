@@ -1,8 +1,8 @@
-# Stock & procurement — Implementation Plan
+# Stock & procurement - Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rebuild the `/portal/stock` screen to match the new design and persist everything in Supabase — editable inventory, a Stock in/out movement ledger that mutates on-hand, provider CRUD, and real purchase orders.
+**Goal:** Rebuild the `/portal/stock` screen to match the new design and persist everything in Supabase - editable inventory, a Stock in/out movement ledger that mutates on-hand, provider CRUD, and real purchase orders.
 
 **Architecture:** Follows the residents pattern exactly: a `tsx` script applies the DDL migration + seeds; an async data layer (`src/lib/data/stock.ts`) reads under RLS; server actions (`src/lib/actions/stock.ts`) write under RLS; the RSC page awaits the data and hands it to the `StockView` client island. On-hand lives in `stock_levels.qty_now`; movements mutate it via an atomic Postgres RPC.
 
@@ -12,12 +12,12 @@
 
 ## Global Constraints
 
-- **Git (user rule):** do NOT create branches or commit unless the user explicitly asks. The `Commit` steps below are checkpoints — leave changes as uncommitted working-tree edits unless told otherwise.
+- **Git (user rule):** do NOT create branches or commit unless the user explicitly asks. The `Commit` steps below are checkpoints - leave changes as uncommitted working-tree edits unless told otherwise.
 - **No test framework in this repo.** "Tests" are `tsx` verify scripts under `scripts/db/` (sign in as owner → exercise RLS ops → assert), plus `npx tsc --noEmit`, `npm run lint`, `npm run build`. Do not add jest/vitest.
-- **Follow the residents pattern verbatim** — `scripts/db/seed-core-schema.mts` (migrate+seed), `scripts/db/verify-residents-write.mts` (RLS verify), `src/lib/data/residents.ts` (accessors), `src/lib/actions/residents.ts` (actions).
+- **Follow the residents pattern verbatim** - `scripts/db/seed-core-schema.mts` (migrate+seed), `scripts/db/verify-residents-write.mts` (RLS verify), `src/lib/data/residents.ts` (accessors), `src/lib/actions/residents.ts` (actions).
 - **Building scope:** `building_id = 'wesley'` constant, like residents.
 - **RLS posture:** `<table>_read` = `for select to authenticated using (true)`; `<table>_write` = `for all to authenticated using (true) with check (true)`.
-- **No plan/phase references in code, comments, or migration filenames** — explain the *why*, not the origin.
+- **No plan/phase references in code, comments, or migration filenames** - explain the *why*, not the origin.
 - **File size:** keep component/module files focused (< ~200 lines); split when a file does too much.
 - **Design fidelity:** exact tokens/labels from the spec §2/§5 and design-meta. Direction colours: IN `text-sage`/`bg-sage-tint`, OUT `text-rust`/`bg-rust-tint`.
 
@@ -26,29 +26,29 @@
 ## File Structure
 
 **Create:**
-- `supabase/migrations/0002_stock_procurement.sql` — 6 tables + RLS + `record_stock_movement`/`delete_stock_movement` RPCs
-- `scripts/db/seed-stock.mts` — apply migration + seed from `stock-catalog.ts`
-- `scripts/db/verify-stock-read.mts` — RLS read verify
-- `scripts/db/verify-stock-write.mts` — RLS write + RPC + reversal verify
-- `src/lib/data/stock.ts` — async accessors
-- `src/lib/actions/stock.ts` — server actions
-- `src/components/portal/stock/movements-tab.tsx` — NEW Stock in/out tab
-- `src/components/portal/stock/record-movement-panel.tsx` — record IN/OUT form
-- `src/components/portal/stock/movement-log.tsx` — movement table
-- `src/components/portal/stock/item-history-modal.tsx` — per-item In/out history
-- `src/components/portal/stock/stock-item-form.tsx` — add/edit product modal
-- `src/components/portal/stock/provider-form.tsx` — add/edit provider modal
-- `src/components/portal/stock/confirm-delete-modal.tsx` — shared confirm delete
+- `supabase/migrations/0002_stock_procurement.sql` - 6 tables + RLS + `record_stock_movement`/`delete_stock_movement` RPCs
+- `scripts/db/seed-stock.mts` - apply migration + seed from `stock-catalog.ts`
+- `scripts/db/verify-stock-read.mts` - RLS read verify
+- `scripts/db/verify-stock-write.mts` - RLS write + RPC + reversal verify
+- `src/lib/data/stock.ts` - async accessors
+- `src/lib/actions/stock.ts` - server actions
+- `src/components/portal/stock/movements-tab.tsx` - NEW Stock in/out tab
+- `src/components/portal/stock/record-movement-panel.tsx` - record IN/OUT form
+- `src/components/portal/stock/movement-log.tsx` - movement table
+- `src/components/portal/stock/item-history-modal.tsx` - per-item In/out history
+- `src/components/portal/stock/stock-item-form.tsx` - add/edit product modal
+- `src/components/portal/stock/provider-form.tsx` - add/edit provider modal
+- `src/components/portal/stock/confirm-delete-modal.tsx` - shared confirm delete
 
 **Modify:**
-- `src/types/domain.ts` — add `StockMovement`, `Order`, `MovementDir`; remove `StockActivityEntry`, `StockActionKind`
-- `src/app/portal/stock/page.tsx` — RSC awaits data, passes to `StockView`
-- `src/components/portal/stock/stock-view.tsx` — tabs (drop `activity`, add `movements`), wire actions
-- `src/components/portal/stock/inventory-tab.tsx` — editable rebuild
-- `src/components/portal/stock/order-tab.tsx` — persist Place order
-- `src/components/portal/stock/providers-tab.tsx` — add edit/delete
-- `docs/03-data-model.md` — stock section → live
-- `docs/features/portal/stock-supplies.md` — reflect new tabs/behaviour
+- `src/types/domain.ts` - add `StockMovement`, `Order`, `MovementDir`; remove `StockActivityEntry`, `StockActionKind`
+- `src/app/portal/stock/page.tsx` - RSC awaits data, passes to `StockView`
+- `src/components/portal/stock/stock-view.tsx` - tabs (drop `activity`, add `movements`), wire actions
+- `src/components/portal/stock/inventory-tab.tsx` - editable rebuild
+- `src/components/portal/stock/order-tab.tsx` - persist Place order
+- `src/components/portal/stock/providers-tab.tsx` - add edit/delete
+- `docs/03-data-model.md` - stock section → live
+- `docs/features/portal/stock-supplies.md` - reflect new tabs/behaviour
 
 **Delete:**
 - `src/components/portal/stock/stock-activity-tab.tsx`
@@ -294,7 +294,7 @@ async function main() {
 main().catch((e) => { console.error(e); process.exit(1); });
 ```
 
-- [ ] **Step 3: Run the seed (this is the test — it applies DDL then verifies row counts)**
+- [ ] **Step 3: Run the seed (this is the test - it applies DDL then verifies row counts)**
 
 Run: `npx tsx scripts/db/seed-stock.mts`
 Expected: `Schema applied.` then a table showing `providers 4, products 12, stock_levels 12, stock_movements 2`, then `Done.`
@@ -324,7 +324,7 @@ git commit -m "feat(stock): add procurement schema, movement RPCs and seed"
 ## Task 2: Domain types + data layer
 
 **Files:**
-- Modify: `src/types/domain.ts` (add stock types; leave `StockActivityEntry`/`StockActionKind` for now — removed in Task 9 with the component)
+- Modify: `src/types/domain.ts` (add stock types; leave `StockActivityEntry`/`StockActionKind` for now - removed in Task 9 with the component)
 - Create: `src/lib/data/stock.ts`
 - Create: `scripts/db/verify-stock-read.mts`
 - Read for context: `src/lib/data/residents.ts`, `scripts/db/verify-residents-write.mts`
@@ -484,7 +484,7 @@ async function main() {
   }
   const { data } = await sb.from("products").select("id,par,stock_levels(qty_now)").limit(1);
   console.log("✓ product+level join ok:", JSON.stringify(data?.[0]));
-  console.log("✓ PASS — stock reads work under RLS");
+  console.log("✓ PASS - stock reads work under RLS");
 }
 main().catch((e) => { console.error(e.message ?? e); process.exit(1); });
 ```
@@ -515,7 +515,7 @@ git commit -m "feat(stock): add stock domain types and Supabase data layer"
 - Read for context: `src/lib/actions/residents.ts`
 
 **Interfaces:**
-- Produces: `saveProduct(prev, fd)`, `deleteProduct(fd)`, `saveProvider(prev, fd)`, `deleteProvider(fd)`, `recordMovement(prev, fd)`, `deleteMovement(fd)`, `placeOrder(fd)` — all `"use server"`, `revalidatePath("/portal/stock")`.
+- Produces: `saveProduct(prev, fd)`, `deleteProduct(fd)`, `saveProvider(prev, fd)`, `deleteProvider(fd)`, `recordMovement(prev, fd)`, `deleteMovement(fd)`, `placeOrder(fd)` - all `"use server"`, `revalidatePath("/portal/stock")`.
 - Form state shape: `interface StockFormState { error?: string }`.
 
 - [ ] **Step 1: Write `src/lib/actions/stock.ts`**
@@ -697,7 +697,7 @@ async function main() {
   await sb.from("stock_movements").delete().eq("product_id", P);
   await sb.from("stock_levels").delete().eq("product_id", P);
   await sb.from("products").delete().eq("id", P);
-  console.log("✓ PASS — RPC in/out, reversal, cleanup all work under RLS");
+  console.log("✓ PASS - RPC in/out, reversal, cleanup all work under RLS");
 }
 main().catch((e) => { console.error(e.message ?? e); process.exit(1); });
 ```
@@ -779,13 +779,13 @@ git commit -m "feat(stock): load stock screen from Supabase, add movements tab s
 - Consumes: `products: Product[]`, actions `saveProduct`/`deleteProduct`, `getMovementsForProduct` (via a server action or passed history), `stockLevel()` from `design-meta`.
 - Produces: KPIs (Items tracked / Low stock / Reorder now / On order), search (`stockQuery`), category chips (`stockCatFilter`), low-only toggle, rows with history/edit/delete.
 
-- [ ] **Step 1: Build `confirm-delete-modal.tsx`** — a controlled modal: props `{ open, label, body?, onCancel, onConfirm }`; overlay `bg-[rgba(30,34,52,.48)]`, sheet `bg-cream`, `Remove {label}?` heading, Cancel + Remove (`text-rust`/`bg-rust`) buttons. (~40 lines.)
+- [ ] **Step 1: Build `confirm-delete-modal.tsx`** - a controlled modal: props `{ open, label, body?, onCancel, onConfirm }`; overlay `bg-[rgba(30,34,52,.48)]`, sheet `bg-cream`, `Remove {label}?` heading, Cancel + Remove (`text-rust`/`bg-rust`) buttons. (~40 lines.)
 
-- [ ] **Step 2: Build `stock-item-form.tsx`** — modal form using `useActionState(saveProduct, {})`; hidden `id` (edit), fields: name, category `<select>` (Clinical & PPE / Continence / Housekeeping / Kitchen & Nutrition / Other), unit, par (number), qty (number), provider `<select>` (from `providers`), price (number). Submit button "Add item"/"Save changes"; shows `state.error`. On success the action `revalidatePath`s; close via an `onClose` passed from `StockView`. (~90 lines.)
+- [ ] **Step 2: Build `stock-item-form.tsx`** - modal form using `useActionState(saveProduct, {})`; hidden `id` (edit), fields: name, category `<select>` (Clinical & PPE / Continence / Housekeeping / Kitchen & Nutrition / Other), unit, par (number), qty (number), provider `<select>` (from `providers`), price (number). Submit button "Add item"/"Save changes"; shows `state.error`. On success the action `revalidatePath`s; close via an `onClose` passed from `StockView`. (~90 lines.)
 
-- [ ] **Step 3: Build `item-history-modal.tsx`** — props `{ open, product, moves, onClose }`; header title = product name + "In/out history"; two tiles Total received `+Σin` (`text-sage`/`bg-sage-tint`) and Total issued `−Σout` (`text-rust`/`bg-rust-tint`); rows Date | Move `±qty` | Details | On hand; empty state "No stock in or out recorded for this item yet." `moves` is fetched by a thin server action `getItemHistory(productId)` wrapping `getMovementsForProduct`. (~80 lines.)
+- [ ] **Step 3: Build `item-history-modal.tsx`** - props `{ open, product, moves, onClose }`; header title = product name + "In/out history"; two tiles Total received `+Σin` (`text-sage`/`bg-sage-tint`) and Total issued `−Σout` (`text-rust`/`bg-rust-tint`); rows Date | Move `±qty` | Details | On hand; empty state "No stock in or out recorded for this item yet." `moves` is fetched by a thin server action `getItemHistory(productId)` wrapping `getMovementsForProduct`. (~80 lines.)
 
-- [ ] **Step 4: Rebuild `inventory-tab.tsx`** — KPIs from `products` (Items tracked = length; Low stock = `qtyNow < par`; Reorder now = `qtyNow < par*0.5`; On order = count of `orders.status==='placed'` lines or static "—"); search input filtering `name+provider`; category chips (`All` + present categories); "Low stock only" toggle; result count; rows: status dot/name+`Par {par} {unit} · {providerName} · ${price}`/progress bar (`stockLevel(qtyNow,par).pct`)/`{qtyNow} {unit}`/status pill/actions (history → `onHistory(id)`, edit → `onEdit(product)`, delete → `onDelete(product)`). Header `+ Add item` opens the form with a blank product. (~150 lines — split the KPI row into a small `stat-tile` reuse if it grows.)
+- [ ] **Step 4: Rebuild `inventory-tab.tsx`** - KPIs from `products` (Items tracked = length; Low stock = `qtyNow < par`; Reorder now = `qtyNow < par*0.5`; On order = count of `orders.status==='placed'` lines or static "-"); search input filtering `name+provider`; category chips (`All` + present categories); "Low stock only" toggle; result count; rows: status dot/name+`Par {par} {unit} · {providerName} · ${price}`/progress bar (`stockLevel(qtyNow,par).pct`)/`{qtyNow} {unit}`/status pill/actions (history → `onHistory(id)`, edit → `onEdit(product)`, delete → `onDelete(product)`). Header `+ Add item` opens the form with a blank product. (~150 lines - split the KPI row into a small `stat-tile` reuse if it grows.)
 
 - [ ] **Step 5: Add `getItemHistory` server action** in `src/lib/actions/stock.ts`:
 
@@ -822,11 +822,11 @@ git commit -m "feat(stock): editable inventory tab with item form and history mo
 - Consumes: `movements: StockMovement[]`, `products`, `providers`, actions `recordMovement`/`deleteMovement`.
 - Produces: `MovementsTab` rendered when `tab==="movements"`.
 
-- [ ] **Step 1: Build `movement-log.tsx`** — table grid `104px 1.4fr 78px 1.9fr 92px 44px` → Date | Item | Move | Details | On hand | (delete). Per row: date + actor sub; item; pill `{dir==='in'?'+':'−'}{qty} {unit}` coloured IN `text-sage`/`bg-sage-tint` / OUT `text-rust`/`bg-rust-tint`; details (IN → provider name; OUT → rooms/persons + "→ {receiver}"), note sub if present; `afterQty {unit}`; delete button → `onDelete(id)`. Empty: "No movements yet. Record a stock in or stock out to start the log." (~90 lines.)
+- [ ] **Step 1: Build `movement-log.tsx`** - table grid `104px 1.4fr 78px 1.9fr 92px 44px` → Date | Item | Move | Details | On hand | (delete). Per row: date + actor sub; item; pill `{dir==='in'?'+':'−'}{qty} {unit}` coloured IN `text-sage`/`bg-sage-tint` / OUT `text-rust`/`bg-rust-tint`; details (IN → provider name; OUT → rooms/persons + "→ {receiver}"), note sub if present; `afterQty {unit}`; delete button → `onDelete(id)`. Empty: "No movements yet. Record a stock in or stock out to start the log." (~90 lines.)
 
-- [ ] **Step 2: Build `record-movement-panel.tsx`** — sticky dark panel; `useActionState(recordMovement, {})`; direction segmented toggle (`in`/`out`, hidden input `dir`); item `<select>` (products); date input; **IN block** (qty, provider `<select>`, unit price); **OUT block** (repeatable dest rows room `<select>`/person input/qty input with add/remove — serialised to a hidden `dests` JSON input; received-by input); note input; submit `Record stock in`/`Record stock out`. Uses local React state for the dest rows + direction, writes them into hidden inputs on submit. (~150 lines — if it exceeds, split the dest-rows editor into `dest-rows.tsx`.)
+- [ ] **Step 2: Build `record-movement-panel.tsx`** - sticky dark panel; `useActionState(recordMovement, {})`; direction segmented toggle (`in`/`out`, hidden input `dir`); item `<select>` (products); date input; **IN block** (qty, provider `<select>`, unit price); **OUT block** (repeatable dest rows room `<select>`/person input/qty input with add/remove - serialised to a hidden `dests` JSON input; received-by input); note input; submit `Record stock in`/`Record stock out`. Uses local React state for the dest rows + direction, writes them into hidden inputs on submit. (~150 lines - if it exceeds, split the dest-rows editor into `dest-rows.tsx`.)
 
-- [ ] **Step 3: Build `movements-tab.tsx`** — KPI row (3 cards, default labels **Stock in (7d) / Stock out (7d) / Net (7d)** computed from `movements` filtered to last 7 days) + two-column grid `1fr 372px`: `<MovementLog/>` left, `<RecordMovementPanel/>` right. Pass `onDelete` → confirm modal → `deleteMovement`. (~70 lines.)
+- [ ] **Step 3: Build `movements-tab.tsx`** - KPI row (3 cards, default labels **Stock in (7d) / Stock out (7d) / Net (7d)** computed from `movements` filtered to last 7 days) + two-column grid `1fr 372px`: `<MovementLog/>` left, `<RecordMovementPanel/>` right. Pass `onDelete` → confirm modal → `deleteMovement`. (~70 lines.)
 
 - [ ] **Step 4: Typecheck, lint, build + manual**
 
@@ -853,9 +853,9 @@ git commit -m "feat(stock): add Stock in/out movement ledger tab"
 - Consumes: `providers`, actions `saveProvider`/`deleteProvider`.
 - Produces: provider cards with Edit/Delete + `New order` (switches to order tab); add via header `+ Add provider`.
 
-- [ ] **Step 1: Build `provider-form.tsx`** — modal, `useActionState(saveProvider, {})`; hidden `id`; fields: name, category `<select>`, status segmented Preferred/Approved (hidden `preferred` = "true"/"false"), contact email, phone, lead time, terms. Submit "Add provider"/"Save changes". (~90 lines.)
+- [ ] **Step 1: Build `provider-form.tsx`** - modal, `useActionState(saveProvider, {})`; hidden `id`; fields: name, category `<select>`, status segmented Preferred/Approved (hidden `preferred` = "true"/"false"), contact email, phone, lead time, terms. Submit "Add provider"/"Save changes". (~90 lines.)
 
-- [ ] **Step 2: Add edit/delete to `providers-tab.tsx`** — on each card add pencil (`onEdit(provider)`) + trash (`onDelete(provider)`) icon buttons (tokens: edit navy, delete `text-rust`). Header `+ Add provider` opens blank form. Keep the existing `New order from {name}` button. Counts header `{n} approved suppliers · {m} preferred`.
+- [ ] **Step 2: Add edit/delete to `providers-tab.tsx`** - on each card add pencil (`onEdit(provider)`) + trash (`onDelete(provider)`) icon buttons (tokens: edit navy, delete `text-rust`). Header `+ Add provider` opens blank form. Keep the existing `New order from {name}` button. Counts header `{n} approved suppliers · {m} preferred`.
 
 - [ ] **Step 3: Typecheck, lint, build + manual**
 
@@ -882,7 +882,7 @@ git commit -m "feat(stock): provider add/edit/delete"
 - Consumes: `products`, `providers`, `placeOrder(fd)`.
 - Produces: Place order posts the client cart as JSON to `placeOrder`; on success shows the "Order sent" state and clears the cart.
 
-- [ ] **Step 1: Wire `placeOrder`** — in `StockView`, replace the mock `placeOrder` state handler with a call that builds a `FormData` (`cart` = JSON of `{productId: qty}`) and invokes the `placeOrder` server action, then clears the cart and sets `orderPlaced`. Keep the client cart/stepper UX from the current `order-tab.tsx`; the auto-fill reorder derives from `products` (`par - qtyNow > 0`).
+- [ ] **Step 1: Wire `placeOrder`** - in `StockView`, replace the mock `placeOrder` state handler with a call that builds a `FormData` (`cart` = JSON of `{productId: qty}`) and invokes the `placeOrder` server action, then clears the cart and sets `orderPlaced`. Keep the client cart/stepper UX from the current `order-tab.tsx`; the auto-fill reorder derives from `products` (`par - qtyNow > 0`).
 
 - [ ] **Step 2: Typecheck, lint, build + manual**
 
@@ -946,11 +946,11 @@ git commit -m "refactor(stock): remove activity log, sync docs to procurement de
 - §7 decisions: unify seeds (Task 1 single `products`), building scope (constant), OUT text/jsonb (schema), moveKpis default labels (Task 6), atomic RPC (Task 1), remove Activity (Task 9). ✓
 - §9 DoD (migration applied+seeded, tabs render from Supabase, reversal, gates, docs) → Tasks 1–9. ✓
 
-**Placeholder scan:** Backend tasks (1–3) carry complete code + runnable verifies. Frontend tasks (5–8) specify exact props, fields, tokens, labels, and layout grids with per-component line budgets rather than full literal JSX — the components are close adaptations of existing files (`resident-form`, `order-tab`, `providers-tab`) named for context. Acceptable per "follow established patterns"; no `TBD`/"handle edge cases"/"similar to Task N".
+**Placeholder scan:** Backend tasks (1–3) carry complete code + runnable verifies. Frontend tasks (5–8) specify exact props, fields, tokens, labels, and layout grids with per-component line budgets rather than full literal JSX - the components are close adaptations of existing files (`resident-form`, `order-tab`, `providers-tab`) named for context. Acceptable per "follow established patterns"; no `TBD`/"handle edge cases"/"similar to Task N".
 
 **Type consistency:** `StockMovement`/`Order`/`MovementDir` defined in Task 2 and consumed unchanged in Tasks 3–8; action names (`saveProduct`, `deleteProduct`, `saveProvider`, `deleteProvider`, `recordMovement`, `deleteMovement`, `placeOrder`, `getItemHistory`) are stable across the plan; RPC arg names match between the migration, `verify-stock-write`, and `recordMovement`.
 
 ## Open items carried from the spec
-1. `moveKpis` labels — using **Stock in / Stock out / Net (7d)** (§7.4); confirm against a complete design file if it becomes available.
-2. `On order` inventory KPI — computed from placed orders vs a static "—"; confirm preference.
-3. Order-history UI — none this pass (persist-only).
+1. `moveKpis` labels - using **Stock in / Stock out / Net (7d)** (§7.4); confirm against a complete design file if it becomes available.
+2. `On order` inventory KPI - computed from placed orders vs a static "-"; confirm preference.
+3. Order-history UI - none this pass (persist-only).

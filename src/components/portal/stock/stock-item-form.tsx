@@ -56,7 +56,7 @@ function Field({
 }
 
 // Add/edit item modal. The parent conditionally mounts this component (no
-// internal `open` flag needed — mounting fresh each time resets both the
+// internal `open` flag needed - mounting fresh each time resets both the
 // form's default values and the useActionState result for the new item).
 export function StockItemForm({
   product,
@@ -71,7 +71,7 @@ export function StockItemForm({
   const wasPending = useRef(false);
   const editing = Boolean(product);
 
-  // Once a submit finishes without an error, the item is saved — close.
+  // Once a submit finishes without an error, the item is saved - close.
   useEffect(() => {
     if (wasPending.current && !pending && !state.error) {
       onClose();

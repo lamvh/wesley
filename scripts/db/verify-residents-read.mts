@@ -33,7 +33,7 @@ async function main() {
   if (error) throw new Error(`residents read failed: ${error.message}`);
 
   console.log(`✓ residents read under session: ${data.length} rows`);
-  for (const r of data.slice(0, 3)) console.log(`   · ${r.name} — ${r.wing} · ${r.care_type}`);
+  for (const r of data.slice(0, 3)) console.log(`   · ${r.name} - ${r.wing} · ${r.care_type}`);
   console.log(data.length === 9 ? "✓ PASS (9 seeded residents)" : `⚠ expected 9, got ${data.length}`);
 }
 main().catch((e) => {

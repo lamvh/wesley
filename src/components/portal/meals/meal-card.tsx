@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import type { MealService } from "@/types/domain";
 
 // Per-meal header wash + eyebrow colour (breakfast amber, lunch sage/navy,
-// dinner terracotta families). Presentation only — keyed off the service name.
+// dinner terracotta families). Presentation only - keyed off the service name.
 const headStyle: Record<
   MealService["meal"],
   { head: string; eyebrow: string }

@@ -12,7 +12,7 @@ const catalog: Product[] = [
   { id: "p2", name: "Surgical masks", cat: "Clinical & PPE", unit: "box of 50", price: 9.0, prov: "medsupply", par: 30, qtyNow: 26 },
   { id: "p3", name: "Wound dressings", cat: "Clinical & PPE", unit: "pack of 10", price: 18.0, prov: "medsupply", par: 40, qtyNow: 48 },
   { id: "p4", name: "Hand sanitiser 500ml", cat: "Clinical & PPE", unit: "each", price: 6.5, prov: "medsupply", par: 24, qtyNow: 9 },
-  { id: "p5", name: "Briefs — large", cat: "Continence", unit: "pack of 20", price: 22.0, prov: "carewell", par: 30, qtyNow: 12 },
+  { id: "p5", name: "Briefs - large", cat: "Continence", unit: "pack of 20", price: 22.0, prov: "carewell", par: 30, qtyNow: 12 },
   { id: "p6", name: "Bed pads", cat: "Continence", unit: "pack of 25", price: 15.0, prov: "carewell", par: 50, qtyNow: 55 },
   { id: "p7", name: "Wipes", cat: "Continence", unit: "pack of 80", price: 4.5, prov: "carewell", par: 30, qtyNow: 34 },
   { id: "p8", name: "Thickener", cat: "Kitchen & Nutrition", unit: "tin", price: 11.0, prov: "freshfields", par: 20, qtyNow: 7 },

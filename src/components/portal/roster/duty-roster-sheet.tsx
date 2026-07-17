@@ -18,7 +18,7 @@ function DutyColumn({ rows, divider }: { rows: DutyRow[]; divider?: boolean }) {
   return (
     <div className={divider ? "border-l-[1.5px] border-duty-rule pl-7" : "pr-7"}>
       {rows.length === 0 ? (
-        <div className="text-[14px] text-duty-empty">—</div>
+        <div className="text-[14px] text-duty-empty">-</div>
       ) : (
         rows.map((r, i) => <DutyLine key={`${r.time}-${r.name}-${i}`} time={r.time} name={r.name} />)
       )}
@@ -28,7 +28,7 @@ function DutyColumn({ rows, divider }: { rows: DutyRow[]; divider?: boolean }) {
 
 // Centred section header: a hairline rule flanks the label on both sides so every
 // band reads the same way down the sheet. Label colour is uniform (bronze) rather
-// than the band's roster colour — the print document stays monochrome-calm.
+// than the band's roster colour - the print document stays monochrome-calm.
 function SectionRule({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-4">
@@ -50,7 +50,7 @@ function DutyMeta({ label, value }: { label: string; value: string }) {
       </span>
       <span className="h-px flex-1 bg-duty-rule" />
       <span className="text-[15.5px] font-semibold tracking-[0.4px] text-ink">
-        {value || "—"}
+        {value || "-"}
       </span>
     </div>
   );
@@ -59,7 +59,7 @@ function DutyMeta({ label, value }: { label: string; value: string }) {
 // A single A4 duty sheet (794×1123px on screen, forced to 210×296mm on print).
 // A clean names + times document grouped by role band and split into two
 // per-building columns (Wesley left, The Lodge right) by the building each shift
-// belongs to — no shift colours here, unlike the grid. Chrome: navy + gold header
+// belongs to - no shift colours here, unlike the grid. Chrome: navy + gold header
 // rule, italic date subtitle, a boxed building header row, centred band headers.
 export function DutyRosterSheet({ sheet }: { sheet: DutySheet }) {
   return (
@@ -81,7 +81,7 @@ export function DutyRosterSheet({ sheet }: { sheet: DutySheet }) {
         </div>
       </div>
 
-      {/* Building column header — Wesley | The Lodge, ruled top and bottom. */}
+      {/* Building column header - Wesley | The Lodge, ruled top and bottom. */}
       <div className="mt-[30px] grid grid-cols-2 border-y-2 border-navy-deep py-[13px]">
         <div className="text-center text-[19px] font-bold uppercase tracking-[6px] text-navy-deep">
           Wesley

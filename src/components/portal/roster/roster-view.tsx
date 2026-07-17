@@ -109,7 +109,7 @@ export function RosterView({
   const gotoWeek = (delta: number) =>
     router.push(`/portal/roster?week=${shiftWeek(weekStartISO, delta)}`);
 
-  // key is `${staffId}::${dateISO}` — split back out for the server action.
+  // key is `${staffId}::${dateISO}` - split back out for the server action.
   const cellParts = (key: string) => {
     const i = key.indexOf("::");
     return { staffId: key.slice(0, i), dateISO: key.slice(i + 2) };
@@ -193,7 +193,7 @@ export function RosterView({
 
       {staff.length === 0 ? (
         <div className="mt-4 rounded-[16px] border border-dashed border-line-strong bg-cream-2 px-6 py-[40px] text-center text-[14px] text-ink-muted">
-          No staff yet — add team members in Staff to roster them here.
+          No staff yet - add team members in Staff to roster them here.
         </div>
       ) : (
         <RosterGrid

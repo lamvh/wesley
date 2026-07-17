@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 // Shared loading placeholders for portal route segments (rendered from each
 // route's loading.tsx as the Suspense fallback). Same visual language as
-// DashboardSkeleton — a pulsing rounded block on the line tint — so every
+// DashboardSkeleton - a pulsing rounded block on the line tint - so every
 // screen's loading state reads as one system.
 
 export function SkeletonBlock({ className }: { className?: string }) {

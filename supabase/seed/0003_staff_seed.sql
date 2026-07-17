@@ -1,4 +1,4 @@
--- Staff seed — paste in the Supabase SQL Editor AFTER 0003_staff_admin.sql.
+-- Staff seed - paste in the Supabase SQL Editor AFTER 0003_staff_admin.sql.
 -- Upsert the design's 10 staff (insert-if-missing + update), then drop stray placeholder staff.
 insert into public.staff (building_id, name, role, wing, initials, color, status, contract, hours, phone, start_label, annual, taken)
   select 'wesley','Aroha Ngata','Registered Nurse','Rātā','AN','#6E875E','Active','Full-time',40,'021 555 012','Mar 2021',20,6

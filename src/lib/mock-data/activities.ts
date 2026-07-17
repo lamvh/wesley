@@ -48,7 +48,7 @@ const week: ActivityDay[] = [
     items: [
       a("10:00", "Craft circle", "Activity room", "craft"),
       a("11:30", "Tai chi", "Courtyard", "move"),
-      a("1:30", "Bus outing — botanic gardens", "Meet foyer", "garden"),
+      a("1:30", "Bus outing - botanic gardens", "Meet foyer", "garden"),
     ],
   },
   {

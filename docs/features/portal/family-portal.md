@@ -1,19 +1,19 @@
 # Family portal
 
-- **Route:** `/portal/family` — `app/portal/family/page.tsx`
+- **Route:** `/portal/family` - `app/portal/family/page.tsx`
 - **Section:** Portal · **Access:** both
 - **Source:** lines `863–908` (screen) + `1291–1307` (`familyFeed`, `visits`, `messages` data)
-- **Render:** RSC (no client islands — static content, inert button only)
+- **Render:** RSC (no client islands - static content, inert button only)
 
 ## Purpose
 Shared whānau-facing feed: staff updates about residents, upcoming family visits, and messages, so both admin and care staff (and, later, families) can see what's shared with whānau. Accessible to both roles (source `pFamily`); also the marketing "Family login" target.
 
 ## Layout
 Single centred column inside `PortalLayout`, `max-width:1180px`, top-to-bottom:
-1. **Header row** — flex, title/subtitle left, "+ Post an update" button right (`align-items:flex-end`, `space-between`, wraps).
-2. **Two-column body** — grid `1.6fr 1fr`, gap `16px`, margin-top `22px`:
-   - **Left (feed)** — `flex-col`, gap `14px`; one `family-post` per `familyFeed` entry.
-   - **Right (sidebar)** — `flex-col`, gap `14px`; "Upcoming visits" card over "Messages" card.
+1. **Header row** - flex, title/subtitle left, "+ Post an update" button right (`align-items:flex-end`, `space-between`, wraps).
+2. **Two-column body** - grid `1.6fr 1fr`, gap `16px`, margin-top `22px`:
+   - **Left (feed)** - `flex-col`, gap `14px`; one `family-post` per `familyFeed` entry.
+   - **Right (sidebar)** - `flex-col`, gap `14px`; "Upcoming visits" card over "Messages" card.
 
 ## Sections & components
 
@@ -36,17 +36,17 @@ From `lib/mock-data/family.ts` (see 03-data-model.md):
 - `messages` → `Message[]` (3, source order). Fields: `from`, `time`, `text`. Source lines 1303–1307.
 
 ## Variants & states
-- **No role variance** — identical for admin and staff (source `pFamily` has no `isAdmin` branch); nav item shown for both. Accessible to both per 02-architecture route map.
-- **Photo present/absent** — post renders photo frame only when `photoSlot` set; otherwise text-only card (George Aleki, source `hasPhoto:false`).
-- **Photo fallback** — unmapped slot → labelled placeholder "Photo for whānau" (source `placeholder`, line 880).
-- **Static lists** — 3 posts, 4 visits, 3 messages; no empty/loading state (mock data fixed).
-- **Tag pill** — sage colour is fixed in source (single tint for all tags: Wellbeing / Activity), not a multi-value semantic scale.
-- **Avatar** — initials on `colorKey` palette bg (avatar palette, 01-design-system.md).
+- **No role variance** - identical for admin and staff (source `pFamily` has no `isAdmin` branch); nav item shown for both. Accessible to both per 02-architecture route map.
+- **Photo present/absent** - post renders photo frame only when `photoSlot` set; otherwise text-only card (George Aleki, source `hasPhoto:false`).
+- **Photo fallback** - unmapped slot → labelled placeholder "Photo for whānau" (source `placeholder`, line 880).
+- **Static lists** - 3 posts, 4 visits, 3 messages; no empty/loading state (mock data fixed).
+- **Tag pill** - sage colour is fixed in source (single tint for all tags: Wellbeing / Activity), not a multi-value semantic scale.
+- **Avatar** - initials on `colorKey` palette bg (avatar palette, 01-design-system.md).
 - Responsive: `1.6fr 1fr` grid stacks (feed above sidebar) on narrow widths; no horizontal body scroll.
 
 ## Interactions
-- **+ Post an update** button — inert this phase (`console`-noop; static button source line 867). No composer/form.
-- No post/visit/message clicks, replies, filters, or search — all read-only display (source has no handlers).
+- **+ Post an update** button - inert this phase (`console`-noop; static button source line 867). No composer/form.
+- No post/visit/message clicks, replies, filters, or search - all read-only display (source has no handlers).
 - Sidebar nav + role toggle come from `PortalLayout` (out of this doc's scope).
 
 ## Tokens
@@ -59,17 +59,17 @@ From `lib/mock-data/family.ts` (see 03-data-model.md):
 - Radius: cards `16px`, photo frame `12px`, button `11px`, tag pill `100px`. Column gap `16px`, card gap `14px`, main pad `30px`, `max-width:1180px`.
 
 ## Out of scope (this phase)
-- **+ Post an update** button — visually present, inert (no composer, no mutation).
+- **+ Post an update** button - visually present, inert (no composer, no mutation).
 - No message reply/compose, visit scheduling/RSVP, or post reactions.
 - No filtering, search, or pagination of feed/visits/messages.
 - Photos may render as placeholders until slot→file mapping is populated in `lib/mock-data/photos.ts`.
-- No real family authentication (route reachable via portal; "Family login" is nav only — see 02-architecture).
+- No real family authentication (route reachable via portal; "Family login" is nav only - see 02-architecture).
 
 ## Definition of Done
 Beyond global DoD (00-rules §11):
 1. Two-column grid `1.6fr 1fr` renders: 3 `family-post`s left, Upcoming visits + Messages cards right.
 2. Each `family-post` shows avatar (initials on `colorKey`), resident, "{by} · {time}", tag pill, body text; photo frame only when `photoSlot` set (posts 1 & 3, not 2).
 3. 4 `visit-row`s (month/day badge + who/detail) and 3 `message-row`s (from · time + text) render in source order.
-4. All data via `getFamilyFeed()` / `visits` / `messages` accessors — no inline fixtures; no raw hex in JSX.
+4. All data via `getFamilyFeed()` / `visits` / `messages` accessors - no inline fixtures; no raw hex in JSX.
 5. Identical render for admin and staff; nav item shown for both.
 6. Layout/tokens match source 863–908 (grid, gaps, radii, sage tag pill, avatar palette).

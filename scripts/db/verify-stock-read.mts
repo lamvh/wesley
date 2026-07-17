@@ -1,5 +1,5 @@
 /**
- * Reads stock data directly via pg (no RLS session — mirrors seed-stock.mts's
+ * Reads stock data directly via pg (no RLS session - mirrors seed-stock.mts's
  * connection pattern since no VERIFY_EMAIL/VERIFY_PASSWORD owner account is
  * configured in .env.local yet). Run: npx tsx scripts/db/verify-stock-read.mts
  */
@@ -39,6 +39,6 @@ async function main() {
   console.log("✓ product+level join ok:", JSON.stringify(joinCheck.rows[0]));
 
   await client.end();
-  console.log("✓ PASS — stock reads work");
+  console.log("✓ PASS - stock reads work");
 }
 main().catch((e) => { console.error(e.message ?? e); process.exit(1); });

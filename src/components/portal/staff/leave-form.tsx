@@ -16,7 +16,7 @@ const fieldCls =
   "rounded-[11px] border border-input bg-cream-2 px-[14px] py-[10px] text-[14.5px] text-ink outline-none focus:border-navy";
 const labelCls = "text-[12.5px] font-bold text-ink-soft";
 
-// Add-leave modal. No edit flow — leave requests are created once, then
+// Add-leave modal. No edit flow - leave requests are created once, then
 // resolved via Approve/Decline on the tab, so this form is always "add".
 // Same reset-via-remount idiom as the other portal forms: the parent mounts
 // this fresh (`key=` remount) each time it opens, which resets both the
@@ -31,7 +31,7 @@ export function LeaveForm({
   const [state, action, pending] = useActionState(saveLeave, {});
   const wasPending = useRef(false);
 
-  // Once a submit finishes without an error, the request is saved — close.
+  // Once a submit finishes without an error, the request is saved - close.
   useEffect(() => {
     if (wasPending.current && !pending && !state.error) {
       onClose();

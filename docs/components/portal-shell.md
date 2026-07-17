@@ -1,18 +1,18 @@
 # Portal shell (PortalLayout)
 
-- **Component:** `PortalLayout` — `app/portal/layout.tsx`
+- **Component:** `PortalLayout` - `app/portal/layout.tsx`
 - **Section:** Portal · **Wraps:** every `/portal/**` route
 - **Source:** wrapper lines `433–435`; sidebar `436–462`; topbar `466–479`; nav/role/me logic `1064–1085`, `1354–1411`
 - **Render:** RSC shell (fixed navy sidebar + cream topbar + `<main>`) with three small client islands (see below)
 
 ## Purpose
-Shared chrome for the staff/admin portal: fixed left navigation, sticky topbar (search + sign-out), and the scrolling content region every portal screen renders into. Access is gated by **Supabase Auth** (middleware guards `/portal/**` — see `docs/features/portal/login.md`) **and by role assignment**: `PortalLayout` is an async RSC that looks up the signed-in user's `app_users` row and shows an "access not provisioned" screen to anyone without an active assignment. Nav visibility / identity / console name derive from a client role context (`usePortalRole`) whose `initialRole` is now derived server-side from `app_users.role_id`; the manual Admin/Staff toggle and the Lodge/Wesley building switch have been **removed**.
+Shared chrome for the staff/admin portal: fixed left navigation, sticky topbar (search + sign-out), and the scrolling content region every portal screen renders into. Access is gated by **Supabase Auth** (middleware guards `/portal/**` - see `docs/features/portal/login.md`) **and by role assignment**: `PortalLayout` is an async RSC that looks up the signed-in user's `app_users` row and shows an "access not provisioned" screen to anyone without an active assignment. Nav visibility / identity / console name derive from a client role context (`usePortalRole`) whose `initialRole` is now derived server-side from `app_users.role_id`; the manual Admin/Staff toggle and the Lodge/Wesley building switch have been **removed**.
 
 ## Layout
 `flex` row, `min-height:100vh`:
 
-1. **Sidebar** — `aside`, fixed `256px`, `navy-deep` (`#232A4C`) background, `sticky top-0 h-screen`, `flex-col`, pad `18px 14px`. Top→bottom: logo block → scrollable nav list (`flex:1`, `overflow-y-auto`) → `me` identity footer (top border `#39406A`).
-2. **Main column** — `flex:1`, `min-w-0`, `flex-col`: sticky topbar on top, then scrollable `<main>` (`overflow-y-auto`, pad `30px`) holding `{children}`. Each page self-centers its own `max-width:1180px` container.
+1. **Sidebar** - `aside`, fixed `256px`, `navy-deep` (`#232A4C`) background, `sticky top-0 h-screen`, `flex-col`, pad `18px 14px`. Top→bottom: logo block → scrollable nav list (`flex:1`, `overflow-y-auto`) → `me` identity footer (top border `#39406A`).
+2. **Main column** - `flex:1`, `min-w-0`, `flex-col`: sticky topbar on top, then scrollable `<main>` (`overflow-y-auto`, pad `30px`) holding `{children}`. Each page self-centers its own `max-width:1180px` container.
 
 ## Sections & components
 
@@ -31,14 +31,14 @@ Shared chrome for the staff/admin portal: fixed left navigation, sticky topbar (
 
 ## Sub-components
 
-- **`portal-sidebar`** (`components/portal/portal-sidebar.tsx`) — client island. Renders logo, nav list, admin group, and identity footer. Reads `usePortalRole()` for role (gates admin items) and `usePathname()` for the active item; the identity footer (`me*`/`console`) comes from the `identity` prop built server-side from `app_users`. Keep the whole sidebar client because both role and pathname are client concerns; nav data (labels/icons/hrefs) is a static array so this file stays small.
-- **`portal-topbar`** (`components/portal/portal-topbar.tsx`) — **client** island (uses `useRouter` for sign-out). Hosts the search input, static date/wings, "View website" link, and the sign-out button. `role-toggle.tsx` and `building-switch.tsx` were **deleted**.
-- **`sidebar-nav-item`** (`components/portal/sidebar-nav-item.tsx`) — presentational `<Link>` taking `{ href, label, icon, active }`. Active = `gold-deep` (`#D99A3C`) pill with `navy-deep` (`#232A4C`) text weight 600; inactive = transparent with `#B9BFD4` text weight 500 (source `1064–1076`). Icon is a `19×19` inline SVG from the shared icon set.
+- **`portal-sidebar`** (`components/portal/portal-sidebar.tsx`) - client island. Renders logo, nav list, admin group, and identity footer. Reads `usePortalRole()` for role (gates admin items) and `usePathname()` for the active item; the identity footer (`me*`/`console`) comes from the `identity` prop built server-side from `app_users`. Keep the whole sidebar client because both role and pathname are client concerns; nav data (labels/icons/hrefs) is a static array so this file stays small.
+- **`portal-topbar`** (`components/portal/portal-topbar.tsx`) - **client** island (uses `useRouter` for sign-out). Hosts the search input, static date/wings, "View website" link, and the sign-out button. `role-toggle.tsx` and `building-switch.tsx` were **deleted**.
+- **`sidebar-nav-item`** (`components/portal/sidebar-nav-item.tsx`) - presentational `<Link>` taking `{ href, label, icon, active }`. Active = `gold-deep` (`#D99A3C`) pill with `navy-deep` (`#232A4C`) text weight 600; inactive = transparent with `#B9BFD4` text weight 500 (source `1064–1076`). Icon is a `19×19` inline SVG from the shared icon set.
 
 ## Role context (client)
 
 - **`PortalRoleProvider`** + **`usePortalRole()`** live in `lib/role-context.tsx` (`"use client"`). Provider wraps the portal subtree inside `PortalLayout`; it is **not** global (marketing pages never mount it). Shape: `{ role: 'admin' | 'staff'; setRole(r) }`. `initialRole` is derived **server-side** in `PortalLayout` from the signed-in user's `app_users.role_id` via `toPortalRole` (`super_admin`/`admin` → `admin`, everyone else → `staff`); with the toggle removed `setRole` has no UI caller. Before the schema is applied the lookup fails open and the default `admin` stands.
-- Access helpers: `lib/supabase/current-user.ts` — `getCurrentUser()` (auth user + `app_users` row, fails open if the table/infra is missing), `canAccessPortal()`, `toPortalRole()`. Consumers: `portal-sidebar` (nav gating + identity), `mobile-tabbar`, and portal views that branch on role (Dashboard variant, Stock, Meal report).
+- Access helpers: `lib/supabase/current-user.ts` - `getCurrentUser()` (auth user + `app_users` row, fails open if the table/infra is missing), `canAccessPortal()`, `toPortalRole()`. Consumers: `portal-sidebar` (nav gating + identity), `mobile-tabbar`, and portal views that branch on role (Dashboard variant, Stock, Meal report).
 
 ### Role-derived values (source `1354–1411`)
 
@@ -78,12 +78,12 @@ Design source: `.design-src/victoria-mt-eden.dc.html` (canvas: `Victoria - Mobil
 | 861–1023px | slim icon rail (`w-[68px]`, forced) | left sidebar | full |
 | ≤860px | **hidden** (`max-[860px]:hidden`) | **`mobile-tabbar`** (bottom) + More sheet | compact; date + "View website" hidden; sign-out shows icon-only |
 
-- **`mobile-tabbar`** (`components/portal/mobile-tabbar.tsx`) — client island, `fixed bottom-0`, shown only `max-[860px]:flex`. Four primary destinations (Dashboard, Residents, Roster, Meals) with short labels + a **More** button. Active tab uses `gold-deep`. `<main>` gets `pb-[84px]` on mobile so content clears the bar; the bar respects `env(safe-area-inset-bottom)`.
-- **More sheet** (inside `mobile-tabbar`) — bottom sheet holding identity, the full main nav, the admin group (admin only), and "View website". Backdrop tap or the close button dismisses it. This is the mobile home for everything dropped from the sidebar/topbar. (The role toggle previously here was removed.)
-- **`.wide-scroll`** (`globals.css`) — opt-in wrapper (`overflow-x:auto`) for wide tables/grids (roster, stock) so they scroll horizontally instead of overflowing on phones; content sets its own `min-width`.
+- **`mobile-tabbar`** (`components/portal/mobile-tabbar.tsx`) - client island, `fixed bottom-0`, shown only `max-[860px]:flex`. Four primary destinations (Dashboard, Residents, Roster, Meals) with short labels + a **More** button. Active tab uses `gold-deep`. `<main>` gets `pb-[84px]` on mobile so content clears the bar; the bar respects `env(safe-area-inset-bottom)`.
+- **More sheet** (inside `mobile-tabbar`) - bottom sheet holding identity, the full main nav, the admin group (admin only), and "View website". Backdrop tap or the close button dismisses it. This is the mobile home for everything dropped from the sidebar/topbar. (The role toggle previously here was removed.)
+- **`.wide-scroll`** (`globals.css`) - opt-in wrapper (`overflow-x:auto`) for wide tables/grids (roster, stock) so they scroll horizontally instead of overflowing on phones; content sets its own `min-width`.
 
 ## Out of scope (this phase)
-- Search box — focusable input but query/results not wired.
+- Search box - focusable input but query/results not wired.
 - Nav gating is still the coarse `admin`/`staff` split (mapped from `app_users.role_id`), not yet the fine-grained `role_permissions` matrix. No manual toggle. Admin-only routes visited as non-admin show an "Admin only" empty state, not a redirect.
 - Access gating (unprovisioned → "access not provisioned" screen) is **live in code but fails open until the schema is applied**, so it only enforces once `app_users` exists in the DB.
 - Date/wings are static strings (no "today" computation).

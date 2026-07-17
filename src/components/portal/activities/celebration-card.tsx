@@ -34,7 +34,7 @@ export function CelebrationCard() {
           </span>
         </div>
         <h3 className="mt-3 font-serif text-[22px] font-semibold text-ink">
-          Mei Lam turned 90 — and the whole wing came
+          Mei Lam turned 90 - and the whole wing came
         </h3>
         <p className="mt-2 text-[14.5px] leading-[1.62] text-ink-soft">
           The Kōwhai wing gathered for afternoon tea and tiramisu cake from The

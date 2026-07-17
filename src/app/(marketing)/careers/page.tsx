@@ -13,7 +13,7 @@ export default function CareersPage() {
       <MarketingPageHeader
         eyebrow="Careers"
         title="Come and do work that matters"
-        intro="We're a small, close team who genuinely care — for our residents and for each other. If that sounds like you, we'd love to talk."
+        intro="We're a small, close team who genuinely care - for our residents and for each other. If that sounds like you, we'd love to talk."
       />
 
       <section className="mx-auto max-w-[1200px] px-7 pb-5 pt-[56px]">
@@ -34,7 +34,7 @@ export default function CareersPage() {
         <div className="mt-[14px] rounded-[14px] border border-dashed border-line-strong bg-cream-2 px-6 py-[22px] text-center">
           <p className="text-[15px] text-ink-soft">
             Don&apos;t see your role? We&apos;re always glad to hear from good
-            people —{" "}
+            people -{" "}
             <Link
               href="/contact"
               className="font-semibold text-bronze-text"

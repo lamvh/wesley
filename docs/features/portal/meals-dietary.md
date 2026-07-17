@@ -1,16 +1,16 @@
 # Meals & dietary
 
-- **Route:** `/portal/meals` — `app/portal/meals/page.tsx`
+- **Route:** `/portal/meals` - `app/portal/meals/page.tsx`
 - **Section:** Portal · **Access:** both
 - **Source:** lines `911–938` (markup); data `1309–1333`
-- **Render:** RSC (+ client islands: none — Print button inert)
+- **Render:** RSC (+ client islands: none - Print button inert)
 
 ## Purpose
 Today's kitchen sheet: the three meal services with menu items and prep notes, plus a roll-up of dietary requirements across residents. Used by kitchen/care staff and admin to see what's served and how many special diets to prepare.
 
 ## Layout
 Centered column (`max-width:1180px`). Top-to-bottom:
-1. Header row — title + date subline left, `Print kitchen sheet` button right.
+1. Header row - title + date subline left, `Print kitchen sheet` button right.
 2. Three-column meal grid (`grid-template-columns:repeat(3,1fr)`, gap `16px`, `margin-top:22px`).
 3. Full-width "Dietary requirements today" card with a 5-tile count grid (`margin-top:16px`).
 
@@ -28,22 +28,22 @@ Grid columns: meals `repeat(3,1fr)`; diet tiles `repeat(5,1fr)`.
 
 ## Data consumed
 From `lib/mock-data/meals.ts` (see 03-data-model.md):
-- `getMeals()` → `MealService[]`. Fields used: `meal` (`Breakfast`|`Lunch`|`Dinner`), `time`, `items[]` → `{ name, note }`. Header wash `bg` + eyebrow `accent` are presentation values derived per meal (breakfast amber `#F3EEE0`/`#b0894a`, lunch sage `#EEF2E7`/`#2C3563`, dinner terracotta `#F4EBE4`/`#BE7350`), keyed in accessor/helper — not stored as raw domain data.
+- `getMeals()` → `MealService[]`. Fields used: `meal` (`Breakfast`|`Lunch`|`Dinner`), `time`, `items[]` → `{ name, note }`. Header wash `bg` + eyebrow `accent` are presentation values derived per meal (breakfast amber `#F3EEE0`/`#b0894a`, lunch sage `#EEF2E7`/`#2C3563`, dinner terracotta `#F4EBE4`/`#BE7350`), keyed in accessor/helper - not stored as raw domain data.
 - `diets` (`getDiets()`) → `DietCount[]`: `label` (`Soft / puree`, `Diabetic`, `Gluten free`, `Vegetarian`, `Thickened`), `count`.
 
 ## Variants & states
 - **Role:** identical for admin and staff (access `both`); no role-gated content.
 - **Per-meal styling:** each card's header tint + eyebrow colour vary by meal service (three fixed tones).
-- **Empty state:** a meal with no `items` would render an empty card body — not exercised (all three meals have items); a diet with `count:0` would still show the tile with `0`.
-- No status/severity styling here — meal cards are informational, not status-driven.
+- **Empty state:** a meal with no `items` would render an empty card body - not exercised (all three meals have items); a diet with `count:0` would still show the tile with `0`.
+- No status/severity styling here - meal cards are informational, not status-driven.
 
 ## Interactions
-- `Print kitchen sheet` — inert stub (would trigger `window.print()` / a print layout). No-op this phase.
+- `Print kitchen sheet` - inert stub (would trigger `window.print()` / a print layout). No-op this phase.
 - No navigation off this screen; no clickable rows.
 
 ## Tokens
 - Surfaces: cream-2 card + `border`; diet tiles on `cream` with `field`/`border-2` edge.
-- Meal header tints + eyebrow colours: fixed per-meal wash tones (amber / sage / terracotta families) — applied via a meal-presentation helper, referenced by name, not hardcoded per JSX node.
+- Meal header tints + eyebrow colours: fixed per-meal wash tones (amber / sage / terracotta families) - applied via a meal-presentation helper, referenced by name, not hardcoded per JSX node.
 - Type: Newsreader for title, card eyebrow-adjacent headings, and the display `count` numbers; Instrument Sans for item names, notes, labels, eyebrow (uppercase `letter-spacing:1px`).
 - Radius: cards `16px`, tiles `12px`.
 

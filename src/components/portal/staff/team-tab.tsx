@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 const COLS = "grid-cols-[2fr_1fr_1fr_1.1fr_0.7fr_1fr_1fr_88px]";
 const PAGE_SIZE = 6;
 
-// Fallback swatches for any contract/status value outside the known sets —
+// Fallback swatches for any contract/status value outside the known sets -
 // keeps the table rendering instead of erroring on unexpected data.
 const FALLBACK_CONTRACT = { badge: "bg-muted text-ink-muted", text: "text-ink-muted", dot: "bg-ink-muted" };
 const FALLBACK_STATUS = { text: "text-ink-muted", dot: "bg-ink-muted" };
@@ -136,7 +136,7 @@ export function TeamTab({
                     </span>
                   ))
                 ) : (
-                  <span className="text-[13.5px] text-ink-faint">—</span>
+                  <span className="text-[13.5px] text-ink-faint">-</span>
                 )}
               </div>
 
@@ -148,7 +148,7 @@ export function TeamTab({
               </div>
 
               <div className="min-w-0">
-                <div className="truncate text-[13px] text-ink-soft">{s.visaType || "—"}</div>
+                <div className="truncate text-[13px] text-ink-soft">{s.visaType || "-"}</div>
                 {pill && (
                   <span className={cn("mt-[3px] inline-block rounded-full px-[8px] py-[2px] text-[11px] font-semibold", pill.cls)}>
                     {pill.text}

@@ -7,7 +7,7 @@ export interface StaffFormState { error?: string }
 const str = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
 const num = (fd: FormData, k: string) => { const v = str(fd, k); return v ? Number(v) : 0; };
 
-// Weekly hours implied by the employment contract type — the roster and leave
+// Weekly hours implied by the employment contract type - the roster and leave
 // accrual screens both key off this instead of a free-text hours field.
 const CONTRACT_HOURS: Record<string, number> = { "Full-time": 40, "Part-time": 24, Casual: 12 };
 
@@ -31,13 +31,13 @@ export async function saveStaff(_prev: StaffFormState, fd: FormData): Promise<St
     phone: str(fd, "phone") || null, initials: initialsOf(name),
     visa_type: visaType || null,
     visa_expiry: noExpiry ? null : (str(fd, "visaExpiry") || null),
-    // Roster band override — only meaningful when roles span >1 group; the form
+    // Roster band override - only meaningful when roles span >1 group; the form
     // submits "" (→ null, auto-band) otherwise.
     roster_group_id: str(fd, "rosterGroupId") || null,
   };
   const supabase = await createClient();
   if (id) {
-    // Edit: never touch annual/taken here — those are only adjusted via
+    // Edit: never touch annual/taken here - those are only adjusted via
     // approve_leave, so a re-save of the profile fields can't clobber balances.
     const { error } = await supabase.from("staff").update(fields).eq("id", id);
     if (error) return { error: error.message };

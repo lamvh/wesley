@@ -96,8 +96,8 @@ export function groupStaffForRoster(
 }
 
 // The roster cell picker offers a staffer a FLAT list of shifts whose role
-// belongs to the same role group(s) they do — the whole group, not just their
-// exact role — in the shift list's natural (canonical) order, with no own-role
+// belongs to the same role group(s) they do - the whole group, not just their
+// exact role - in the shift list's natural (canonical) order, with no own-role
 // prioritisation. Roleless shifts (no group) are universal. A staffer whose
 // roles map to no group, or who would otherwise see nothing, is offered every
 // shift so the cell is never un-assignable. Role-group banding of the roster

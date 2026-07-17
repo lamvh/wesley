@@ -12,7 +12,7 @@ export function Hero() {
         <Photo
           slot="vme-hero"
           alt="Wesley Home &amp; Care garden and grounds"
-          placeholder="Drop a hero photo — garden, lounge, or exterior"
+          placeholder="Drop a hero photo - garden, lounge, or exterior"
           priority
         />
       </div>
@@ -30,8 +30,8 @@ export function Hero() {
               A warm place to call home, in the heart of Mt&nbsp;Eden
             </h1>
             <p className="mt-5 max-w-[500px] text-[18.5px] leading-[1.6] text-hero-body">
-              Boutique rest-home care in three room styles — VIP, premium and
-              comfortable — with the garden, kitchen and whānau warmth that make
+              Boutique rest-home care in three room styles - VIP, premium and
+              comfortable - with the garden, kitchen and whānau warmth that make
               a house a home.
             </p>
             <div className="pointer-events-auto mt-[30px] flex gap-[14px] max-sm:flex-col">

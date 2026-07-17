@@ -51,7 +51,7 @@ function Field({
 
 // Add/edit staff modal. Roles are chosen from the registry (managed in Staff →
 // Roles & groups) and mirrored to hidden fields; visa type/expiry persist via
-// the form action. Same reset-via-remount idiom as StockItemForm — parent mounts
+// the form action. Same reset-via-remount idiom as StockItemForm - parent mounts
 // fresh per target.
 export function StaffForm({
   staff,
@@ -97,7 +97,7 @@ export function StaffForm({
     ? (eligibleGroups.some((g) => g.id === rosterGroup) ? rosterGroup : eligibleGroups[0].id)
     : "";
 
-  // Once a submit finishes without an error, the staffer is saved — close.
+  // Once a submit finishes without an error, the staffer is saved - close.
   useEffect(() => {
     if (wasPending.current && !pending && !state.error) {
       onClose();
@@ -172,7 +172,7 @@ export function StaffForm({
                 ))}
               </select>
               <span className="text-[12px] text-ink-faint">
-                This staffer&apos;s roles span multiple groups — pick which band they sit in on the roster.
+                This staffer&apos;s roles span multiple groups - pick which band they sit in on the roster.
               </span>
             </label>
           )}

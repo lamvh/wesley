@@ -1,6 +1,6 @@
 // Domain model for Victoria at Mt Eden. Mock-data shapes mirror future
 // Supabase rows (see docs/03-data-model.md). Presentation values (colors)
-// are NOT stored here — derived in lib/design-meta.ts.
+// are NOT stored here - derived in lib/design-meta.ts.
 
 export type Wing = "Rātā" | "Kōwhai" | "Tōtara";
 export type CareTier = "Normal" | "Premium" | "VIP";
@@ -362,7 +362,7 @@ export interface RosterDay {
   dow: string;
   date: string;
   month: string;
-  iso: string; // YYYY-MM-DD — the calendar date this column represents
+  iso: string; // YYYY-MM-DD - the calendar date this column represents
 }
 
 /** grid["{staffId}::{YYYY-MM-DD}"] = list of shift-type ids for that staff/day cell */

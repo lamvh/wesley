@@ -13,7 +13,7 @@ export function getMealReportResidents(): MealReportResident[] {
   }));
 }
 
-/** Seed intake — a few residents already logged, matching the design. */
+/** Seed intake - a few residents already logged, matching the design. */
 export function getDefaultMealLog(): MealLog {
   return {
     0: { breakfast: "all", lunch: "most" },

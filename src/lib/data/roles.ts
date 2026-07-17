@@ -16,7 +16,7 @@ export async function getRoleGroups(): Promise<RoleGroup[]> {
   }));
 }
 
-// The role registry — every assignable role plus the group it bands into.
+// The role registry - every assignable role plus the group it bands into.
 export async function getRoles(): Promise<RoleDef[]> {
   const supabase = await createClient();
   const { data, error } = await supabase.from("staff_roles")

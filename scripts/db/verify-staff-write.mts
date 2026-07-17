@@ -1,5 +1,5 @@
 /**
- * Exercises the approve_leave RPC directly via pg (no RLS session — mirrors
+ * Exercises the approve_leave RPC directly via pg (no RLS session - mirrors
  * verify-stock-write.mts's connection pattern): inserts a temp staff row
  * (annual 20, taken 0), a Pending 'Annual leave' request for it with
  * days=3, calls approve_leave, and asserts the staffer's taken balance
@@ -75,6 +75,6 @@ async function main() {
   await client.query(`delete from public.leave_requests where id=$1`, [leaveId]);
   await client.query(`delete from public.staff where id=$1`, [staffId]);
   await client.end();
-  console.log("✓ PASS — approve_leave debits taken and flips status, cleanup done");
+  console.log("✓ PASS - approve_leave debits taken and flips status, cleanup done");
 }
 main().catch((e) => { console.error(e.message ?? e); process.exit(1); });

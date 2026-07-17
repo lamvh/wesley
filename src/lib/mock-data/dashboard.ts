@@ -25,7 +25,7 @@ const wings: OccupancyWing[] = [
 ];
 
 const familyPosts: Dashboard["familyPosts"] = [
-  { from: "Aroha (RN)", resident: "Peggy W.", initials: "PW", color: "#6E875E", preview: "Picked the first sweet peas this morning — thrilled!", time: "2h" },
+  { from: "Aroha (RN)", resident: "Peggy W.", initials: "PW", color: "#6E875E", preview: "Picked the first sweet peas this morning - thrilled!", time: "2h" },
   { from: "Grace (activities)", resident: "George A.", initials: "GA", color: "#b06a5a", preview: "Joined the choir today and sang every song.", time: "4h" },
   { from: "Mere (carer)", resident: "Bill T.", initials: "WT", color: "#5b8f9a", preview: "Enjoyed the cricket on the big screen with Miso.", time: "5h" },
 ];
@@ -40,9 +40,9 @@ const adminKpis: Kpi[] = [
 
 const adminAlerts: Alert[] = [
   { title: "Nitrile gloves (M) below par", detail: "Clinical · 4 boxes left of 20 par level", tag: "Reorder", tone: "warn" },
-  { title: "Open shift — Sunday night", detail: "Kōwhai wing needs 1 carer, 11:00pm–7:00am", tag: "Roster gap", tone: "warn" },
-  { title: "Fall reported — Harry Fitzgerald", detail: "INC-0432 · logged 8:20am, under review", tag: "Incident", tone: "amber" },
-  { title: "Peggy Whitcombe — GP review due", detail: "Rātā 12 · medication review with Dr Anaru", tag: "Clinical", tone: "accent" },
+  { title: "Open shift - Sunday night", detail: "Kōwhai wing needs 1 carer, 11:00pm–7:00am", tag: "Roster gap", tone: "warn" },
+  { title: "Fall reported - Harry Fitzgerald", detail: "INC-0432 · logged 8:20am, under review", tag: "Incident", tone: "amber" },
+  { title: "Peggy Whitcombe - GP review due", detail: "Rātā 12 · medication review with Dr Anaru", tag: "Clinical", tone: "accent" },
 ];
 
 // ---- staff-specific ----
@@ -54,9 +54,9 @@ const staffKpis: Kpi[] = [
 ];
 
 const staffAlerts: Alert[] = [
-  { title: "Peggy Whitcombe — 9am medication", detail: "Rātā 12 · due now, with breakfast", tag: "Now", tone: "warn" },
-  { title: "Harry Fitzgerald — post-fall obs", detail: "Rātā 07 · hourly observations, next at 10am", tag: "Obs", tone: "amber" },
-  { title: "Joan Ferris — care note pending", detail: "Rātā 15 · morning wellbeing note not logged", tag: "Note", tone: "accent" },
+  { title: "Peggy Whitcombe - 9am medication", detail: "Rātā 12 · due now, with breakfast", tag: "Now", tone: "warn" },
+  { title: "Harry Fitzgerald - post-fall obs", detail: "Rātā 07 · hourly observations, next at 10am", tag: "Obs", tone: "amber" },
+  { title: "Joan Ferris - care note pending", detail: "Rātā 15 · morning wellbeing note not logged", tag: "Note", tone: "accent" },
 ];
 
 export function getDashboard(role: PortalRole): Dashboard {
@@ -65,7 +65,7 @@ export function getDashboard(role: PortalRole): Dashboard {
     greeting: isAdmin ? "Good morning, Sarah" : "Kia ora, Aroha",
     sub: isAdmin
       ? "Here’s how the home is running today across all three wings."
-      : "You’re on the Rātā (Normal) morning shift — here’s what needs you.",
+      : "You’re on the Rātā (Normal) morning shift - here’s what needs you.",
     kpis: isAdmin ? adminKpis : staffKpis,
     alerts: isAdmin ? adminAlerts : staffAlerts,
     todaySchedule,

@@ -1,5 +1,5 @@
 #!/usr/bin/env zsh
-# Landing-page audit — content checksum + last-commit per marketing route,
+# Landing-page audit - content checksum + last-commit per marketing route,
 # tracked against the baseline in docs/features/marketing/landing-audit-log.md.
 #
 # Usage:  ./scripts/landing-audit.sh
@@ -9,7 +9,7 @@
 # it renders, the marketing data (marketing-content.ts), the photo slot map
 # (photos.ts), and the shared render helpers it touches (photo.tsx / icons.tsx
 # / ui form primitives). It deliberately does NOT follow the @/lib/mock-data
-# barrel — that re-exports every portal/roster fixture, whose changes must not
+# barrel - that re-exports every portal/roster fixture, whose changes must not
 # masquerade as a landing-page change. Type-only + utility deps (domain.ts,
 # utils.ts) are tracked in the "Shared deps" line below, not in the checksum.
 #
@@ -49,7 +49,24 @@ for key in "${ORDER[@]}"; do
 done
 
 echo
-echo "Shared deps (watch — not in checksum): tracked by last-commit, re-check manually if changed"
+echo "Shared deps (watch - not in checksum): tracked by last-commit, re-check manually if changed"
 for f in src/types/domain.ts src/lib/utils.ts; do
   printf "  %-24s %s\n" "${f#src/}" "$(git log -1 --format='%ad %h' --date=short -- "$f")"
 done
+
+# ---------------------------------------------------------------------------
+# Design source drift - the code above is ported FROM the Claude Design HTML in
+# .design-src/. Code checksums only detect code-vs-code change; this section
+# surfaces the design side so design→code drift (design edited, code not yet
+# updated) is visible. A changed design checksum vs the log baseline ⇒ re-diff
+# the affected screens and either port the change or record why not.
+echo
+echo "Design source (.design-src) - port-from origin; newest '.dc.html' is authoritative"
+newest=""; newest_mt=""
+for f in .design-src/*.html; do
+  sum=$(git hash-object "$f" | cut -c1-12)
+  mt=$(stat -f '%Sm' -t '%Y-%m-%d %H:%M' "$f")
+  printf "  %-44s %s  %s\n" "${f#.design-src/}" "$sum" "$mt"
+  [[ "$mt" > "$newest_mt" ]] && { newest_mt="$mt"; newest="${f#.design-src/}"; }
+done
+echo "  → authoritative (newest): $newest ($newest_mt)"

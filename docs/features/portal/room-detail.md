@@ -1,18 +1,18 @@
 # Room detail
 
-- **Route:** `/portal/rooms/[num]` — `app/portal/rooms/[num]/page.tsx`
+- **Route:** `/portal/rooms/[num]` - `app/portal/rooms/[num]/page.tsx`
 - **Section:** Portal · **Access:** admin
 - **Source:** lines `586–650` (room detail screen) + `1217–1259` (`roomsRaw`, `roomStatusMeta`, `roomSupplyDefs`, `actsByWing`, `mkItem`)
-- **Render:** RSC (no client islands — static content + back link)
+- **Render:** RSC (no client islands - static content + back link)
 
 ## Purpose
 Admin deep-view of a single room: its status, the resident (or vacancy), today's programme, current supply levels and housekeeping schedule. Reached by clicking a room card on `/portal/rooms`.
 
 ## Layout
 Single-column body inside `PortalLayout`, `max-width:1180px`, top-to-bottom:
-1. **Back link** — `‹ All rooms` text button, `muted` `14px`/600, pad-bottom `14px`.
-2. **Status header** — `cream-2` bar, `border`, **`border-left:5px` in `statusColor`**, radius `16px`, pad `22px 26px`, flex space-between: wing · room number + care line left, status pill right.
-3. **Two-column grid** — `grid-template-columns:1.4fr 1fr`, gap `16px`, margin-top `16px`.
+1. **Back link** - `‹ All rooms` text button, `muted` `14px`/600, pad-bottom `14px`.
+2. **Status header** - `cream-2` bar, `border`, **`border-left:5px` in `statusColor`**, radius `16px`, pad `22px 26px`, flex space-between: wing · room number + care line left, status pill right.
+3. **Two-column grid** - `grid-template-columns:1.4fr 1fr`, gap `16px`, margin-top `16px`.
    - **Left col** (`flex-col` gap `16px`): occupied ⇒ resident card + Today's activities; empty ⇒ room-status card with Assign button.
    - **Right col** (`flex-col` gap `16px`): Room supplies card + Housekeeping card.
 
@@ -31,13 +31,13 @@ Single-column body inside `PortalLayout`, `max-width:1180px`, top-to-bottom:
 
 ## Data consumed
 From `lib/mock-data/rooms.ts` via **`getRoomByNum(num)`** → `Room` (mirrors `roomsRaw`, lines 1230–1246; `[num]` param = room number e.g. `05`). Fields used:
-- `num`, `wing`, `status` — header title + status pill + left-border.
-- `careType` / care line — e.g. "Rest home" shown in header + resident card.
-- `resident?` — `{ name, initials, colorKey, diet, mobility }`; drives occupied resident card. `note` also from room.
-- `note` — resident-card paragraph (occupied) OR room-status paragraph (empty).
-- `activities?` — `string[]` by wing (`actsByWing`, lines 1224–1228), occupied only, e.g. Rātā → Garden group · 9:30am / Gentle exercise · 11:00am / Choir & singalong · 2:00pm.
-- `supplies?` — `SupplyItem[]` from `roomSupplyDefs` (line 1229: briefs 18/24, bed pads 30/30, gloves 3/10, wipes 12/12), occupied only.
-- `house` — housekeeping line.
+- `num`, `wing`, `status` - header title + status pill + left-border.
+- `careType` / care line - e.g. "Rest home" shown in header + resident card.
+- `resident?` - `{ name, initials, colorKey, diet, mobility }`; drives occupied resident card. `note` also from room.
+- `note` - resident-card paragraph (occupied) OR room-status paragraph (empty).
+- `activities?` - `string[]` by wing (`actsByWing`, lines 1224–1228), occupied only, e.g. Rātā → Garden group · 9:30am / Gentle exercise · 11:00am / Choir & singalong · 2:00pm.
+- `supplies?` - `SupplyItem[]` from `roomSupplyDefs` (line 1229: briefs 18/24, bed pads 30/30, gloves 3/10, wipes 12/12), occupied only.
+- `house` - housekeeping line.
 
 Derived (helpers, not stored):
 - `roomStatusMeta(status)` → `{ colorToken, tintToken }` (room-status scale) for header pill + left-border.
@@ -56,7 +56,7 @@ Derived (helpers, not stored):
 ## Interactions
 - **`‹ All rooms`** back link → `/portal/rooms`.
 - **`Stock`** link (supplies card header) → `/portal/stock` (source `navStock`, line 627).
-- **Assign a resident** button (empty variant) — visually present, **inert** this phase.
+- **Assign a resident** button (empty variant) - visually present, **inert** this phase.
 - No supply editing, quantity adjustment, or activity editing.
 
 ## Tokens
@@ -68,9 +68,9 @@ Derived (helpers, not stored):
 - Type: Newsreader header `30px`/600, card H3 `19px`/600, resident name `18px`/600; Instrument Sans body/meta/pills. Radius cards `16px`, button `11px`, pills `100px`. `max-width:1180px`.
 
 ## Out of scope (this phase)
-- **Assign a resident** button inert — no admission/assignment flow.
-- Supplies are read-only — no reorder, no editing qty/par (the `Stock` link only navigates).
-- Activities are read-only labels — no scheduling.
+- **Assign a resident** button inert - no admission/assignment flow.
+- Supplies are read-only - no reorder, no editing qty/par (the `Stock` link only navigates).
+- Activities are read-only labels - no scheduling.
 - No breadcrumb beyond the single back link; `[num]` not validated against real data (mock lookup only).
 
 ## Definition of Done
@@ -80,4 +80,4 @@ Beyond global DoD (00-rules §11):
 3. Empty/Available/Maintenance room: room-status card with note + inert Assign button renders; supplies card shows the "No supplies allocated while the room is {status}." message with the live status word.
 4. Housekeeping card shows `house` line.
 5. `‹ All rooms` → `/portal/rooms`; `Stock` → `/portal/stock`.
-6. All content via `getRoomByNum(num)` + helpers — no inline fixtures or raw hex.
+6. All content via `getRoomByNum(num)` + helpers - no inline fixtures or raw hex.

@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-// Placeholder block — pulses while dashboard data loads.
+// Placeholder block - pulses while dashboard data loads.
 function Block({ className }: { className?: string }) {
   return <div className={cn("animate-pulse rounded-[14px] bg-line/70", className)} />;
 }

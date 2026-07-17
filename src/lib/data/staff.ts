@@ -20,7 +20,7 @@ export async function getStaff(): Promise<StaffRecord[]> {
   }));
 }
 // Shift templates for the Staff → Shift-templates tab (all buildings, so the
-// tab can group them by building). Pass a buildingId to scope to one building —
+// tab can group them by building). Pass a buildingId to scope to one building -
 // the roster uses this to only offer its own building's shifts.
 export async function getShiftTemplates(buildingId?: string): Promise<ShiftTemplate[]> {
   const supabase = await createClient();

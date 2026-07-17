@@ -25,7 +25,7 @@ function readEnv(key: string): string | undefined {
   return line.slice(line.indexOf("=") + 1).trim().replace(/^["']|["']$/g, "");
 }
 
-// Build discrete connection fields instead of handing pg a connection STRING —
+// Build discrete connection fields instead of handing pg a connection STRING -
 // a URL-reserved char in the password (@ / : ? #) breaks pg's URL parser and
 // yields a bogus password. The greedy match takes the password up to the LAST
 // '@' (hosts never contain '@'), so a raw special-char password parses fine.
@@ -59,7 +59,7 @@ async function main() {
   await client.query(ddl);
   console.log("Schema applied.");
 
-  // role_permissions — the full 6×10×4 grant matrix (super_admin = allow-all).
+  // role_permissions - the full 6×10×4 grant matrix (super_admin = allow-all).
   const perms = getDefaultPermissions();
   const modules = getModules();
   let permCount = 0;
@@ -97,7 +97,7 @@ async function main() {
     }
   }
 
-  // app_users (role assignment lives here — auth_id linked on first sign-in)
+  // app_users (role assignment lives here - auth_id linked on first sign-in)
   for (const u of getUsers()) {
     await client.query(
       `insert into public.app_users (name, email, role_id, building_id, scope, status)
@@ -109,7 +109,7 @@ async function main() {
     );
   }
 
-  // Project owner — super admin, linked to the Supabase Auth account by email.
+  // Project owner - super admin, linked to the Supabase Auth account by email.
   await client.query(
     `insert into public.app_users (auth_id, name, email, role_id, building_id, scope, status)
      values ((select id from auth.users where email = $2), $1, $2, 'super_admin', null, 'System', 'Active')
@@ -119,7 +119,7 @@ async function main() {
     ["lamvh", "vhlam1997@gmail.com"],
   );
 
-  // staff — dedup people across all shifts
+  // staff - dedup people across all shifts
   const seen = new Set<string>();
   const staff: StaffMember[] = [];
   for (const shift of getShifts()) {

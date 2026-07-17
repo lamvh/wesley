@@ -1,17 +1,17 @@
 # Our home
 
-- **Route:** `/our-home` — `app/(marketing)/our-home/page.tsx`
+- **Route:** `/our-home` - `app/(marketing)/our-home/page.tsx`
 - **Section:** Marketing · **Access:** both
 - **Source:** lines `280–336` (data `1432–1444`)
 - **Render:** RSC (no client islands)
 
 ## Purpose
-Public "about the building" page. Sells the physical home — its scale, feel, facilities and three wings — to prospective residents and their whānau, then routes them to book a visit.
+Public "about the building" page. Sells the physical home - its scale, feel, facilities and three wings - to prospective residents and their whānau, then routes them to book a visit.
 
 ## Layout
 Inside `MarketingLayout` (announcement + sticky nav + footer assumed). Body, top to bottom:
 1. Header band (eyebrow + title + lede).
-2. Intro split — photo left, copy right.
+2. Intro split - photo left, copy right.
 3. Facilities section (tinted band, 6-card grid).
 4. Three-wings section (3 image cards).
 5. Find-us navy panel (address + CTA + map).
@@ -30,14 +30,14 @@ Reused: `Photo` (`components/shared`). New shared: `MarketingPageHeader` (also u
 
 ## Data consumed
 Accessor `getMarketingContent()` (`lib/mock-data/marketing-content.ts`):
-- `facilities` — 6× `{ title, desc }` (source `1432–1439`).
-- `careWings` — 3× `{ name, care, desc }` where `name` = Rātā | Kōwhai | Tōtara, `care` = Normal | Premium | VIP (source `1440–1444`).
+- `facilities` - 6× `{ title, desc }` (source `1432–1439`).
+- `careWings` - 3× `{ name, care, desc }` where `name` = Rātā | Kōwhai | Tōtara, `care` = Normal | Premium | VIP (source `1440–1444`).
 
 Header/intro/find-us copy is static screen content (not entity data): title "A boutique home in the heart of Mt Eden", intro H2 "Built around people, not corridors", find-us address "227 Mt Eden Rd". Photo slots: `home-exterior`, `wing-Rātā` / `wing-Kōwhai` / `wing-Tōtara`, `home-map`.
 
 ## Variants & states
-- No role/auth differences — public page, identical for all visitors.
-- No empty states — `facilities` (6) and `careWings` (3) always present.
+- No role/auth differences - public page, identical for all visitors.
+- No empty states - `facilities` (6) and `careWings` (3) always present.
 - Photo slots with no mapped file → `Photo` labelled placeholder ("Exterior or lounge", "{name} wing", "Map or street view").
 - Hover: facility/wing cards static; "Book a visit" button gets pointer + subtle hover per button token.
 
@@ -50,7 +50,7 @@ Header/intro/find-us copy is static screen content (not entity data): title "A b
 
 ## Out of scope (this phase)
 - Photo slots `home-exterior`, `home-map`, `wing-*` render labelled placeholders until real files mapped in `photos.ts`.
-- Find-us map is a `Photo` placeholder only — no embedded/interactive map.
+- Find-us map is a `Photo` placeholder only - no embedded/interactive map.
 
 ## Definition of Done
 Beyond global DoD (00-rules §11):

@@ -41,7 +41,7 @@ async function main() {
   const del = await supabase.from("residents").delete().eq("slug", SLUG);
   if (del.error) throw new Error(`delete failed: ${del.error.message}`);
   const { count } = await supabase.from("residents").select("*", { count: "exact", head: true }).eq("slug", SLUG);
-  console.log(count === 0 ? "✓ delete ok — row gone, table clean" : `⚠ leftover rows: ${count}`);
-  console.log("✓ PASS — insert/update/delete all work under RLS");
+  console.log(count === 0 ? "✓ delete ok - row gone, table clean" : `⚠ leftover rows: ${count}`);
+  console.log("✓ PASS - insert/update/delete all work under RLS");
 }
 main().catch((e) => { console.error(e.message ?? e); process.exit(1); });

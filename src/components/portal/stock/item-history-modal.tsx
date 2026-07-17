@@ -26,7 +26,7 @@ function detailsFor(m: StockMovement): string {
 
 // In/out history for one product. Fetches its own data client-side via the
 // getItemHistory server action once mounted. The caller keys this component
-// on the product id, so switching items remounts it — `moves` naturally
+// on the product id, so switching items remounts it - `moves` naturally
 // starts empty again instead of needing a setState-based reset in an effect.
 export function ItemHistoryModal({
   open,

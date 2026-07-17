@@ -2,7 +2,7 @@
 
 All tokens extracted from `.design-src/victoria-all-screens.html`. Implement as CSS variables in `globals.css` (Tailwind v4 `@theme`) + shadcn theme. **JSX references tokens, never raw values.**
 
-## Palette — primitives
+## Palette - primitives
 
 | Token | Hex | Where |
 |-------|-----|-------|
@@ -23,9 +23,9 @@ All tokens extracted from `.design-src/victoria-all-screens.html`. Implement as 
 | `border-2` | `#EAE0CE` / `#EEE6D6` | inner dividers |
 | `field` | `#DDD1BB` | input borders |
 
-## Palette — semantic scales
+## Palette - semantic scales
 
-Named scales for status. **Never hardcode these per screen** — reference by name.
+Named scales for status. **Never hardcode these per screen** - reference by name.
 
 **Care tier** (room/resident): Normal → text `#3F5137` / tint `#E5EBDD` (sage) · Premium → `#2C3563` / `#E4E6F2` (navy) · VIP → `#8A6516` / `#F3E8CE` (gold).
 
@@ -42,8 +42,8 @@ Named scales for status. **Never hardcode these per screen** — reference by na
 ## Typography
 
 Two families via `next/font`:
-- **Newsreader** (serif) — weights 400/500/600, optical sizing. Headings, page titles, display numbers (KPI values), quotes. Hero H1 `62px`, page H1 `46px`, section H2 `40-42px`, portal H1 `32-34px`, card titles `19-23px`, KPI numbers `30-33px`.
-- **Instrument Sans** (sans) — 400/500/600/700. Body, labels, buttons, meta. Body `15-18.5px`, UI `13-15px`, eyebrow `12-13px` uppercase `letter-spacing:2px`, meta `11.5-12.5px`.
+- **Newsreader** (serif) - weights 400/500/600, optical sizing. Headings, page titles, display numbers (KPI values), quotes. Hero H1 `62px`, page H1 `46px`, section H2 `40-42px`, portal H1 `32-34px`, card titles `19-23px`, KPI numbers `30-33px`.
+- **Instrument Sans** (sans) - 400/500/600/700. Body, labels, buttons, meta. Body `15-18.5px`, UI `13-15px`, eyebrow `12-13px` uppercase `letter-spacing:2px`, meta `11.5-12.5px`.
 
 Define as a fluid/utility type scale; keep the design's exact sizes as the desktop reference.
 

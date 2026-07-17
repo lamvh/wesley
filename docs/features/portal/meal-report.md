@@ -1,6 +1,6 @@
 # Meal report
 
-- **Route:** `/portal/meal-report` — `app/portal/meal-report/page.tsx`
+- **Route:** `/portal/meal-report` - `app/portal/meal-report/page.tsx`
 - **Section:** Portal · **Access:** all staff (carers log intake)
 - **Source:** `.design-src/victoria-all-screens-v2.html` lines 1034–1077 (markup), 1367–1375 + 1687–1704 (logic/data)
 - **Render:** RSC page → client island `MealReportView` (intake log is stateful)
@@ -15,7 +15,7 @@ Header row (title + date/logged-by + Submit) → 4 summary tiles → one table (
 | Section | Component | Notes |
 |---------|-----------|-------|
 | Header | inline in `meal-report-view` | eyebrow "Daily record", title "Meal report", sub; right: date, "Logged by {me}", **Submit report** (inert) |
-| Summary tiles (4) | inline | Entries logged (`logged/total`, `{pct}% complete`), Ate well (sage), Poor intake (gold), Refused (rust) — live from `summariseMealLog` |
+| Summary tiles (4) | inline | Entries logged (`logged/total`, `{pct}% complete`), Ate well (sage), Poor intake (gold), Refused (rust) - live from `summariseMealLog` |
 | Intake table | `meal-report-row` × N | cols `1.7fr 1.1fr 1.1fr 1.1fr 1.3fr` = Resident / Breakfast / Lunch / Dinner / Notes |
 | Intake selector | `intake-cell` | segmented 4-button group (All/Most/Some/Refused); selected uses `intakeMeta[level].badge` |
 
@@ -36,7 +36,7 @@ Header row (title + date/logged-by + Submit) → 4 summary tiles → one table (
 `intakeMeta` semantic scale (all=sage, most=cat-craft, some=gold, refused=rust); `bg-cream-2` cards; `font-serif` numbers; `text-ink-faint` for unselected options.
 
 ## Out of scope (this phase)
-Persisting intake, Submit report, per-row notes — all UI-only until the DB layer lands.
+Persisting intake, Submit report, per-row notes - all UI-only until the DB layer lands.
 
 ## Definition of Done
 Table renders all residents; selecting/clearing intake updates the 4 tiles live; matches the design; tokens only; RSC page + single client island; `tsc`/`lint`/`build` clean.

@@ -15,7 +15,7 @@ export function FindUsPanel() {
             227 Mt Eden Rd
           </h2>
           <p className="mt-3 text-[16px] leading-[1.65] text-hero-meta">
-            Mt Eden, Tāmaki Makaurau — a short walk from the village, with
+            Mt Eden, Tāmaki Makaurau - a short walk from the village, with
             off-street parking for visitors.
           </p>
           <Button

@@ -28,7 +28,7 @@ const levelRows = getProductCatalog()
   .map((p) => `  (${q(p.id)},${q(B)},${n(p.qtyNow)})`)
   .join(",\n");
 
-const stockSql = `-- Stock seed — paste in the Supabase SQL Editor AFTER 0002_stock_procurement.sql. Idempotent.
+const stockSql = `-- Stock seed - paste in the Supabase SQL Editor AFTER 0002_stock_procurement.sql. Idempotent.
 insert into public.providers (id, building_id, name, category, contact_email, phone, lead_time, terms, preferred, color, tint) values
 ${provRows}
 on conflict (id) do update set name=excluded.name, category=excluded.category, contact_email=excluded.contact_email,
@@ -96,7 +96,7 @@ const leaveInserts = leaves
   .map((l) => `insert into public.leave_requests (building_id, staff_id, type, from_date, to_date, days, status, note)\n  select ${q(B)}, s.id, ${q(l[1])}, ${q(l[2])}, ${q(l[3])}, ${n(l[4] as number)}, ${q(l[5])}, ${q(l[6])} from public.staff s where s.name=${q(l[0])} and s.building_id=${q(B)};`)
   .join("\n");
 
-const staffSql = `-- Staff seed — paste in the Supabase SQL Editor AFTER 0003_staff_admin.sql.
+const staffSql = `-- Staff seed - paste in the Supabase SQL Editor AFTER 0003_staff_admin.sql.
 -- Upsert the design's 10 staff (insert-if-missing + update), then drop stray placeholder staff.
 ${staffUpsert}
 

@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import type { RoleDef, ShiftTemplate } from "@/types/domain";
 
 // Shift-template directory: compact cards (3 per row) grouped by building, then
-// by role within each building — each role a sub-section led by the role's pill
+// by role within each building - each role a sub-section led by the role's pill
 // (colour from the Roles & groups registry) + count. Each card shows its own
 // colour swatch, name, "time · Nh paid" payroll line, a gap badge and a coverage
 // bar.

@@ -31,7 +31,7 @@ export function RequestVisitForm() {
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    // Inert this phase — no network or persistence.
+    // Inert this phase - no network or persistence.
     console.log({ name, contact, room, message });
   }
 

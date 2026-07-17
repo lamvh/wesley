@@ -1,6 +1,6 @@
 # Users & access
 
-- **Route:** `/portal/users` — `app/portal/users/page.tsx`
+- **Route:** `/portal/users` - `app/portal/users/page.tsx`
 - **Section:** Portal · **Access:** admin / super-admin only
 - **Source:** `.design-src/victoria-all-screens-v2.html` lines 1080–1210 (screen + add-user modal), 1283–1365 + 1637–1685 (roles, permissions, data)
 - **Render:** RSC page → client island `UsersView` (tabs, filters, permission toggles, modal are all stateful)
@@ -32,7 +32,7 @@ Header (title + Add user) → pill tabs (Users / Roles & permissions) → tab bo
 - Filter narrows the user table by role.
 
 ## Interactions
-- Tab switch, role-filter select, role-card select — client state.
+- Tab switch, role-filter select, role-card select - client state.
 - Toggle permission → `togglePerm(role, moduleKey, action)` (no-op for super_admin), flips a cloned matrix.
 - Add user modal open/close; submit **inert** (no persistence this phase).
 
@@ -40,10 +40,10 @@ Header (title + Add user) → pill tabs (Users / Roles & permissions) → tab bo
 `userRoleMeta` (super_admin=navy, admin=rust, nurse=cat-craft, carer=sage, activities=gold, family=cat-music); switch on=`bg-sage`, off=`bg-line-strong`; navy active tabs/pills.
 
 ## Out of scope (this phase)
-Creating/inviting/suspending users, persisting permission edits, the ⋯ row menu — UI-only until DB + auth land.
+Creating/inviting/suspending users, persisting permission edits, the ⋯ row menu - UI-only until DB + auth land.
 
 ## Definition of Done
 Both tabs render; filters + role selection + permission toggles work in-session; super_admin locked; modal opens/closes; tokens only; RSC page + client island; `tsc`/`lint`/`build` clean.
 
 ## DB status
-The RBAC tables are **live in the DB** (`supabase/migrations/0001_core_schema.sql`, applied + seeded): `roles` (6), `role_permissions` (the full 6×10×4 = 240 grant matrix, seeded from `getDefaultPermissions()`), and `app_users` (name/email/`role_id`/`status`, linked to `auth.users` by `auth_id`). The signed-in user's `app_users` row **already gates portal access + role** (`lib/supabase/current-user.ts`, verified end-to-end) — "only assigned users are shown". Still pending: this screen still reads mock data (not yet the DB); `togglePerm` → upsert `role_permissions`, Add user → insert `app_users` (`Invited`) + Supabase invite; wiring nav/route guards to the `role_permissions` matrix (today gating is the coarse admin/staff map). `user_scopes` remains deferred (see docs/03-data-model.md).
+The RBAC tables are **live in the DB** (`supabase/migrations/0001_core_schema.sql`, applied + seeded): `roles` (6), `role_permissions` (the full 6×10×4 = 240 grant matrix, seeded from `getDefaultPermissions()`), and `app_users` (name/email/`role_id`/`status`, linked to `auth.users` by `auth_id`). The signed-in user's `app_users` row **already gates portal access + role** (`lib/supabase/current-user.ts`, verified end-to-end) - "only assigned users are shown". Still pending: this screen still reads mock data (not yet the DB); `togglePerm` → upsert `role_permissions`, Add user → insert `app_users` (`Invited`) + Supabase invite; wiring nav/route guards to the `role_permissions` matrix (today gating is the coarse admin/staff map). `user_scopes` remains deferred (see docs/03-data-model.md).

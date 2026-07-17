@@ -1,8 +1,8 @@
-# Staff (Administration) — Implementation Plan
+# Staff (Administration) - Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax.
 
-**Goal:** Add a new `/portal/staff` Administration screen — staff directory with leave balances, shift-template CRUD, and a leave approve/decline workflow — persisted in Supabase.
+**Goal:** Add a new `/portal/staff` Administration screen - staff directory with leave balances, shift-template CRUD, and a leave approve/decline workflow - persisted in Supabase.
 
 **Architecture:** Mirrors the just-shipped Stock feature and residents: a `tsx` script applies the DDL + seeds; async data layer reads under RLS; server actions write under RLS; the RSC page awaits data → `StaffView` client island. The live `staff` table is **extended** (not recreated); two new tables are added.
 
@@ -12,14 +12,14 @@
 
 ## Global Constraints
 
-- **Git:** do NOT branch or commit unless the user asks. `Commit` steps are checkpoints — leave changes uncommitted.
-- **No test framework:** "tests" are `tsx` verify scripts (pg-direct via `DIRECT_URL`, like `scripts/db/seed-stock.mts`) + `npx tsc --noEmit` + `npm run lint` + `npm run build`. **The DB is currently unreachable from the build environment** (IPv6-only direct host) — so **do NOT run any DB command**; write the seed/verify scripts but gate only on tsc/lint/build. The user runs the DB batch on their machine.
+- **Git:** do NOT branch or commit unless the user asks. `Commit` steps are checkpoints - leave changes uncommitted.
+- **No test framework:** "tests" are `tsx` verify scripts (pg-direct via `DIRECT_URL`, like `scripts/db/seed-stock.mts`) + `npx tsc --noEmit` + `npm run lint` + `npm run build`. **The DB is currently unreachable from the build environment** (IPv6-only direct host) - so **do NOT run any DB command**; write the seed/verify scripts but gate only on tsc/lint/build. The user runs the DB batch on their machine.
 - **Follow the Stock feature verbatim as the reference** (`supabase/migrations/0002_stock_procurement.sql`, `scripts/db/seed-stock.mts`, `src/lib/data/stock.ts`, `src/lib/actions/stock.ts`, `src/components/portal/stock/*`).
 - **Building scope:** `building_id = 'wesley'`.
 - **RLS:** `<table>_read` select/authenticated; `<table>_write` all/authenticated with check(true).
-- **Strict lint:** `@typescript-eslint/no-explicit-any` and `no-unused-vars` are errors; `eslint-plugin-react-hooks` forbids synchronous `setState` in a `useEffect` body — drive state from events; reset modals via the `key=` remount idiom used across `src/components/portal/stock/`.
+- **Strict lint:** `@typescript-eslint/no-explicit-any` and `no-unused-vars` are errors; `eslint-plugin-react-hooks` forbids synchronous `setState` in a `useEffect` body - drive state from events; reset modals via the `key=` remount idiom used across `src/components/portal/stock/`.
 - **No plan/phase references in code, comments, or migration filenames.**
-- **Type collision:** an existing `LeaveRequest` type (roster) must NOT be changed — use new names `StaffRecord`, `ShiftTemplate`, `StaffLeaveRequest`.
+- **Type collision:** an existing `LeaveRequest` type (roster) must NOT be changed - use new names `StaffRecord`, `ShiftTemplate`, `StaffLeaveRequest`.
 
 ---
 
@@ -167,8 +167,8 @@ for (const [name,type,from,to,days,status,note] of leaves) {
 ```
 End with a counts `console.table` (staff / shift_templates / leave_requests).
 
-- [ ] **Step 3 (DEFERRED — DB unreachable):** the run command is `npx tsx scripts/db/seed-staff.mts` (expect staff 10, shift_templates 6, leave_requests 4). Do NOT run now; document it in the report as deferred.
-- [ ] **Step 4: Gate** — there is no code to typecheck here except the `.mts` (which uses no `@/` app imports). Run `npx tsc --noEmit` to confirm the repo still compiles. Commit step skipped (git rule).
+- [ ] **Step 3 (DEFERRED - DB unreachable):** the run command is `npx tsx scripts/db/seed-staff.mts` (expect staff 10, shift_templates 6, leave_requests 4). Do NOT run now; document it in the report as deferred.
+- [ ] **Step 4: Gate** - there is no code to typecheck here except the `.mts` (which uses no `@/` app imports). Run `npx tsc --noEmit` to confirm the repo still compiles. Commit step skipped (git rule).
 
 ---
 
@@ -197,7 +197,7 @@ export interface StaffLeaveRequest {
 }
 ```
 
-- [ ] **Step 2: Write `src/lib/data/staff.ts`** — async accessors mapping snake→camel (mirror `src/lib/data/stock.ts` exactly for the client + error pattern):
+- [ ] **Step 2: Write `src/lib/data/staff.ts`** - async accessors mapping snake→camel (mirror `src/lib/data/stock.ts` exactly for the client + error pattern):
 
 ```ts
 import { createClient } from "@/lib/supabase/server";
@@ -252,7 +252,7 @@ export async function getLeaveRequests(): Promise<StaffLeaveRequest[]> {
 
 **Interfaces produced:** `saveStaff`, `deleteStaff`, `saveShiftTemplate`, `deleteShiftTemplate`, `saveLeave`, `approveLeave`, `declineLeave` (all `"use server"`, `revalidatePath("/portal/staff")`).
 
-- [ ] **Step 1: Write `src/lib/actions/staff.ts`** — mirror `src/lib/actions/stock.ts` (same `str`/`num` helpers, `StaffFormState { error?: string }`):
+- [ ] **Step 1: Write `src/lib/actions/staff.ts`** - mirror `src/lib/actions/stock.ts` (same `str`/`num` helpers, `StaffFormState { error?: string }`):
   - `saveStaff(prev, fd)`: hidden `id`; require `name`; `role`, `wing`, `contract`, `phone`; derive `hours` from contract (`Full-time`→40, `Part-time`→24, `Casual`→12); `initials` from name; `annual` default 20 (keep existing on edit); upsert `staff` with `building_id`. On insert set `taken` 0.
   - `deleteStaff(fd)`: delete by id.
   - `saveShiftTemplate(prev, fd)`: hidden `id` (or generate `sh-${Date.now()}`); `name`, `time_label` (from start/end or a single field), `req`, `filled`, `color`/`tint`/`border` (pick a palette entry by color); upsert.
@@ -270,10 +270,10 @@ export async function getLeaveRequests(): Promise<StaffLeaveRequest[]> {
 
 **Files:** Create `src/app/portal/staff/page.tsx`, `src/app/portal/staff/loading.tsx`, `src/components/portal/staff/staff-view.tsx`. Modify `src/lib/portal-nav.ts`, `src/components/shared/icons.tsx`. Read: `src/app/portal/stock/page.tsx`, `src/components/portal/stock/stock-view.tsx`, an existing `loading.tsx` (e.g. `src/app/portal/users/loading.tsx`), `src/components/shared/portal-page-header.tsx`.
 
-- [ ] **Step 1: Add nav + icon** — in `src/lib/portal-nav.ts` add to `PORTAL_ADMIN_NAV` (after Users & access): `{ href: "/portal/staff", label: "Staff", icon: "staff" }`. In `src/components/shared/icons.tsx` add a `staff` path (a people glyph, lucide-style, matching the existing paths' format).
-- [ ] **Step 2: `page.tsx`** (RSC) — `await Promise.all([getStaff(), getShiftTemplates(), getLeaveRequests()])` → `<StaffView staff={...} shifts={...} leaves={...} />`.
-- [ ] **Step 3: `loading.tsx`** — a skeleton matching the other portal routes' style.
-- [ ] **Step 4: `staff-view.tsx`** — client island: props `{ staff, shifts, leaves }`; `PortalPageHeader` with eyebrow `Administration`, title `Staff`, sub `{building} · manage your team and shift coverage`; header action `+ Add staff`; KPI row (4: Total staff / On shift today = `status==='Active'` / On leave = `status==='On leave'` / Pending requests = `leaves.filter(status==='Pending')`); pill sub-tabs `team|shifts|leave` (`useState`); render each tab body as a **placeholder** for now; modal state scaffolding added in Tasks 5–7.
+- [ ] **Step 1: Add nav + icon** - in `src/lib/portal-nav.ts` add to `PORTAL_ADMIN_NAV` (after Users & access): `{ href: "/portal/staff", label: "Staff", icon: "staff" }`. In `src/components/shared/icons.tsx` add a `staff` path (a people glyph, lucide-style, matching the existing paths' format).
+- [ ] **Step 2: `page.tsx`** (RSC) - `await Promise.all([getStaff(), getShiftTemplates(), getLeaveRequests()])` → `<StaffView staff={...} shifts={...} leaves={...} />`.
+- [ ] **Step 3: `loading.tsx`** - a skeleton matching the other portal routes' style.
+- [ ] **Step 4: `staff-view.tsx`** - client island: props `{ staff, shifts, leaves }`; `PortalPageHeader` with eyebrow `Administration`, title `Staff`, sub `{building} · manage your team and shift coverage`; header action `+ Add staff`; KPI row (4: Total staff / On shift today = `status==='Active'` / On leave = `status==='On leave'` / Pending requests = `leaves.filter(status==='Pending')`); pill sub-tabs `team|shifts|leave` (`useState`); render each tab body as a **placeholder** for now; modal state scaffolding added in Tasks 5–7.
 - [ ] **Step 5: Gate** `npx tsc --noEmit` + `npm run lint` + `npm run build` (the route is dynamic; build passes without a DB). Commit skipped.
 
 ---
@@ -282,9 +282,9 @@ export async function getLeaveRequests(): Promise<StaffLeaveRequest[]> {
 
 **Files:** Create `src/components/portal/staff/team-tab.tsx`, `src/components/portal/staff/staff-form.tsx`. Modify `staff-view.tsx`. Reuse `src/components/portal/stock/confirm-delete-modal.tsx`. Read: `.design-src/victoria-at-mt-eden.dc.html` lines 1339–1361 (team table) + 1786–1831 (staff modal); `src/components/portal/stock/stock-item-form.tsx` (modal pattern); `src/lib/design-meta.ts`.
 
-- [ ] **Step 1: `team-tab.tsx`** — table, columns **Name** (avatar `color`/`initials` + name + `Since {start}`) · **Role** · **Wing** · **Contract** (pill colored by contract: Full-time navy `text-navy`/`bg-navy-tint`, Part-time gold `text-gold-text`/`bg-gold-tint`, Casual `text-ink-muted`/`bg-muted`; sub `{hours} hrs/wk`) · **Leave** (`{taken}/{annual}`, per decision #4) · **Contact** (phone) · **Status** (dot `bg-sage` Active / `bg-amber` On leave + label) · actions (edit `onEdit(s)`, delete `onDelete(s)`). Props: `staff: StaffRecord[]`, callbacks.
-- [ ] **Step 2: `staff-form.tsx`** — modal, `useActionState(saveStaff, {})`, hidden `id`; fields: Full name; Role choice-grid (Carer / Registered Nurse / Team Leader / Activities); Contract choice-grid (Full-time / Part-time / Casual); Wing `<select>` (Rātā / Kōwhai / Tōtara / All wings); Phone. Submit "Add staff"/"Save changes"; show `state.error`; `onClose`.
-- [ ] **Step 3: wire `staff-view.tsx`** — replace team placeholder with `<TeamTab>`; header `+ Add staff` opens blank form; hold `editStaff: StaffRecord | null` + `confirmDelete` state; delete → confirm modal → `deleteStaff`; surface imperative errors (try/catch → confirm modal `error`, like Stock's fix pass).
+- [ ] **Step 1: `team-tab.tsx`** - table, columns **Name** (avatar `color`/`initials` + name + `Since {start}`) · **Role** · **Wing** · **Contract** (pill colored by contract: Full-time navy `text-navy`/`bg-navy-tint`, Part-time gold `text-gold-text`/`bg-gold-tint`, Casual `text-ink-muted`/`bg-muted`; sub `{hours} hrs/wk`) · **Leave** (`{taken}/{annual}`, per decision #4) · **Contact** (phone) · **Status** (dot `bg-sage` Active / `bg-amber` On leave + label) · actions (edit `onEdit(s)`, delete `onDelete(s)`). Props: `staff: StaffRecord[]`, callbacks.
+- [ ] **Step 2: `staff-form.tsx`** - modal, `useActionState(saveStaff, {})`, hidden `id`; fields: Full name; Role choice-grid (Carer / Registered Nurse / Team Leader / Activities); Contract choice-grid (Full-time / Part-time / Casual); Wing `<select>` (Rātā / Kōwhai / Tōtara / All wings); Phone. Submit "Add staff"/"Save changes"; show `state.error`; `onClose`.
+- [ ] **Step 3: wire `staff-view.tsx`** - replace team placeholder with `<TeamTab>`; header `+ Add staff` opens blank form; hold `editStaff: StaffRecord | null` + `confirmDelete` state; delete → confirm modal → `deleteStaff`; surface imperative errors (try/catch → confirm modal `error`, like Stock's fix pass).
 - [ ] **Step 4: Gate** tsc + lint + build. Commit skipped.
 
 ---
@@ -293,9 +293,9 @@ export async function getLeaveRequests(): Promise<StaffLeaveRequest[]> {
 
 **Files:** Create `src/components/portal/staff/shift-templates-tab.tsx`, `src/components/portal/staff/shift-template-form.tsx`. Modify `staff-view.tsx`. Read: `.design-src/...` lines 1365–1378 (template cards); `src/components/portal/stock/provider-form.tsx` (modal).
 
-- [ ] **Step 1: `shift-templates-tab.tsx`** — two-column cards: swatch (`tint`/`border`) + name + time; **gap badge** (`gap = req-filled`; `{gap} open` terracotta `text-rust`/`bg-rust-tint` if gap>0 else `Fully staffed` sage); **coverage bar** track `bg-line` filled to `filled/req` with `bg-sage` (staffed) / `bg-terracotta` (gap); edit button per card. Header `+ Add shift`.
-- [ ] **Step 2: `shift-template-form.tsx`** — modal, `useActionState(saveShiftTemplate, {})`; fields name, start + end (time text) OR a single time field, req (number), filled (number), color swatch picker (6 palette entries from the seed). Submit "Add shift"/"Save changes".
-- [ ] **Step 3: wire into `staff-view.tsx`** — replace shifts placeholder; header action switches to `+ Add shift` when on the shifts tab; edit/delete via confirm modal → `deleteShiftTemplate`.
+- [ ] **Step 1: `shift-templates-tab.tsx`** - two-column cards: swatch (`tint`/`border`) + name + time; **gap badge** (`gap = req-filled`; `{gap} open` terracotta `text-rust`/`bg-rust-tint` if gap>0 else `Fully staffed` sage); **coverage bar** track `bg-line` filled to `filled/req` with `bg-sage` (staffed) / `bg-terracotta` (gap); edit button per card. Header `+ Add shift`.
+- [ ] **Step 2: `shift-template-form.tsx`** - modal, `useActionState(saveShiftTemplate, {})`; fields name, start + end (time text) OR a single time field, req (number), filled (number), color swatch picker (6 palette entries from the seed). Submit "Add shift"/"Save changes".
+- [ ] **Step 3: wire into `staff-view.tsx`** - replace shifts placeholder; header action switches to `+ Add shift` when on the shifts tab; edit/delete via confirm modal → `deleteShiftTemplate`.
 - [ ] **Step 4: Gate** tsc + lint + build. Commit skipped.
 
 ---
@@ -304,9 +304,9 @@ export async function getLeaveRequests(): Promise<StaffLeaveRequest[]> {
 
 **Files:** Create `src/components/portal/staff/leave-tab.tsx`, `src/components/portal/staff/leave-form.tsx`. Modify `staff-view.tsx`. Read: `src/components/portal/roster/leave-request-row.tsx` (existing inert row for visual reference); design leave data shape (spec §2).
 
-- [ ] **Step 1: `leave-tab.tsx`** — rows: avatar + `{name} · {type}`, date range `{from} – {to}`, `{days} days`, status pill (Pending amber `text-amber`/`bg-amber-tint` · Approved navy `text-navy`/`bg-navy-tint` · Declined `text-rust`/`bg-rust-tint`), note; for `Pending` rows show **Approve** (sage) + **Decline** (outline) buttons → `onApprove(id)` / `onDecline(id)`. Header `+ Add leave`.
-- [ ] **Step 2: `leave-form.tsx`** — modal, `useActionState(saveLeave, {})`; fields staff `<select>` (from `staff`), type `<select>` (Annual leave / Sick leave / Shift swap), from + to (date), days (number), note. Submit "Add leave".
-- [ ] **Step 3: wire into `staff-view.tsx`** — replace leave placeholder; approve/decline call the actions (try/catch + surface errors); `+ Add leave` opens the form.
+- [ ] **Step 1: `leave-tab.tsx`** - rows: avatar + `{name} · {type}`, date range `{from} – {to}`, `{days} days`, status pill (Pending amber `text-amber`/`bg-amber-tint` · Approved navy `text-navy`/`bg-navy-tint` · Declined `text-rust`/`bg-rust-tint`), note; for `Pending` rows show **Approve** (sage) + **Decline** (outline) buttons → `onApprove(id)` / `onDecline(id)`. Header `+ Add leave`.
+- [ ] **Step 2: `leave-form.tsx`** - modal, `useActionState(saveLeave, {})`; fields staff `<select>` (from `staff`), type `<select>` (Annual leave / Sick leave / Shift swap), from + to (date), days (number), note. Submit "Add leave".
+- [ ] **Step 3: wire into `staff-view.tsx`** - replace leave placeholder; approve/decline call the actions (try/catch + surface errors); `+ Add leave` opens the form.
 - [ ] **Step 4: Gate** tsc + lint + build. Commit skipped.
 
 ---
@@ -315,9 +315,9 @@ export async function getLeaveRequests(): Promise<StaffLeaveRequest[]> {
 
 **Files:** Modify `docs/03-data-model.md`; create `docs/features/portal/staff.md`. Verify no `LeaveRequest`/`StaffMember` regressions.
 
-- [ ] **Step 1:** `docs/features/portal/staff.md` — document the new screen (3 tabs, CRUD, approve/decline debits `taken`, Supabase flow via `data/staff.ts` + `actions/staff.ts` + `approve_leave` RPC).
-- [ ] **Step 2:** `docs/03-data-model.md` — add the extended `staff` columns + `shift_templates` + `leave_requests` tables + `approve_leave` RPC as LIVE (deferred apply noted).
-- [ ] **Step 3:** `grep -rn "StaffMember\|LeaveRequest\b" src/` — confirm the roster's original `LeaveRequest`/`StaffMember` usages still compile untouched (new types are `StaffRecord`/`ShiftTemplate`/`StaffLeaveRequest`).
+- [ ] **Step 1:** `docs/features/portal/staff.md` - document the new screen (3 tabs, CRUD, approve/decline debits `taken`, Supabase flow via `data/staff.ts` + `actions/staff.ts` + `approve_leave` RPC).
+- [ ] **Step 2:** `docs/03-data-model.md` - add the extended `staff` columns + `shift_templates` + `leave_requests` tables + `approve_leave` RPC as LIVE (deferred apply noted).
+- [ ] **Step 3:** `grep -rn "StaffMember\|LeaveRequest\b" src/` - confirm the roster's original `LeaveRequest`/`StaffMember` usages still compile untouched (new types are `StaffRecord`/`ShiftTemplate`/`StaffLeaveRequest`).
 - [ ] **Step 4: Gate** `npx tsc --noEmit` + `npm run lint` + `npm run build` all clean.
 
 ---
@@ -331,5 +331,5 @@ export async function getLeaveRequests(): Promise<StaffLeaveRequest[]> {
 **Type consistency:** new types `StaffRecord`/`ShiftTemplate`/`StaffLeaveRequest` defined in Task 2, consumed unchanged in Tasks 3–7; action names stable; `approve_leave` RPC arg (`p_id`) matches between migration, `verify-staff-write`, and `approveLeave`.
 
 ## Open items
-1. All DB apply/seed/verify runs are **deferred** (DB unreachable from build env) — same batch-on-your-machine handoff as Stock, plus `npx tsx scripts/db/seed-staff.mts`.
-2. Reconstructed leave-tab/modals (past 256 KB cap) built to app tokens — confirm against a live screenshot if available.
+1. All DB apply/seed/verify runs are **deferred** (DB unreachable from build env) - same batch-on-your-machine handoff as Stock, plus `npx tsx scripts/db/seed-staff.mts`.
+2. Reconstructed leave-tab/modals (past 256 KB cap) built to app tokens - confirm against a live screenshot if available.

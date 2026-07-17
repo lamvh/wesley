@@ -62,7 +62,7 @@ export function UsersView() {
       name: user.name,
       email: user.email,
       role: user.role,
-      scope: user.scope === "—" ? "" : user.scope,
+      scope: user.scope === "-" ? "" : user.scope,
     });
     setEditingEmail(user.email);
     setAddUserOpen(true);
@@ -80,7 +80,7 @@ export function UsersView() {
     const parts = name.split(/\s+/);
     const initials = (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase();
     const email = form.email.trim() || `${parts.join(".").toLowerCase()}@wesley.nz`;
-    const scope = form.scope.trim() || "—";
+    const scope = form.scope.trim() || "-";
 
     if (editingEmail) {
       setUsers((prev) =>

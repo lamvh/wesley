@@ -111,7 +111,7 @@ export function RolesPermissions({
         {locked && (
           <div className="mx-6 mt-4 flex items-center gap-[9px] rounded-[11px] border border-navy/25 bg-navy-tint px-[15px] py-[11px] text-[13px] text-navy">
             <Icon name="lock" size={16} />
-            Super Admin has unrestricted access — these permissions can&apos;t be
+            Super Admin has unrestricted access - these permissions can&apos;t be
             changed.
           </div>
         )}

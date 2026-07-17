@@ -1,7 +1,7 @@
 -- A staff member whose roles span more than one role group can be pinned to a
 -- chosen group for the weekly roster (which band they appear in). Null = auto:
 -- the roster falls back to the earliest eligible group by sort order. Staff
--- whose roles all sit in one group never need this — it stays null for them.
+-- whose roles all sit in one group never need this - it stays null for them.
 
 alter table public.staff
   add column if not exists roster_group_id text;

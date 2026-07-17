@@ -2,7 +2,7 @@ import type { RosterDay, RosterGrid } from "@/types/domain";
 import { rosterCellKey } from "@/types/domain";
 
 // Roster date/week helpers. The shift-type vocabulary (legend/picker) is real
-// data — see getRosterShiftTypes in @/lib/data/roster.
+// data - see getRosterShiftTypes in @/lib/data/roster.
 
 const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];

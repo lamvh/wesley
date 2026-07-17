@@ -3,7 +3,7 @@ import { BackLink } from "@/components/portal/back-link";
 import { PortalPageHeader } from "@/components/shared/portal-page-header";
 import { ResidentForm } from "@/components/portal/residents/resident-form";
 
-export const metadata: Metadata = { title: "Admit a resident — Wesley" };
+export const metadata: Metadata = { title: "Admit a resident - Wesley" };
 
 export default function NewResidentPage() {
   return (

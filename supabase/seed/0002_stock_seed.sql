@@ -1,4 +1,4 @@
--- Stock seed — paste in the Supabase SQL Editor AFTER 0002_stock_procurement.sql. Idempotent.
+-- Stock seed - paste in the Supabase SQL Editor AFTER 0002_stock_procurement.sql. Idempotent.
 insert into public.providers (id, building_id, name, category, contact_email, phone, lead_time, terms, preferred, color, tint) values
   ('medsupply','wesley','MedSupply NZ','Clinical & PPE','orders@medsupply.co.nz','09 555 0110','2–3 days','20th of month',true,'#2C3563','#E4E6F2'),
   ('carewell','wesley','CareWell Continence','Continence','sales@carewell.co.nz','09 555 0244','3–4 days','Net 30',true,'#3d6b74','#DEEAEC'),
@@ -13,7 +13,7 @@ insert into public.products (id, building_id, name, category, unit, price, provi
   ('p2','wesley','Surgical masks','Clinical & PPE','box of 50',9,'medsupply',30),
   ('p3','wesley','Wound dressings','Clinical & PPE','pack of 10',18,'medsupply',40),
   ('p4','wesley','Hand sanitiser 500ml','Clinical & PPE','each',6.5,'medsupply',24),
-  ('p5','wesley','Briefs — large','Continence','pack of 20',22,'carewell',30),
+  ('p5','wesley','Briefs - large','Continence','pack of 20',22,'carewell',30),
   ('p6','wesley','Bed pads','Continence','pack of 25',15,'carewell',50),
   ('p7','wesley','Wipes','Continence','pack of 80',4.5,'carewell',30),
   ('p8','wesley','Thickener','Kitchen & Nutrition','tin',11,'freshfields',20),

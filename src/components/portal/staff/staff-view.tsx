@@ -71,7 +71,7 @@ export function StaffView({
     },
   ];
 
-  // Staff form: staffFormOpen + editStaff together decide add vs edit —
+  // Staff form: staffFormOpen + editStaff together decide add vs edit -
   // editStaff stays null for "+ Add staff".
   const [staffFormOpen, setStaffFormOpen] = useState(false);
   const [editStaff, setEditStaff] = useState<StaffRecord | null>(null);
@@ -93,7 +93,7 @@ export function StaffView({
   const [leaveFormOpen, setLeaveFormOpen] = useState(false);
   const [leaveError, setLeaveError] = useState<string | null>(null);
   // Tracks the leave request currently being approved/declined so its row's
-  // buttons can be disabled — guards against a double-click double-approving.
+  // buttons can be disabled - guards against a double-click double-approving.
   const [pendingLeaveId, setPendingLeaveId] = useState<string | null>(null);
 
   function onHeaderAction() {

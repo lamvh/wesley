@@ -1,6 +1,6 @@
 /**
  * Emits a single self-contained SQL file (schema + seed data from the mocks)
- * that can be pasted straight into the Supabase SQL editor — no DB password
+ * that can be pasted straight into the Supabase SQL editor - no DB password
  * needed. Output: supabase/seed/0001_core_seed.sql
  *
  * Run: npx tsx scripts/db/emit-core-seed-sql.mts
@@ -65,7 +65,7 @@ for (const u of getUsers()) {
   );
 }
 
-// project owner — super admin, linked to the auth account by email
+// project owner - super admin, linked to the auth account by email
 out.push("\n-- project owner (super_admin)");
 out.push(
   `insert into public.app_users (auth_id, name, email, role_id, building_id, scope, status) values ((select id from auth.users where email = 'vhlam1997@gmail.com'), 'lamvh', 'vhlam1997@gmail.com', 'super_admin', null, 'System', 'Active') on conflict (email) do update set name=excluded.name, role_id='super_admin', status='Active', auth_id=coalesce(app_users.auth_id, excluded.auth_id);`,

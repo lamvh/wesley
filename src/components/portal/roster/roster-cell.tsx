@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-// createPortal is only reached when the picker is open — a client-only state
-// that is always false during SSR — so document is never touched on the server.
+// createPortal is only reached when the picker is open - a client-only state
+// that is always false during SSR - so document is never touched on the server.
 import { createPortal } from "react-dom";
 import type { ShiftType } from "@/types/domain";
 import { cn } from "@/lib/utils";
@@ -63,7 +63,7 @@ export function RosterCell({
     setPos({ top: r.bottom + 4, left: clampedLeft });
   }, [isOpen, flipRight]);
 
-  // A fixed popover detaches from its anchor on scroll/resize — close it so it
+  // A fixed popover detaches from its anchor on scroll/resize - close it so it
   // never lingers in the wrong place. Scrolls inside the popover's own shift
   // list must not close it, so ignore scroll events originating within it.
   useEffect(() => {
@@ -147,7 +147,7 @@ export function RosterCell({
                   Day off
                 </button>
               </div>
-              {/* Which role's shifts this cell offers — the picker is a flat
+              {/* Which role's shifts this cell offers - the picker is a flat
                   list filtered to the staffer's role group (see rosterPickersFor). */}
               {staffRole && (
                 <div className="mt-[-3px] mb-[9px] text-[10.5px] font-semibold text-ink-faint">

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import type { RoomStyle } from "@/types/domain";
 
 // Large 2-col marketing row for one room style: photo left, detail panel right.
-// Distinct from the portal occupancy room-card — this is a feature presentation.
+// Distinct from the portal occupancy room-card - this is a feature presentation.
 export function RoomStyleRow({ style }: { style: RoomStyle }) {
   return (
     <div className="grid grid-cols-[0.9fr_1.1fr] items-stretch overflow-hidden rounded-[20px] border border-line bg-cream-2 max-md:grid-cols-1">

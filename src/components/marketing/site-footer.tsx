@@ -46,11 +46,8 @@ export function SiteFooter() {
         <div>
           <div className="mb-3 text-[14px] font-bold text-cream-warm">Access</div>
           <div className="flex flex-col gap-[9px] text-[14px]">
-            <Link href="/portal/family" className="text-on-navy hover:text-cream-warm">
-              Family login
-            </Link>
-            <Link href="/portal" className="text-on-navy hover:text-cream-warm">
-              Staff portal
+            <Link href="/login" className="text-on-navy hover:text-cream-warm">
+              Portal login
             </Link>
             <Link href="/contact" className="text-on-navy hover:text-cream-warm">
               Contact

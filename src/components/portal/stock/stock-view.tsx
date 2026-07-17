@@ -55,7 +55,7 @@ export function StockView({ providers, products, movements, orders }: StockViewP
   const [tab, setTab] = useState<Tab>("inventory");
 
   // Inventory item form: itemFormOpen + editProduct together decide add vs
-  // edit — editProduct stays null for "+ Add item".
+  // edit - editProduct stays null for "+ Add item".
   const [itemFormOpen, setItemFormOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [historyProduct, setHistoryProduct] = useState<Product | null>(null);
@@ -63,7 +63,7 @@ export function StockView({ providers, products, movements, orders }: StockViewP
   const [confirmError, setConfirmError] = useState<string | null>(null);
 
   // Provider form: providerFormOpen + editProvider together decide add vs
-  // edit — editProvider stays null for "+ Add provider".
+  // edit - editProvider stays null for "+ Add provider".
   const [providerFormOpen, setProviderFormOpen] = useState(false);
   const [editProvider, setEditProvider] = useState<Provider | null>(null);
 

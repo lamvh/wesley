@@ -21,7 +21,7 @@ export function FamilyTeaser() {
             Stay close, wherever you are
           </h2>
           <p className="mt-[18px] text-[17px] leading-[1.7] text-hero-meta">
-            Our new family portal keeps whānau in the loop — daily photos and
+            Our new family portal keeps whānau in the loop - daily photos and
             updates from carers, upcoming visits, activity sign-ups and secure
             messaging with the care team.
           </p>
@@ -62,7 +62,7 @@ export function FamilyTeaser() {
           </div>
           <p className="mb-[6px] mt-[14px] px-1 text-[14px] leading-[1.6] text-ink-nav">
             &ldquo;Peggy joined the garden group this morning and picked the
-            first of the sweet peas — she was thrilled. Ate a good lunch and is
+            first of the sweet peas - she was thrilled. Ate a good lunch and is
             resting well. 🌿&rdquo;
           </p>
         </div>

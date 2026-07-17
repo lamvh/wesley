@@ -14,8 +14,8 @@ export function WelcomeSection() {
         </h2>
         <p className="mt-[22px] text-[17px] leading-[1.72] text-ink-muted">
           At Wesley we keep things small on purpose. Our team learns the little
-          things — how you take your tea, the crossword you never miss, the
-          family who visit on Sundays — because those details are what make a
+          things - how you take your tea, the crossword you never miss, the
+          family who visit on Sundays - because those details are what make a
           place feel like home.
         </p>
         <div className="mt-[26px] flex flex-wrap gap-[10px]">

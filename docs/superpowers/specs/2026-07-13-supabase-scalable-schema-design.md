@@ -1,4 +1,4 @@
-# Supabase Scalable Schema — Design
+# Supabase Scalable Schema - Design
 
 **Status:** Approved design (pre-implementation)
 **Date:** 2026-07-13
@@ -9,11 +9,11 @@
 
 | Decision | Choice |
 |---|---|
-| Growth axis | **Single org now, SaaS-ready later** — `org_id` seam on every tenant table from day one; going multi-tenant is a data migration, not a rewrite. |
+| Growth axis | **Single org now, SaaS-ready later** - `org_id` seam on every tenant table from day one; going multi-tenant is a data migration, not a rewrite. |
 | Deliverable | **Design doc first**; SQL migrations + RLS policies generated in a follow-up phase. |
 | Audit/history | **Soft-delete + audit columns** baseline (`created_at/updated_at/created_by/updated_by/deleted_at`). Generic trigger-based `audit_log` deferred (see Open Questions). |
-| RLS depth | **Full policy strategy** — tenant isolation, building scope, resident scope, and permission-matrix enforcement all specified. |
-| RLS enforcement pattern | **Approach C (hybrid)** — identity (`org_id`, `role_id`, `building_ids`) in JWT claims; fine-grained module/action grants checked live via a `SECURITY DEFINER authorize()` function reading `role_permissions`. |
+| RLS depth | **Full policy strategy** - tenant isolation, building scope, resident scope, and permission-matrix enforcement all specified. |
+| RLS enforcement pattern | **Approach C (hybrid)** - identity (`org_id`, `role_id`, `building_ids`) in JWT claims; fine-grained module/action grants checked live via a `SECURITY DEFINER authorize()` function reading `role_permissions`. |
 
 ## 1 · Architecture & conventions
 
@@ -25,11 +25,11 @@
   - `created_by uuid references app_users(id)`
   - `updated_by uuid references app_users(id)`
   - `deleted_at timestamptz` (soft delete; `NULL` = live)
-- **`org_id uuid not null references organizations(id)`** on every tenant-owned table — the isolation column. Exactly one `organizations` row exists today.
+- **`org_id uuid not null references organizations(id)`** on every tenant-owned table - the isolation column. Exactly one `organizations` row exists today.
 - **Enums vs lookup tables:**
   - Postgres `enum` for **universal, fixed** sets: `intake_level`, `permission_action`, `room_status`, `severity`, `user_status`, `staff_role`, `meal_slot`, `activity_category`, `incident_status`.
   - **Lookup tables** for anything a future tenant would customize: `wings`, `care_types`, `care_tiers`, `shift_types`. ("Rātā/Kōwhai/Tōtara" are Wesley-specific; the next tenant names theirs differently.)
-- **Presentation values (colors) stay out of the DB** — derived in `lib/design-meta.ts` — **except** genuine config rows (`shift_types`, `care_tiers`), which store a **semantic color token** (e.g. `sage`, `gold`), never a hex string.
+- **Presentation values (colors) stay out of the DB** - derived in `lib/design-meta.ts` - **except** genuine config rows (`shift_types`, `care_tiers`), which store a **semantic color token** (e.g. `sage`, `gold`), never a hex string.
 - **Naming:** `snake_case` columns and tables; plural table names; FK columns named `<referenced_singular>_id`.
 - **Soft-delete reads:** each table exposes a `<table>_live` view filtering `deleted_at IS NULL`; the app reads views, writes base tables. Deletes are `UPDATE ... SET deleted_at = now()`.
 
@@ -113,7 +113,7 @@ role_permissions (                          -- editable grant matrix; org-scoped
 ```
 
 **Custom access-token hook** (Supabase Auth) injects into every JWT:
-`org_id`, `role_id`, `building_ids[]` — identity that rarely changes, so it is safe to cache in the token.
+`org_id`, `role_id`, `building_ids[]` - identity that rarely changes, so it is safe to cache in the token.
 
 **Helper functions** (all `SECURITY DEFINER`, `search_path` pinned to `public`):
 
@@ -123,7 +123,7 @@ role_permissions (                          -- editable grant matrix; org-scoped
 | `auth_org_id()` | `uuid` | reads `org_id` claim |
 | `auth_role()` | `text` | reads `role_id` claim |
 | `auth_building_ids()` | `uuid[]` | reads `building_ids` claim |
-| `authorize(module text, action permission_action)` | `bool` | reads `role_permissions` live — permission edits take effect immediately; `super_admin` short-circuits to `true` |
+| `authorize(module text, action permission_action)` | `bool` | reads `role_permissions` live - permission edits take effect immediately; `super_admin` short-circuits to `true` |
 
 Identity in claims (cheap, constant-time) + permissions in a live function (instant edits) is the balance Approach C buys. Because `role_permissions` and the customizable lookups are **org-scoped from day one**, a future tenant can own its matrix without touching the system roles.
 
@@ -183,7 +183,7 @@ staff (
 **Normalizations vs the mock layer:**
 - `age` → **derived** from `dob` (never store a value that goes stale daily).
 - resident `flags[]` → `resident_flags` (1:N).
-- room ↔ resident is the single FK `residents.room_id`; rooms do **not** duplicate resident fields. The mock layer's embedded `room.resident {...}` was a rendering convenience — in the DB it's a join.
+- room ↔ resident is the single FK `residents.room_id`; rooms do **not** duplicate resident fields. The mock layer's embedded `room.resident {...}` was a rendering convenience - in the DB it's a join.
 
 ## 5 · Operations
 
@@ -274,39 +274,39 @@ Family users reach only rows for their linked resident(s), enforced by `user_res
 Every tenant table: `ALTER TABLE ... ENABLE ROW LEVEL SECURITY; ... FORCE ROW LEVEL SECURITY;`
 Policies compose (ANDed) in these layers:
 
-1. **Tenant isolation — every table:** `org_id = auth_org_id()`. Non-negotiable; makes cross-tenant leakage structurally impossible.
-2. **Building scope — staff-scoped tables** (residents, rooms, staff, roster_assignments, meal_*, activities, stock_levels, orders, incidents): `building_id = ANY(auth_building_ids())` **unless** `auth_role()` is org-wide (`admin`, `super_admin`).
-3. **Resident scope — family tables** (family_posts, visits, messages, photos): `resident_id IN (select resident_id from user_resident_scopes where user_id = auth_uid())`.
-4. **Permission matrix — writes:** `INSERT/UPDATE/DELETE` policies call `authorize('<module>','<action>')` in `USING` / `WITH CHECK`. Reads gate on `authorize('<module>','view')`.
+1. **Tenant isolation - every table:** `org_id = auth_org_id()`. Non-negotiable; makes cross-tenant leakage structurally impossible.
+2. **Building scope - staff-scoped tables** (residents, rooms, staff, roster_assignments, meal_*, activities, stock_levels, orders, incidents): `building_id = ANY(auth_building_ids())` **unless** `auth_role()` is org-wide (`admin`, `super_admin`).
+3. **Resident scope - family tables** (family_posts, visits, messages, photos): `resident_id IN (select resident_id from user_resident_scopes where user_id = auth_uid())`.
+4. **Permission matrix - writes:** `INSERT/UPDATE/DELETE` policies call `authorize('<module>','<action>')` in `USING` / `WITH CHECK`. Reads gate on `authorize('<module>','view')`.
 5. **Soft delete:** reads via `*_live` views (`deleted_at IS NULL`); `DELETE` is disallowed by policy in favour of `UPDATE deleted_at = now()`.
 
-`super_admin` bypasses layers 2–4 but remains bound by layer 1 (its own org). **Policies are the only authorization source of truth** — the client permission matrix merely mirrors `role_permissions` for UI affordances.
+`super_admin` bypasses layers 2–4 but remains bound by layer 1 (its own org). **Policies are the only authorization source of truth** - the client permission matrix merely mirrors `role_permissions` for UI affordances.
 
 ## 8 · Scaling notes
 
 - **Indexes:** every FK; composite `(org_id, building_id)` on hot ops tables; `(resident_id, service_date)` on `meal_intake_logs`; partial indexes `WHERE deleted_at IS NULL` for the live-row hot path.
-- **Partition candidates** (documented, built only when volume demands): `meal_intake_logs`, any future `audit_log`, `roster_assignments` — range-partition by month on the date column.
+- **Partition candidates** (documented, built only when volume demands): `meal_intake_logs`, any future `audit_log`, `roster_assignments` - range-partition by month on the date column.
 - **Aggregates:** occupancy/stock KPIs as plain views first; promote to materialized views only when measured slow.
 - **Multi-tenant upgrade path:** because `org_id`, org-scoped `role_permissions`, and org-scoped lookups exist from day one, going full SaaS = (a) tighten the access-token hook, (b) insert one `organizations` row per tenant, (c) **no schema change**.
 - **Shared triggers:** one generic `set_updated_at()` and one `set_created_by()/set_updated_by()` reused across all tables.
 
 ## 9 · Migration plan (follow-up phase, not this doc)
 
-1. `000001_extensions_and_enums` — `citext`, `pgcrypto`; all enum types.
-2. `000002_identity_tenancy` — organizations, buildings, wings, app_users, scopes, roles, role_permissions.
-3. `000003_care_domain` — care_tiers, care_types, residents, resident_flags, rooms, staff.
-4. `000004_operations` — roster, meals, activities, stock, incidents.
-5. `000005_family_portal` — family_posts, visits, messages, photos.
-6. `000006_functions_triggers` — `set_updated_at`, `authorize`, `auth_*` helpers, access-token hook.
-7. `000007_rls_policies` — enable RLS + all policies per §7.
-8. `000008_views` — `*_live` views + KPI aggregate views.
-9. `000009_seed` — one org, 6 roles, default permission matrix, Wesley/Lodge buildings, wings, shift_types.
+1. `000001_extensions_and_enums` - `citext`, `pgcrypto`; all enum types.
+2. `000002_identity_tenancy` - organizations, buildings, wings, app_users, scopes, roles, role_permissions.
+3. `000003_care_domain` - care_tiers, care_types, residents, resident_flags, rooms, staff.
+4. `000004_operations` - roster, meals, activities, stock, incidents.
+5. `000005_family_portal` - family_posts, visits, messages, photos.
+6. `000006_functions_triggers` - `set_updated_at`, `authorize`, `auth_*` helpers, access-token hook.
+7. `000007_rls_policies` - enable RLS + all policies per §7.
+8. `000008_views` - `*_live` views + KPI aggregate views.
+9. `000009_seed` - one org, 6 roles, default permission matrix, Wesley/Lodge buildings, wings, shift_types.
 
 The app's `lib/mock-data/*` accessors become async Supabase queries with **unchanged call sites**, since the mock shapes already mirror these rows.
 
 ## Open questions
 
-1. **Generic `audit_log` table** — you chose soft-delete + audit columns as the baseline and deferred the full trigger-based log. Confirm it stays deferred (vs. adding it now for the regulated incident/meal/medication trail).
-2. **`staff` vs `app_users` merge** — kept separate (a staff member may have no login; a login may be non-staff like family). Confirm this separation is desired rather than a single `app_users` with a `is_staff` flag.
-3. **Medication records** — mentioned as a compliance concern but **no medication table exists in the current app**. Out of scope here; flag if it should be designed in now.
-4. **`super_admin` reach** — modelled as org-bound (each org has its own super admin). If you need a *platform* super-admin that sees across all orgs for support, that's a distinct role with a claim flag — confirm which you want.
+1. **Generic `audit_log` table** - you chose soft-delete + audit columns as the baseline and deferred the full trigger-based log. Confirm it stays deferred (vs. adding it now for the regulated incident/meal/medication trail).
+2. **`staff` vs `app_users` merge** - kept separate (a staff member may have no login; a login may be non-staff like family). Confirm this separation is desired rather than a single `app_users` with a `is_staff` flag.
+3. **Medication records** - mentioned as a compliance concern but **no medication table exists in the current app**. Out of scope here; flag if it should be designed in now.
+4. **`super_admin` reach** - modelled as org-bound (each org has its own super admin). If you need a *platform* super-admin that sees across all orgs for support, that's a distinct role with a claim flag - confirm which you want.

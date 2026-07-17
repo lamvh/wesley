@@ -2,7 +2,7 @@ import { StockItemRow } from "@/components/portal/stock/stock-item-row";
 import type { Product } from "@/types/domain";
 
 // A supply category card: header strip (title + item count) over its rows.
-// Private to the inventory tab — providerName/actions are resolved by the
+// Private to the inventory tab - providerName/actions are resolved by the
 // caller so this component stays a thin presentational wrapper.
 export function StockGroup({
   category,

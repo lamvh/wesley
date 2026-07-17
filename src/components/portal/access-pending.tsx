@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-// Shown when someone is signed in but has no active app_users assignment —
+// Shown when someone is signed in but has no active app_users assignment -
 // "only assigned users are shown". Rendered by PortalLayout in place of the
 // whole portal, so an unprovisioned account never sees any portal data.
 export function AccessPending({

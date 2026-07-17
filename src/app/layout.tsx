@@ -18,7 +18,7 @@ const instrument = Instrument_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Wesley Home & Care — Victoria at Mt Eden",
+  title: "Wesley Home & Care - Victoria at Mt Eden",
   description:
     "Boutique aged residential care in the heart of Mt Eden, Tāmaki Makaurau.",
 };
