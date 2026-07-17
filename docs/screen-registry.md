@@ -6,6 +6,8 @@ Single source of truth for **which Claude Design screen** each route was ported 
 
 ## Marketing
 
+Change-tracking baseline (checksums + last-update per route): [landing-audit-log](./features/marketing/landing-audit-log.md) — re-run `./scripts/landing-audit.sh` to detect changes.
+
 | Code | Screen | Route | Version | Doc |
 |------|--------|-------|---------|-----|
 | — | Home | `/` | — | [home](./features/marketing/home.md) |
