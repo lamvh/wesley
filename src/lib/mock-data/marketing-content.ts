@@ -80,7 +80,7 @@ const benefits: Benefit[] = [
 const testimonial = {
   quote:
     "Mum settled at Victoria in a way we didn't think possible. The team don't just care for her - they know her. That's everything.",
-  author: "Katherine R. - daughter of a Kōwhai resident",
+  author: "Katherine R. - daughter of a resident",
 };
 
 const stats: { value: string; label: string }[] = [

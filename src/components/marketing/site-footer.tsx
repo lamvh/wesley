@@ -2,10 +2,6 @@ import Link from "next/link";
 
 const COLUMNS = [
   {
-    heading: "Our rooms",
-    links: ["VIP suites", "Premium suites", "Normal rooms", "Rest-home care"],
-  },
-  {
     heading: "Our home",
     links: ["Life here", "Our team", "Careers", "News"],
   },
@@ -14,7 +10,7 @@ const COLUMNS = [
 export function SiteFooter() {
   return (
     <footer className="bg-navy-footer text-on-navy">
-      <div className="mx-auto grid max-w-[1200px] grid-cols-[1.4fr_1fr_1fr_1fr] gap-9 px-7 pb-[30px] pt-14 max-md:grid-cols-2">
+      <div className="mx-auto grid max-w-[1200px] grid-cols-[1.6fr_1fr_1fr] gap-9 px-7 pb-[30px] pt-14 max-md:grid-cols-2">
         <div>
           <div className="flex items-center gap-[11px]">
             <span className="flex size-9 items-center justify-center rounded-[10px] bg-navy font-serif text-[20px] text-gold">

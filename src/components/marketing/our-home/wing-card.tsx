@@ -1,15 +1,15 @@
 import { Photo } from "@/components/shared/photo";
 import type { CareWing } from "@/types/domain";
 
-// Image card for one care wing (Rātā / Kōwhai / Tōtara) on the our-home page.
+// Image card for one room style (Rātā / Kōwhai / Tōtara) on the our-home page.
 export function WingCard({ wing }: { wing: CareWing }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-line bg-cream-2">
       <div className="relative h-[150px]">
         <Photo
-          slot={`wing-${wing.name}`}
-          alt={`${wing.name} wing`}
-          placeholder={`${wing.name} wing`}
+          slot={`roomstyle-${wing.name}`}
+          alt={`${wing.name} room`}
+          placeholder={`${wing.name} room`}
         />
       </div>
       <div className="px-[22px] py-5">

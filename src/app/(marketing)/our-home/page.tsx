@@ -14,7 +14,7 @@ export default function OurHomePage() {
       <MarketingPageHeader
         eyebrow="Our home"
         title="A boutique home in the heart of Mt Eden"
-        intro="Fifty-four suites across three connected wings, wrapped around sunny gardens and shared spaces made for company."
+        intro="Fifty-four suites wrapped around sunny gardens and shared spaces made for company."
       />
 
       <PhotoCopySplit />
@@ -34,7 +34,7 @@ export default function OurHomePage() {
 
       <section className="mx-auto max-w-[1200px] px-7 py-[60px]">
         <h2 className="mb-[26px] font-serif text-[30px] font-medium">
-          Our three wings
+          Our three room styles
         </h2>
         <div className="grid grid-cols-3 gap-[18px] max-md:grid-cols-1">
           {careWings.map((w) => (

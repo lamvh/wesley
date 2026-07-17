@@ -50,7 +50,7 @@ export function FamilyTeaser() {
             </div>
             <div className="leading-[1.1]">
               <div className="text-[14.5px] font-bold text-ink">
-                Peggy Whitcombe · Rātā 12
+                Peggy Whitcombe · Room 12
               </div>
               <div className="text-[12px] text-ink-meta">
                 Today&rsquo;s update from Aroha

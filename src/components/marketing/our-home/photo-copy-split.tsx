@@ -17,7 +17,7 @@ export function PhotoCopySplit() {
           Built around people, not corridors
         </h2>
         <p className="mt-4 text-[16px] leading-[1.7] text-ink-soft">
-          We keep Wesley deliberately small. Wings are short and easy to
+          We keep Wesley deliberately small. Corridors are short and easy to
           navigate, lounges are warm and lived-in, and the garden is never more
           than a few steps away. It&apos;s a place that feels like home from the
           first visit.
