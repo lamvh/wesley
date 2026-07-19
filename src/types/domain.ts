@@ -272,7 +272,8 @@ export type UserRole =
   | "nurse"
   | "carer"
   | "activities"
-  | "family";
+  | "family"
+  | "stock_manager";
 export type UserStatus = "Active" | "Invited" | "Suspended";
 
 export interface User {

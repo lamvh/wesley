@@ -147,6 +147,11 @@ export const userRoleMeta: Record<UserRole, Swatch & { label: string; desc: stri
     label: "Family / Whānau",
     desc: "Read-only portal access for a resident's whānau.",
   },
+  stock_manager: {
+    ...swatch("text-bronze", "bg-gold-tint", "bg-bronze"),
+    label: "Stock Manager",
+    desc: "Stock & supplies ordering only.",
+  },
 };
 
 /** User status -> text + dot classes. */

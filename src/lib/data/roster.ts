@@ -9,6 +9,11 @@ const BUILDING = "wesley";
 // legend and cell picker consume. The template name doubles as both the short
 // code chip and the descriptive label. All buildings' templates are offered so
 // the picker can assign any shift (e.g. The Lodge) regardless of building.
+//
+// Each shift keeps its own template color (set via the admin's swatch picker
+// in Staff → Shift templates), not a role-derived one: deriving from role
+// collapsed same-role shifts (e.g. Carer's Morning vs Afternoon vs Night) into
+// one indistinguishable color, losing per-shift distinction on the grid.
 export async function getRosterShiftTypes(): Promise<ShiftType[]> {
   const templates = await getShiftTemplates();
   return templates.map((t) => ({

@@ -49,9 +49,10 @@ const preset: Preset = {
   carer: { dashboard: p(1,0,0,0), residents: p(1,0,1,0), rooms: p(1,0,0,0), roster: p(1,0,0,0), meals: p(1,0,0,0), activities: p(1,0,0,0), family: p(1,0,0,0), stock: NONE, incidents: p(1,1,0,0), users: NONE },
   activities: { dashboard: p(1,0,0,0), residents: p(1,0,0,0), rooms: NONE, roster: p(1,0,0,0), meals: p(1,0,0,0), activities: ALL, family: p(1,1,0,0), stock: p(1,0,0,0), incidents: p(1,0,0,0), users: NONE },
   family: { dashboard: NONE, residents: p(1,0,0,0), rooms: NONE, roster: NONE, meals: p(1,0,0,0), activities: p(1,0,0,0), family: p(1,1,0,0), stock: NONE, incidents: NONE, users: NONE },
+  stock_manager: { dashboard: p(1,0,0,0), residents: NONE, rooms: NONE, roster: NONE, meals: NONE, activities: NONE, family: NONE, stock: ALL, incidents: NONE, users: NONE },
 };
 
-export const ROLE_KEYS: UserRole[] = ["super_admin", "admin", "nurse", "carer", "activities", "family"];
+export const ROLE_KEYS: UserRole[] = ["super_admin", "admin", "nurse", "carer", "activities", "family", "stock_manager"];
 
 export function getUsers(): User[] {
   return users;

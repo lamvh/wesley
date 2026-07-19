@@ -82,7 +82,7 @@ interface OccupancyWing { name: string; filled: number; total: number; colorKey:
 Backs the **Users & access** screen. Types in `types/domain.ts`: `User`, `UserRole`, `UserStatus`, `AppModule`, `ModuleKey`, `Permission`, `PermissionMatrix`.
 
 ```ts
-type UserRole = "super_admin" | "admin" | "nurse" | "carer" | "activities" | "family";
+type UserRole = "super_admin" | "admin" | "nurse" | "carer" | "activities" | "family" | "stock_manager";
 type UserStatus = "Active" | "Invited" | "Suspended";
 interface User { name; username; email; role: UserRole; scope: string; status: UserStatus; last: string; initials; color }
 
@@ -92,7 +92,7 @@ type Permission = Record<PermissionAction, boolean>;               // one module
 type PermissionMatrix = Record<UserRole, Record<ModuleKey, Permission>>;
 ```
 
-- 6 roles, 10 modules, 4 actions ⇒ matrix of `6 × 10 × 4` grants. `super_admin` is implicit-all and immutable (never store editable rows for it).
+- 7 roles, 10 modules, 4 actions ⇒ matrix of `7 × 10 × 4` grants. `super_admin` is implicit-all and immutable (never store editable rows for it). `stock_manager` (added `0019_stock_manager_role.sql`) is scoped to `dashboard` view + full `stock` CRUD only.
 - Accessors: `getUsers()` (mock, unused by the live screen - kept type-safe only), `getModules()`, `getDefaultPermissions()` (seed matrix), `countGranted()`, `ROLE_KEYS`. Role/status colors derive in `design-meta.ts` (`userRoleMeta`, `userStatusMeta`) - not stored.
 - **`scope`** is free-text today (e.g. "Rātā wing", "Peggy W. · Rātā 12"). For the DB, model it as a typed FK (wing or resident) - see below.
 
@@ -236,8 +236,8 @@ Accessors become async queries; screens unchanged (already `await` accessors whe
 
 ### RBAC tables (Users & access)
 ```sql
--- fixed lookup of the 6 roles
-roles(id text pk,           -- 'super_admin' | 'admin' | 'nurse' | 'carer' | 'activities' | 'family'
+-- fixed lookup of the 7 roles
+roles(id text pk,           -- 'super_admin' | 'admin' | 'nurse' | 'carer' | 'activities' | 'family' | 'stock_manager'
       label text, description text, is_system bool default false)
 
 users(id uuid pk default gen_random_uuid(),

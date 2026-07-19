@@ -5,7 +5,7 @@
 - **Render:** RSC page reads `?week=YYYY-MM-DD` (defaults to the current Mon–Sun week), loads `getStaff()` + `getRosterAssignments()` → client `RosterView` (editable weekly grid, keyed per week)
 
 ## Purpose
-Plan the week's shifts as a **real-staff × 7-day** grid. Each staff member (pulled live from the staff directory) gets a row, **banded and ordered by role group** (Nurses & HCAs → Care Takers → Kitchen, defined in Staff → Roles & groups); assign one or more shift types per staff/day and see daily staffing totals.
+Plan the week's shifts as a **real-staff × 7-day** grid. Each staff member (pulled live from the staff directory) gets a row, **banded and ordered by role group** (Nurse → HCA → Care Takers → Kitchen, defined in Staff → Roles & groups; see "Nurse/HCA group split" below), plus a trailing "Unassigned" band for roles in no group; assign one or more shift types per staff/day and see daily staffing totals.
 
 ## Layout
 Header (title + week nav + **Export duty roster** + Publish) → shift-type legend bar → the scheduler table. The grid **starts empty** - there is no pre-filled/mock schedule.
@@ -40,7 +40,23 @@ Header (title + week nav + **Export duty roster** + Publish) → shift-type lege
 - **Export duty roster** → config modal → A4 print preview (`window.print()`). Publish flips the button label (no persistence yet).
 
 ## Tokens
-Shift types carry their own `color`/`tint`/`border` (**data** → inline style on chips/legend/picker swatches, sanctioned). Table header `bg-navy-deep` + `text-cream`; totals `font-serif`.
+Shift types carry their own `color`/`tint`/`border` (**data** → inline style on chips/legend/picker swatches, sanctioned), set per-template via the swatch picker in Staff → Shift templates (`SHIFT_PALETTE`, `lib/actions/staff.ts`) — each shift template keeps its own distinct color, not derived from role. Table header `bg-navy-deep` + `text-cream`; totals `font-serif`.
+
+## Shift chip color history (2026-07-20)
+
+A same-day round trip on how shift chip colors are sourced:
+
+1. **Root cause reported:** shifts looked hard to tell apart on the grid.
+2. **First fix (reverted):** `getRosterShiftTypes()` (`lib/data/roster.ts`) was changed to override each shift's chip color with its **role's** color (`staff_roles.color`/`tint`, the "Roles & groups" registry), so same-role shifts shared one color and different roles stood apart. This also surfaced a data bug: migration `0007_role_groups.sql` bulk-seeded the base role registry without setting `color`/`tint`, so every seeded role sat on the same column default (`#5B5347`/`#EFE7D7`) — the reason everything still rendered as one color right after deploying the role-color fix. `supabase/migrations/0020_backfill_role_colors.sql` backfills distinct colors for any role still on that default (from the same 8-color `PALETTE` `saveRole()` draws from for roles created via the UI) — this migration is still in place and still useful (role colors back roles' own badges/chips elsewhere), independent of the revert below.
+3. **Reverted:** deriving from role turned out to be the wrong axis — shift templates were already seeded with distinct colors per shift (`scripts/db/seed-staff.mts`, sh1–sh6, six different hex triples), so role-derivation actually **collapsed** that distinction (e.g. a Carer's Morning/Afternoon/Night shifts, previously three different colors, all became the one Carer-role color). `getRosterShiftTypes()` now reads `t.color`/`t.tint`/`t.border` straight off the template again, matching what the "Shift templates" admin tab's swatch picker sets.
+
+Because the roster grid, the cell picker popover, and the duty export sheet all read the same `ShiftType[]` from `getRosterShiftTypes()`, this is consistent across all three without touching those components.
+
+## Nurse/HCA group split (2026-07-20)
+
+The roster band "Nurses & HCAs" (`role_groups` id `nurses_hcas`, seeded by `0007_role_groups.sql`) grouped `Registered Nurse`, `Carer`, and `Team Leader` into one band. Split into two distinct bands: **Nurse** (`Registered Nurse`) and **HCA** (`Carer`). `Team Leader` is deliberately left **unassigned** (not merged into either), an explicit call rather than a default — it now bands into the trailing "Unassigned" group like any other role with no `group_id`.
+
+`supabase/migrations/0021_split_nurse_hca_groups.sql` adds the two new `role_groups` rows (`nurses`, `hcas`), reassigns `staff_roles.group_id` for the three affected roles, and deletes the old `nurses_hcas` group (safe: `staff_roles.group_id` is `on delete set null`, so any straggler drops to Unassigned rather than orphaning). No app code change — `groupStaffForRoster()` (`lib/roster-grouping.ts`) already bands purely off `role_groups`/`staff_roles` data.
 
 ## Removed
 - The mock **Leave & requests** section (staff Leave lives on the Staff screen).

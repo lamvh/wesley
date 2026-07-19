@@ -63,6 +63,20 @@ export function RosterCell({
     setPos({ top: r.bottom + 4, left: clampedLeft });
   }, [isOpen, flipRight]);
 
+  // The popover's height depends on how many shift options it renders, so it
+  // can only be measured after mount. Re-clamp top against its real height so
+  // a long list never runs past the viewport bottom instead of just the
+  // inner list's own max-h scroll area.
+  useLayoutEffect(() => {
+    if (!isOpen || !pos || !popoverRef.current) return;
+    const height = popoverRef.current.getBoundingClientRect().height;
+    const maxTop = window.innerHeight - height - 8;
+    const clampedTop = Math.max(8, Math.min(pos.top, maxTop));
+    if (clampedTop !== pos.top) {
+      popoverRef.current.style.top = `${clampedTop}px`;
+    }
+  }, [isOpen, pos]);
+
   // A fixed popover detaches from its anchor on scroll/resize - close it so it
   // never lingers in the wrong place. Scrolls inside the popover's own shift
   // list must not close it, so ignore scroll events originating within it.
