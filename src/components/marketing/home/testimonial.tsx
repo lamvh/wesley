@@ -1,8 +1,12 @@
-import { getTestimonial } from "@/lib/mock-data";
+import type { SiteContent } from "@/lib/mock-data/site-content-defaults";
 
 // Centered pull-quote with a large open-quote glyph and attribution.
-export function Testimonial() {
-  const { quote, author } = getTestimonial();
+export function Testimonial({
+  testimonial,
+}: {
+  testimonial: SiteContent["testimonial"];
+}) {
+  const { quote, author } = testimonial;
   return (
     <section className="mx-auto max-w-[900px] px-7 py-[86px] text-center">
       <div className="h-[28px] font-serif text-[56px] leading-[0] text-line-strong">

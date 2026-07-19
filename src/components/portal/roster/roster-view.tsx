@@ -63,6 +63,17 @@ export function RosterView({
   const [published, setPublished] = useState(false);
   const [, startTransition] = useTransition();
 
+  // On-call carer per day (keyed by day ISO, value = staff name). Feeds the
+  // duty-roster export; the picker offers nurses first, then HCAs.
+  const [onCallByDay, setOnCallByDay] = useState<Record<string, string>>({});
+  const setOnCall = (dateISO: string, value: string) =>
+    setOnCallByDay((prev) => {
+      const next = { ...prev };
+      if (value) next[dateISO] = value;
+      else delete next[dateISO];
+      return next;
+    });
+
   // "Export duty roster" flow: config modal -> full-screen A4 print preview.
   // On-call / chef default to the first two staff so the selects are populated.
   const [dutyOpen, setDutyOpen] = useState(false);
@@ -82,6 +93,16 @@ export function RosterView({
   // so the roster reads by role, not a flat alphabetical list.
   const bands = groupStaffForRoster(staff, roles, groups);
 
+  // On-call options follow the band order, so nurses & HCAs surface first.
+  const onCallOptions = bands.flatMap((b) =>
+    b.staff.map((s) => ({
+      value: s.name,
+      label: s.name,
+      initials: s.initials,
+      color: s.color,
+    })),
+  );
+
   // Per-staff shift picker: a flat list of shifts filtered to the staffer's own
   // role group, in canonical order (see rosterPickersFor).
   const pickers = rosterPickersFor(staff, roles, shiftTypes);
@@ -96,8 +117,8 @@ export function RosterView({
 
   // Duty sheets rebuild whenever the grid or export config changes.
   const dutySheets = useMemo(
-    () => buildDutySheets(bands, days, grid, shiftTypes, dutyForm),
-    [bands, days, grid, shiftTypes, dutyForm],
+    () => buildDutySheets(bands, days, grid, shiftTypes, dutyForm, onCallByDay),
+    [bands, days, grid, shiftTypes, dutyForm, onCallByDay],
   );
   const dutyTitle = dutySheetTitle(days, dutyForm);
   const dayOptions = dutyDayOptions(days);
@@ -203,6 +224,9 @@ export function RosterView({
           defs={defs}
           pickers={pickers}
           totals={totals}
+          onCallByDay={onCallByDay}
+          onCallOptions={onCallOptions}
+          onOnCall={setOnCall}
           openCell={openCell}
           onOpen={openRosterCell}
           onClose={() => setOpenCell(null)}

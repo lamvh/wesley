@@ -1,7 +1,11 @@
 import { Photo } from "@/components/shared/photo";
 
-// Intro split: exterior photo left, heading + copy right.
-export function PhotoCopySplit() {
+// Intro split: exterior photo left, heading + copy right. Copy from the CMS.
+export function PhotoCopySplit({
+  intro,
+}: {
+  intro: { introH2: string; introBody: string };
+}) {
   return (
     <section className="mx-auto grid max-w-[1200px] grid-cols-2 items-center gap-[52px] px-7 py-[60px] max-md:grid-cols-1">
       <div className="relative h-[340px] overflow-hidden rounded-[20px]">
@@ -13,14 +17,9 @@ export function PhotoCopySplit() {
         />
       </div>
       <div>
-        <h2 className="font-serif text-[30px] font-medium">
-          Built around people, not corridors
-        </h2>
+        <h2 className="font-serif text-[30px] font-medium">{intro.introH2}</h2>
         <p className="mt-4 text-[16px] leading-[1.7] text-ink-soft">
-          We keep Wesley deliberately small. Corridors are short and easy to
-          navigate, lounges are warm and lived-in, and the garden is never more
-          than a few steps away. It&apos;s a place that feels like home from the
-          first visit.
+          {intro.introBody}
         </p>
       </div>
     </section>

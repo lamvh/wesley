@@ -1,51 +1,40 @@
 import { PersonBadge } from "@/components/shared/person-badge";
 import { StatTile } from "./stat-tile";
 import { CareFlag } from "./care-flag";
-import { careTier, careTierMeta } from "@/lib/design-meta";
-import { cn } from "@/lib/utils";
 import type { Resident } from "@/types/domain";
 
-// Full resident profile card: gradient banner (per-record colour → navy),
-// overlapping avatar, identity + care-tier badge, 4 stat tiles, About + Care
-// flags. The banner start colour is data-driven (the sanctioned inline-colour
+// Full resident profile card: gradient banner (per-record colour → navy), an
+// avatar overlapping the banner, the name sitting on the card below it, 4 stat
+// tiles, About + Care flags. The care-tier badge was retired from the design.
+// The banner start colour is data-driven (the sanctioned inline-colour
 // exception, like PersonBadge); the navy end reads the token via CSS var.
 export function ResidentProfileHeader({ resident }: { resident: Resident }) {
-  const tier = careTier(resident.wing);
-  const badge = careTierMeta[tier];
   return (
     <div className="overflow-hidden rounded-[18px] border border-line bg-cream-2">
       <div
-        className="h-24"
+        className="h-[84px]"
         style={{
           backgroundImage: `linear-gradient(90deg, ${resident.color}, var(--color-navy))`,
         }}
         aria-hidden
       />
-      <div className="-mt-[42px] px-7 pb-[26px]">
+      <div className="px-7 pb-[26px]">
         <div className="flex items-end gap-[18px]">
           <PersonBadge
             initials={resident.avatar}
             color={resident.color}
             serif
-            className="size-[88px] rounded-[20px] border-4 border-cream-2 text-[34px]"
+            className="-mt-[44px] size-[88px] rounded-[20px] border-4 border-cream-2 text-[34px]"
           />
-          <div className="flex-1 pb-1.5">
-            <h2 className="font-serif text-[29px] font-semibold text-ink">
+          <div className="flex-1 pt-3">
+            <h2 className="font-serif text-[29px] font-semibold leading-[1.1] text-ink">
               {resident.name}
             </h2>
-            <div className="text-[14.5px] text-ink-muted">
+            <div className="mt-1 text-[14.5px] text-ink-muted">
               Prefers &ldquo;{resident.pref}&rdquo; · {resident.wing} · Room{" "}
               {resident.room}
             </div>
           </div>
-          <span
-            className={cn(
-              "rounded-full px-[14px] py-[7px] text-[13px] font-semibold",
-              badge.badge,
-            )}
-          >
-            {tier}
-          </span>
         </div>
 
         <div className="mt-6 grid grid-cols-2 gap-[14px] md:grid-cols-4">

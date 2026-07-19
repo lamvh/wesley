@@ -41,6 +41,7 @@ export function buildDutySheets(
   grid: RosterGrid,
   shiftTypes: ShiftType[],
   form: DutyForm,
+  onCallByDay: Record<string, string> = {},
 ): DutySheet[] {
   const defs = Object.fromEntries(shiftTypes.map((s) => [s.id, s]));
   const scopeDays =
@@ -48,7 +49,9 @@ export function buildDutySheets(
 
   return scopeDays.map((day) => ({
     dateLabel: sheetDateLabel(day),
-    onCall: form.onCall,
+    // Per-day on-call set in the roster grid; the export form's single value is
+    // the fallback for days left unset.
+    onCall: onCallByDay[day.iso] || form.onCall,
     chef: form.chef,
     sections: bands
       .map((band) => {

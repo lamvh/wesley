@@ -1,15 +1,17 @@
 import { MarketingPageHeader } from "@/components/shared/marketing-page-header";
 import { RoomStyleRow } from "@/components/marketing/room-style-row";
-import { getRoomStyles } from "@/lib/mock-data";
+import { getSiteContent } from "@/lib/data/site-content";
+import { CARE_SLOTS } from "@/lib/mock-data/site-content-defaults";
 
-export default function OurRoomsPage() {
-  const roomStyles = getRoomStyles();
+export default async function OurRoomsPage() {
+  const c = await getSiteContent();
+  const roomStyles = c.careLevels.map((r, i) => ({ ...r, slot: CARE_SLOTS[i] }));
   return (
     <>
       <MarketingPageHeader
         eyebrow="Our rooms"
-        title="Three room styles, one caring team"
-        intro="A boutique rest home with three styles of room - VIP, premium and comfortable - so you can choose the space that suits. Every room is looked after by the same warm, registered-nurse-led team."
+        title={c.care.h1}
+        intro={c.care.intro}
       />
       <section className="mx-auto flex max-w-[1200px] flex-col gap-[26px] px-7 py-[60px]">
         {roomStyles.map((style) => (

@@ -7,7 +7,7 @@ const COLUMNS = [
   },
 ];
 
-export function SiteFooter() {
+export function SiteFooter({ blurb }: { blurb: string }) {
   return (
     <footer className="bg-navy-footer text-on-navy">
       <div className="mx-auto grid max-w-[1200px] grid-cols-[1.6fr_1fr_1fr] gap-9 px-7 pb-[30px] pt-14 max-md:grid-cols-2">
@@ -20,10 +20,7 @@ export function SiteFooter() {
               Wesley Home &amp; Care
             </span>
           </div>
-          <p className="mt-4 max-w-[280px] text-[14px] leading-[1.65]">
-            Boutique aged residential care in the heart of Mt Eden, Tāmaki
-            Makaurau. Certified by the Ministry of Health.
-          </p>
+          <p className="mt-4 max-w-[280px] text-[14px] leading-[1.65]">{blurb}</p>
         </div>
 
         {COLUMNS.map((col) => (

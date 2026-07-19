@@ -1,9 +1,17 @@
 import { Fragment } from "react";
-import type { RosterDay, RosterGrid, ShiftType } from "@/types/domain";
+import type { PersonColor, RosterDay, RosterGrid, ShiftType } from "@/types/domain";
 import { rosterCellKey } from "@/types/domain";
 import type { RosterBand } from "@/lib/roster-grouping";
 import { PersonBadge } from "@/components/shared/person-badge";
 import { RosterCell } from "@/components/portal/roster/roster-cell";
+
+/** One selectable on-call candidate (nurses first, then HCAs, then the rest). */
+export interface OnCallOption {
+  value: string;
+  label: string;
+  initials: string;
+  color: PersonColor;
+}
 
 interface RosterGridProps {
   bands: RosterBand[];
@@ -14,6 +22,10 @@ interface RosterGridProps {
    *  role group, canonical order). */
   pickers: Record<string, ShiftType[]>;
   totals: number[];
+  /** On-call carer per day, keyed by day ISO (value = staff name). */
+  onCallByDay: Record<string, string>;
+  onCallOptions: OnCallOption[];
+  onOnCall: (dateISO: string, value: string) => void;
   openCell: string | null;
   onOpen: (key: string) => void;
   onClose: () => void;
@@ -32,6 +44,9 @@ export function RosterGrid({
   defs,
   pickers,
   totals,
+  onCallByDay,
+  onCallOptions,
+  onOnCall,
   openCell,
   onOpen,
   onClose,
@@ -39,6 +54,7 @@ export function RosterGrid({
   onClear,
 }: RosterGridProps) {
   const colSpan = days.length + 2;
+  const onCallMeta = Object.fromEntries(onCallOptions.map((o) => [o.value, o]));
   // Running row number offset per band, so numbering flows continuously across
   // bands (computed up-front to avoid mutating a counter during render).
   const bandOffsets: number[] = [];
@@ -71,6 +87,50 @@ export function RosterGrid({
           </tr>
         </thead>
         <tbody>
+          {/* On-call carer per day — nurse/HCA who covers after hours. Feeds
+              the duty-roster export. */}
+          <tr className="border-b-2 border-line bg-navy-tint">
+            <td
+              colSpan={2}
+              className="px-3 py-[8px] text-right align-middle text-[11.5px] font-bold uppercase tracking-[0.4px] text-navy"
+            >
+              On call
+              <div className="text-[10px] font-medium normal-case tracking-normal text-ink-faint">
+                Nurse / HCA
+              </div>
+            </td>
+            {days.map((d) => {
+              const meta = onCallMeta[onCallByDay[d.iso] ?? ""];
+              return (
+                <td key={d.iso} className="border-l border-line-divider px-[5px] py-[6px]">
+                  <div className="flex items-center gap-1.5">
+                    {meta ? (
+                      <PersonBadge
+                        initials={meta.initials}
+                        color={meta.color}
+                        className="size-5 rounded-full text-[8.5px]"
+                      />
+                    ) : (
+                      <span className="size-5 shrink-0 rounded-full border border-dashed border-line-strong" />
+                    )}
+                    <select
+                      value={onCallByDay[d.iso] ?? ""}
+                      onChange={(e) => onOnCall(d.iso, e.target.value)}
+                      aria-label={`On call for ${d.dow} ${d.date}`}
+                      className="w-full min-w-0 rounded-[7px] border border-line-soft bg-cream px-1 py-1 text-[11px] font-semibold text-ink outline-none"
+                    >
+                      <option value="">—</option>
+                      {onCallOptions.map((o) => (
+                        <option key={o.value} value={o.value}>
+                          {o.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </td>
+              );
+            })}
+          </tr>
           {bands.map((band, bi) => (
             <Fragment key={band.id}>
               <tr>

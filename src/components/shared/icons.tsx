@@ -7,6 +7,8 @@ const PATHS: Record<string, string> = {
   residents:
     '<circle cx="9" cy="7" r="3"/><path d="M3 21v-1a6 6 0 0 1 12 0v1"/><path d="M16 3.5a3 3 0 0 1 0 7"/><path d="M21 21v-1a6 6 0 0 0-3-5"/>',
   roster: '<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>',
+  website:
+    '<rect x="3" y="4" width="18" height="15" rx="2"/><path d="M3 9h18"/><path d="M6.5 6.5h.01M9 6.5h.01"/>',
   meals: '<path d="M4 3v7a3 3 0 0 0 6 0V3M7 3v18"/><path d="M17 3c-2 1-3 3-3 6s1 4 3 4v8"/>',
   activities: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   family: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',

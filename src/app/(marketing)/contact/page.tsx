@@ -2,17 +2,24 @@ import { MarketingPageHeader } from "@/components/shared/marketing-page-header";
 import { Photo } from "@/components/shared/photo";
 import { ContactDetails } from "@/components/marketing/contact/contact-details";
 import { RequestVisitForm } from "@/components/marketing/contact/request-visit-form";
-import { getContactInfo } from "@/lib/mock-data";
+import { getSiteContent } from "@/lib/data/site-content";
 
-export default function ContactPage() {
-  const contact = getContactInfo();
+export default async function ContactPage() {
+  const c = await getSiteContent();
+  const contact = {
+    phone: c.contact.phone,
+    address: c.contact.address,
+    suburb: c.contact.addressSub,
+    email: c.contact.email,
+    hours: c.contact.hours,
+  };
 
   return (
     <>
       <MarketingPageHeader
         eyebrow="Contact"
-        title="Come and see for yourself"
-        intro="Book a no-obligation visit, or call our team for a warm, honest chat about care options for your loved one."
+        title={c.contact.h1}
+        intro={c.contact.sub}
       />
 
       <section className="mx-auto grid max-w-[1200px] grid-cols-[1fr_1.1fr] gap-[52px] px-7 py-[60px] max-md:grid-cols-1">

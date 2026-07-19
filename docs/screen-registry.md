@@ -39,6 +39,7 @@ Ported from Claude Design project `Wesley MtEden` (`Victoria at Mt Eden.dc.html`
 | - | Incidents & compliance | `/portal/incidents` | - | [incidents-compliance](./features/portal/incidents-compliance.md) |
 | - | Staff (Administration) | `/portal/staff` | - | [staff](./features/portal/staff.md) |
 | - | Users & access | `/portal/users` | - | [users-access](./features/portal/users-access.md) |
+| - | Website content (CMS) | `/portal/website` | v1.0 | — |
 
 ## Changelog (per screen)
 

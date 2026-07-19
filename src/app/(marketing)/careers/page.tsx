@@ -2,18 +2,20 @@ import Link from "next/link";
 import { MarketingPageHeader } from "@/components/shared/marketing-page-header";
 import { BenefitCard } from "@/components/marketing/careers/benefit-card";
 import { RoleRow } from "@/components/marketing/careers/role-row";
-import { getBenefits, getJobRoles } from "@/lib/mock-data";
+import { getSiteContent } from "@/lib/data/site-content";
+import { getJobRoles } from "@/lib/mock-data";
 
-export default function CareersPage() {
-  const benefits = getBenefits();
+export default async function CareersPage() {
+  const c = await getSiteContent();
+  const benefits = c.benefits;
   const roles = getJobRoles();
 
   return (
     <>
       <MarketingPageHeader
         eyebrow="Careers"
-        title="Come and do work that matters"
-        intro="We're a small, close team who genuinely care - for our residents and for each other. If that sounds like you, we'd love to talk."
+        title={c.careers.h1}
+        intro={c.careers.sub}
       />
 
       <section className="mx-auto max-w-[1200px] px-7 pb-5 pt-[56px]">

@@ -8,18 +8,9 @@ export { getMeals, getDiets } from "./meals";
 export { getActivityWeek, getBirthdays } from "./activities";
 export { getFamilyFeed, getVisits, getMessages } from "./family";
 export { getDashboard } from "./dashboard";
-export {
-  getRoomStyles,
-  getFeatures,
-  getDayTimeline,
-  getFacilities,
-  getCareWings,
-  getJobRoles,
-  getBenefits,
-  getTestimonial,
-  getStats,
-  getContactInfo,
-} from "./marketing-content";
+// Marketing site copy now lives in the Website CMS (lib/data/site-content.ts +
+// site-content-defaults.ts). Only the job roles remain static here.
+export { getJobRoles } from "./marketing-content";
 export { photoSrc } from "./photos";
 export { getUsers, getModules, getDefaultPermissions, countGranted, ROLE_KEYS } from "./users";
 export {

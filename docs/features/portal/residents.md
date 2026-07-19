@@ -78,3 +78,31 @@ Beyond global DoD (00-rules §11):
 4. Tier pills toggle active styling (client) but leave the grid unfiltered; `+ Admit` opens the create form.
 5. All content via `getResidents()` (Supabase) + care-tier helpers - no inline fixtures.
 6. Admit/Edit persist to Supabase and redirect to the resident; Remove deletes and returns to the list; the directory reflects changes (revalidated).
+
+## Design parity — open items (audited 2026-07-18)
+
+Compared CRUD against design v1.0 (`Victoria at Mt Eden.dc.html`, 16 Jul). Code implements full CRUD on Supabase (create/update/delete + validation + RLS) beyond the mock design; care flags are captured for real (design hardcodes them). Open differences, **reported only — not changed** (pending decision):
+
+| # | Item | Design | Code | Note |
+|---|------|--------|------|------|
+| 1 | Room field | `<select>` from real rooms ("every resident linked to one room") | free-text input | data-integrity: room not constrained to a real room |
+| 2 | Detail room card | room card (status/type/building/shared) + "View room details →" link | absent | no resident↔room navigation on detail |
+| 3 | Wing | not in form (derived from room) | explicit required "Wing" select | code models wing as the anchor; tier derived from wing |
+| 4 | Care type | not in form (badge = tier, room-derived) | required "Care type" select (Rest Home/Hospital/Dementia/Respite) | divergent taxonomy; code stores `care_type` |
+| 5 | Tier label | "Standard" | "Normal" (careTier: Rātā→Normal) | terminology mismatch |
+| 6 | Tier filter pills | filter by tier | visual-only ("does not filter this phase") | both incomplete |
+| 7 | Card subtitle | "Room {room}" | "{wing} · Room {room}" | trivial |
+| 8 | Detail facts | Age/Care level/Mobility/Diet/GP | Age/Mobility/Diet/GP (tier as badge) | "Care level" row omitted |
+| 9 | Remove placement | detail header | edit page (with confirm) | UX-only |
+
+Key model difference: **code = wing→tier**, **design = room→wing/tier**. Items 3–4 are deliberate code extensions (schema-backed), not bugs — align only on explicit decision.
+
+## Design v1.2 (18 Jul 2026) — implemented 2026-07-18
+
+Pulled the updated resident screens from Claude Design (`Victoria at Mt Eden.dc.html`, now 18 Jul / detail v1.2; the earlier local copy was 16 Jul v1.0). Changes applied:
+
+- **Care-tier badge removed** (design 17 Jul, "Care level pill & row removed"). Dropped the tier pill from `resident-profile-header.tsx` (detail) and `resident-card.tsx` (directory). The "Care level" fact row was already absent in code. `careTier`/`careTierMeta`/`cn` imports removed from both. The tier concept still backs the list filter pills (`tier-filter-pills.tsx`, visual-only).
+- **Name repositioned** (design 18 Jul, "name moved onto the card"). Detail banner shortened (h-24 → h-[84px]); only the avatar overlaps the banner (`-mt-[44px]`); the name now sits on the card body (`pt-3`) instead of the whole identity row being pulled up over the banner.
+- **Card subtitle** "{wing} · Room {room}" → "Room {room}" (matches design directory card).
+
+Prior parity items #1–4 (room-as-select, detail room card, wing/careType model) remain **reported-only, not changed**. Item #5 (tier label "Normal" vs "Standard") now only surfaces in the filter pills, since per-resident tier badges are gone. Item #8 (Care level fact row) is resolved — neither design nor code shows it.

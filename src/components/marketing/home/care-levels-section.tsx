@@ -1,25 +1,31 @@
 import Link from "next/link";
 import { Photo } from "@/components/shared/photo";
-import { getRoomStyles } from "@/lib/mock-data";
+import type { RoomStyle } from "@/types/domain";
+import type { SiteContent } from "@/lib/mock-data/site-content-defaults";
 
-// Cream band: section header + three compact room-style cards.
-export function CareLevelsSection() {
-  const roomStyles = getRoomStyles();
+// Cream band: section header + three compact room-style cards. Copy + cards
+// come from the CMS.
+export function CareLevelsSection({
+  header,
+  roomStyles,
+}: {
+  header: SiteContent["homeRooms"];
+  roomStyles: RoomStyle[];
+}) {
   return (
     <section className="border-y border-line bg-cream-2">
       <div className="mx-auto max-w-[1200px] px-7 py-[82px]">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
             <div className="text-[13px] font-bold uppercase tracking-[2px] text-bronze-text">
-              Our rooms
+              {header.eyebrow}
             </div>
             <h2 className="mt-[14px] font-serif text-[40px] font-medium tracking-[-0.3px]">
-              Three room styles, one caring team
+              {header.h2}
             </h2>
           </div>
           <p className="max-w-[340px] text-[15.5px] leading-[1.65] text-ink-muted">
-            Choose the room that suits you best - whichever you pick, the same
-            warm, registered-nurse-led team looks after you.
+            {header.note}
           </p>
         </div>
 

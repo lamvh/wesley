@@ -1,14 +1,11 @@
 import Link from "next/link";
 import { PersonBadge } from "@/components/shared/person-badge";
-import { careTier, careTierMeta } from "@/lib/design-meta";
-import { cn } from "@/lib/utils";
 import type { Resident } from "@/types/domain";
 
-// One resident tile in the directory grid. Care-tier badge is derived from the
-// wing via the care-tier scale. Navigates to the resident profile route.
+// One resident tile in the directory grid. Navigates to the resident profile
+// route. The care-tier badge was retired from the design; the card shows the
+// resident, their room and diet only.
 export function ResidentCard({ resident }: { resident: Resident }) {
-  const tier = careTier(resident.wing);
-  const badge = careTierMeta[tier];
   return (
     <Link
       href={`/portal/residents/${resident.slug}`}
@@ -23,20 +20,10 @@ export function ResidentCard({ resident }: { resident: Resident }) {
         />
         <div className="min-w-0 flex-1">
           <div className="text-[16px] font-semibold text-ink">{resident.name}</div>
-          <div className="text-[13px] text-ink-meta">
-            {resident.wing} · Room {resident.room}
-          </div>
+          <div className="text-[13px] text-ink-meta">Room {resident.room}</div>
         </div>
       </div>
       <div className="mt-[15px] flex items-center justify-between">
-        <span
-          className={cn(
-            "rounded-full px-[11px] py-[5px] text-[12.5px] font-semibold",
-            badge.badge,
-          )}
-        >
-          {tier}
-        </span>
         <span className="text-[12.5px] text-ink-faint">{resident.diet}</span>
       </div>
     </Link>

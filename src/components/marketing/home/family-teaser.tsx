@@ -1,15 +1,11 @@
 import Link from "next/link";
 import { Photo } from "@/components/shared/photo";
-
-const CHECKLIST = [
-  "Daily wellbeing updates & photos",
-  "Book visits and join activities",
-  "Message the care team securely",
-];
+import type { SiteContent } from "@/lib/mock-data/site-content-defaults";
 
 // Navy band promoting the new family portal: copy + checklist on the left,
-// a sample daily-update card on the right.
-export function FamilyTeaser() {
+// a sample daily-update card on the right. Copy comes from the CMS; the sample
+// card (name, avatar) is illustrative and stays fixed.
+export function FamilyTeaser({ family }: { family: SiteContent["family"] }) {
   return (
     <section className="bg-navy text-cream-warm">
       <div className="mx-auto grid max-w-[1200px] grid-cols-2 items-center gap-14 px-7 py-[82px] max-md:grid-cols-1">
@@ -18,15 +14,13 @@ export function FamilyTeaser() {
             New
           </span>
           <h2 className="mt-[18px] font-serif text-[40px] font-medium leading-[1.1] text-hero-title">
-            Stay close, wherever you are
+            {family.h2}
           </h2>
           <p className="mt-[18px] text-[17px] leading-[1.7] text-hero-meta">
-            Our new family portal keeps whānau in the loop - daily photos and
-            updates from carers, upcoming visits, activity sign-ups and secure
-            messaging with the care team.
+            {family.body}
           </p>
           <div className="mt-[26px] flex flex-col gap-3">
-            {CHECKLIST.map((item) => (
+            {family.checks.map((item) => (
               <div
                 key={item}
                 className="flex items-center gap-3 text-[15.5px] text-cream-warm"
@@ -39,7 +33,7 @@ export function FamilyTeaser() {
             href="/portal/family"
             className="mt-7 inline-block rounded-[12px] bg-cream px-6 py-[14px] text-[15.5px] font-semibold text-ink"
           >
-            Preview the family portal
+            {family.cta}
           </Link>
         </div>
 
@@ -61,9 +55,7 @@ export function FamilyTeaser() {
             <Photo slot="vme-fam" alt="Activity photo" placeholder="Activity photo" />
           </div>
           <p className="mb-[6px] mt-[14px] px-1 text-[14px] leading-[1.6] text-ink-nav">
-            &ldquo;Peggy joined the garden group this morning and picked the
-            first of the sweet peas - she was thrilled. Ate a good lunch and is
-            resting well. 🌿&rdquo;
+            {family.quote}
           </p>
         </div>
       </div>

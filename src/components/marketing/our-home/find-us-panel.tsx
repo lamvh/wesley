@@ -2,8 +2,13 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Photo } from "@/components/shared/photo";
 
-// Navy "Find us" panel: address + book-a-visit CTA left, map right.
-export function FindUsPanel() {
+// Navy "Find us" panel: address + book-a-visit CTA left, map right. Copy from
+// the CMS (ourhome.findH2 / findBody).
+export function FindUsPanel({
+  find,
+}: {
+  find: { findH2: string; findBody: string };
+}) {
   return (
     <section className="mx-auto max-w-[1200px] px-7 pb-16">
       <div className="grid grid-cols-2 overflow-hidden rounded-[20px] bg-navy max-md:grid-cols-1">
@@ -12,11 +17,10 @@ export function FindUsPanel() {
             Find us
           </div>
           <h2 className="mt-[14px] font-serif text-[30px] font-medium text-hero-title">
-            227 Mt Eden Rd
+            {find.findH2}
           </h2>
           <p className="mt-3 text-[16px] leading-[1.65] text-hero-meta">
-            Mt Eden, Tāmaki Makaurau - a short walk from the village, with
-            off-street parking for visitors.
+            {find.findBody}
           </p>
           <Button
             asChild
