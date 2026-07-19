@@ -5,6 +5,7 @@ import type { PortalRole } from "@/types/domain";
 export interface AppUserRecord {
   id: string;
   name: string;
+  username: string;
   email: string;
   role_id: string; // super_admin|admin|nurse|carer|activities|family
   building_id: string | null;
@@ -37,7 +38,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
 
     const { data, error } = await supabase
       .from("app_users")
-      .select("id, name, email, role_id, building_id, scope, status")
+      .select("id, name, username, email, role_id, building_id, scope, status")
       .eq("auth_id", user.id)
       .maybeSingle();
 

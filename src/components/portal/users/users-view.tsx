@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { getDefaultPermissions, getUsers } from "@/lib/mock-data";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { getDefaultPermissions } from "@/lib/mock-data";
+import { createUser } from "@/lib/actions/users";
 import type {
   ModuleKey,
   PermissionAction,
@@ -18,25 +20,23 @@ import { ConfirmDeleteModal } from "@/components/portal/stock/confirm-delete-mod
 type Tab = "users" | "roles";
 type Filter = UserRole | "all";
 
-const EMPTY_FORM: AddUserForm = { name: "", email: "", role: "carer", scope: "" };
+const EMPTY_FORM: AddUserForm = { name: "", username: "", email: "", password: "", role: "carer", scope: "" };
 
-// Avatar accent for newly-added users (data-colour, cycles by list length).
-const AVATAR_PALETTE = [
-  "#6E875E", "#BE7350", "#8a6ba3", "#5b8f9a", "#c08a3e",
-  "#9a7b4f", "#7e9b6a", "#b06a5a", "#6e879e",
-];
-
-export function UsersView() {
-  const [users, setUsers] = useState<User[]>(getUsers);
+export function UsersView({ initialUsers }: { initialUsers: User[] }) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [formError, setFormError] = useState<string | null>(null);
+  const [users, setUsers] = useState<User[]>(initialUsers);
   const [tab, setTab] = useState<Tab>("users");
   const [roleFilter, setRoleFilter] = useState<Filter>("all");
   const [selectedRole, setSelectedRole] = useState<UserRole>("admin");
   const [perms, setPerms] = useState(getDefaultPermissions);
   const [addUserOpen, setAddUserOpen] = useState(false);
   const [form, setForm] = useState<AddUserForm>(EMPTY_FORM);
-  // Identity of the user being edited (null = adding). Email is unique, so it
-  // survives role-filter reordering unlike an index would.
-  const [editingEmail, setEditingEmail] = useState<string | null>(null);
+  // Identity of the user being edited (null = adding). Username is required
+  // and unique (unlike email, which can be blank), so it survives role-filter
+  // reordering unlike an index would.
+  const [editingUsername, setEditingUsername] = useState<string | null>(null);
   const [confirmUser, setConfirmUser] = useState<User | null>(null);
 
   function togglePerm(role: UserRole, module: ModuleKey, action: PermissionAction) {
@@ -53,63 +53,73 @@ export function UsersView() {
 
   function openAdd() {
     setForm(EMPTY_FORM);
-    setEditingEmail(null);
+    setEditingUsername(null);
     setAddUserOpen(true);
   }
 
   function openEdit(user: User) {
     setForm({
       name: user.name,
+      username: user.username,
       email: user.email,
+      password: "",
       role: user.role,
       scope: user.scope === "-" ? "" : user.scope,
     });
-    setEditingEmail(user.email);
+    setEditingUsername(user.username);
     setAddUserOpen(true);
   }
 
   function closeModal() {
     setAddUserOpen(false);
-    setEditingEmail(null);
+    setEditingUsername(null);
     setForm(EMPTY_FORM);
+    setFormError(null);
   }
 
   function submitUser() {
     const name = form.name.trim();
     if (!name) return;
-    const parts = name.split(/\s+/);
-    const initials = (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase();
-    const email = form.email.trim() || `${parts.join(".").toLowerCase()}@wesley.nz`;
-    const scope = form.scope.trim() || "-";
 
-    if (editingEmail) {
+    if (editingUsername) {
+      // Edit stays local for now (persisting edits is out of scope here).
+      const parts = name.split(/\s+/);
+      const initials = (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase();
+      const scope = form.scope.trim() || "-";
       setUsers((prev) =>
         prev.map((u) =>
-          u.email === editingEmail
-            ? { ...u, name, email, role: form.role, scope, initials }
+          u.username === editingUsername
+            ? { ...u, name, email: form.email.trim(), role: form.role, scope, initials }
             : u,
         ),
       );
-    } else {
-      const newUser: User = {
-        name,
-        email,
-        role: form.role,
-        scope,
-        status: "Invited",
-        last: "Just now",
-        initials,
-        color: AVATAR_PALETTE[users.length % AVATAR_PALETTE.length],
-      };
-      setUsers((prev) => [newUser, ...prev]);
-      setRoleFilter("all");
+      closeModal();
+      return;
     }
-    closeModal();
+
+    setFormError(null);
+    const fd = new FormData();
+    fd.set("name", name);
+    fd.set("username", form.username);
+    fd.set("email", form.email);
+    fd.set("password", form.password);
+    fd.set("role", form.role);
+    fd.set("scope", form.scope);
+
+    startTransition(async () => {
+      const res = await createUser({}, fd);
+      if (res.error) {
+        setFormError(res.error);
+        return;
+      }
+      closeModal();
+      router.refresh(); // re-fetch the live list so the new account appears
+    });
   }
 
   function doDelete() {
     if (!confirmUser) return;
-    setUsers((prev) => prev.filter((u) => u.email !== confirmUser.email));
+    setUsers((prev) => prev.filter((u) => u.username !== confirmUser.username));
     setConfirmUser(null);
   }
 
@@ -170,7 +180,9 @@ export function UsersView() {
       {addUserOpen && (
         <AddUserModal
           form={form}
-          editing={editingEmail !== null}
+          editing={editingUsername !== null}
+          error={formError}
+          submitting={isPending}
           onChange={(patch) => setForm((f) => ({ ...f, ...patch }))}
           onClose={closeModal}
           onSubmit={submitUser}

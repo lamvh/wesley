@@ -84,7 +84,7 @@ Backs the **Users & access** screen. Types in `types/domain.ts`: `User`, `UserRo
 ```ts
 type UserRole = "super_admin" | "admin" | "nurse" | "carer" | "activities" | "family";
 type UserStatus = "Active" | "Invited" | "Suspended";
-interface User { name; email; role: UserRole; scope: string; status: UserStatus; last: string; initials; color }
+interface User { name; username; email; role: UserRole; scope: string; status: UserStatus; last: string; initials; color }
 
 type ModuleKey = "dashboard"|"residents"|"rooms"|"roster"|"meals"|"activities"|"family"|"stock"|"incidents"|"users";
 type PermissionAction = "view" | "create" | "edit" | "delete";
@@ -93,8 +93,19 @@ type PermissionMatrix = Record<UserRole, Record<ModuleKey, Permission>>;
 ```
 
 - 6 roles, 10 modules, 4 actions ⇒ matrix of `6 × 10 × 4` grants. `super_admin` is implicit-all and immutable (never store editable rows for it).
-- Accessors: `getUsers()`, `getModules()`, `getDefaultPermissions()` (seed matrix), `countGranted()`, `ROLE_KEYS`. Role/status colors derive in `design-meta.ts` (`userRoleMeta`, `userStatusMeta`) - not stored.
+- Accessors: `getUsers()` (mock, unused by the live screen - kept type-safe only), `getModules()`, `getDefaultPermissions()` (seed matrix), `countGranted()`, `ROLE_KEYS`. Role/status colors derive in `design-meta.ts` (`userRoleMeta`, `userStatusMeta`) - not stored.
 - **`scope`** is free-text today (e.g. "Rātā wing", "Peggy W. · Rātā 12"). For the DB, model it as a typed FK (wing or resident) - see below.
+
+### Login: username required, email optional - LIVE (`supabase/migrations/0014_user_username.sql`)
+
+`app_users.username` (citext, unique, not null) is the required login handle; `app_users.email` is now nullable (contact email, also a valid login identifier when set). Supabase Auth still needs an email per `auth.users` row - accounts with no real email get a deterministic synthetic address `<username>@no-email.wesley.internal` (`AUTH_EMAIL_DOMAIN`, `src/lib/validation/username.ts`).
+
+- `src/lib/validation/username.ts` - pure helpers: `normalizeUsername`, `validateUsername` (`^[a-z0-9._-]{3,30}$`, reserved: `admin|root|system|support`), `isValidEmail`, `syntheticAuthEmail`, `resolveAuthEmail(row)` (real email if set, else synthetic).
+- `src/lib/supabase/admin.ts` - service-role client (`createAdminClient`), server-only, bypasses RLS. Only imported by the two actions below.
+- `src/lib/actions/users.ts` (`createUser`) - admin-only (checked server-side: caller's `role_id` must be `super_admin` or `admin`, via `getCurrentUser()`) account creation: `auth.users` + `app_users` row, rolls back the orphaned auth user if the `app_users` insert fails.
+- `src/lib/actions/auth.ts` (`signIn`) - resolves a username-or-email identifier to the account server-side (anonymous users can't read `app_users` under RLS), then signs in via the SSR client. Every failure (no such identifier, wrong password) returns the same generic message to prevent account enumeration.
+- `login-view.tsx` takes a single "Username hoặc email" identifier field instead of a dedicated email field.
+- **Known limitation:** Edit/Delete user and the Roles & permissions tab remain local React state only, not persisted - only Add-user writes to the DB this phase. There is no password-reset flow for username-only (no-email) accounts; the admin sets the password directly at creation.
 
 ## Meal intake logs (`lib/mock-data/meal-report.ts`)
 
@@ -207,7 +218,7 @@ Types: `StaffRecord`, `ShiftTemplate`, `StaffLeaveRequest` (`src/types/domain.ts
 
 ## Future Supabase mapping (deferred - not this phase)
 
-> **Status:** the **core subset is LIVE in the DB** - `supabase/migrations/0001_core_schema.sql` (tables `roles`, `role_permissions`, `buildings`, `building_wings`, `app_users`, `staff`, `residents`, all with RLS) applied + seeded from the mocks (`scripts/db/seed-core-schema.mts`, or paste-ready `supabase/seed/0001_core_seed.sql`). Row counts: roles 6, role_permissions 240 (6×10×4), buildings 2, app_users 11, staff 10, residents 9. `app_users` already gates portal access + role (verified end-to-end). **Stock & procurement is also LIVE** - `supabase/migrations/0002_stock_procurement.sql` (tables `providers`, `products`, `stock_levels`, `stock_movements`, `orders`, `order_lines`, all with RLS + two RPCs) applied + seeded; see "Stock, providers & ordering" above. **Staff administration schema is also defined** (`0003_staff_admin.sql`, extended `staff` columns + `shift_templates` + `leave_requests` + `approve_leave` RPC) but DB apply/seed is deferred - see "Staff administration" above. Other screens still read mock data - swapping accessors to Supabase queries is the next step. The remaining tables below are still deferred.
+> **Status:** the **core subset is LIVE in the DB** - `supabase/migrations/0001_core_schema.sql` (tables `roles`, `role_permissions`, `buildings`, `building_wings`, `app_users`, `staff`, `residents`, all with RLS) applied + seeded from the mocks (`scripts/db/seed-core-schema.mts`, or paste-ready `supabase/seed/0001_core_seed.sql`). Row counts: roles 6, role_permissions 240 (6×10×4), buildings 2, app_users 11, staff 10, residents 9. `app_users` already gates portal access + role (verified end-to-end); `app_users.username` is now required for login, `email` optional - see "Login: username required, email optional" above. **Stock & procurement is also LIVE** - `supabase/migrations/0002_stock_procurement.sql` (tables `providers`, `products`, `stock_levels`, `stock_movements`, `orders`, `order_lines`, all with RLS + two RPCs) applied + seeded; see "Stock, providers & ordering" above. **Staff administration schema is also defined** (`0003_staff_admin.sql`, extended `staff` columns + `shift_templates` + `leave_requests` + `approve_leave` RPC) but DB apply/seed is deferred - see "Staff administration" above. Other screens still read mock data - swapping accessors to Supabase queries is the next step. The remaining tables below are still deferred.
 
 Accessors become async queries; screens unchanged (already `await` accessors where practical). The shapes below keep the mock layer DB-compatible so the swap is mechanical. RLS on every table.
 

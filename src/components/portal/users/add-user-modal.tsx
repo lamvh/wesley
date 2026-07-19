@@ -7,7 +7,9 @@ import { cn } from "@/lib/utils";
 
 export interface AddUserForm {
   name: string;
+  username: string;
   email: string;
+  password: string;
   role: UserRole;
   scope: string;
 }
@@ -22,12 +24,16 @@ const LABEL = "mb-[7px] block text-[12.5px] font-bold text-ink-soft";
 export function AddUserModal({
   form,
   editing = false,
+  error = null,
+  submitting = false,
   onChange,
   onClose,
   onSubmit,
 }: {
   form: AddUserForm;
   editing?: boolean;
+  error?: string | null;
+  submitting?: boolean;
   onChange: (patch: Partial<AddUserForm>) => void;
   onClose: () => void;
   onSubmit: () => void;
@@ -47,7 +53,7 @@ export function AddUserModal({
               {editing ? "Edit user" : "Add a user"}
             </h3>
             <p className="mt-[5px] text-[13.5px] text-ink-muted">
-              They&apos;ll get an email invite to set their password.
+              Username bắt buộc. Email tùy chọn. Bạn đặt mật khẩu cho họ.
             </p>
           </div>
           <button
@@ -71,11 +77,34 @@ export function AddUserModal({
             />
           </div>
           <div>
-            <label className={LABEL}>Email address</label>
+            <label className={LABEL}>Username</label>
+            <input
+              value={form.username}
+              onChange={(e) => onChange({ username: e.target.value })}
+              placeholder="vd. anahera.w"
+              autoCapitalize="none"
+              autoCorrect="off"
+              className={FIELD}
+            />
+          </div>
+          <div>
+            <label className={LABEL}>
+              Email <span className="font-normal text-ink-faint">(tùy chọn)</span>
+            </label>
             <input
               value={form.email}
               onChange={(e) => onChange({ email: e.target.value })}
               placeholder="name@wesley.nz"
+              className={FIELD}
+            />
+          </div>
+          <div>
+            <label className={LABEL}>Mật khẩu</label>
+            <input
+              type="password"
+              value={form.password}
+              onChange={(e) => onChange({ password: e.target.value })}
+              placeholder="Tối thiểu 8 ký tự"
               className={FIELD}
             />
           </div>
@@ -121,6 +150,9 @@ export function AddUserModal({
           </div>
         </div>
 
+        {error && (
+          <div className="px-[26px] pb-2 text-[13px] font-medium text-high">{error}</div>
+        )}
         <div className="flex justify-end gap-[10px] border-t border-line px-[26px] py-[18px]">
           <button
             type="button"
@@ -132,9 +164,10 @@ export function AddUserModal({
           <button
             type="button"
             onClick={onSubmit}
-            className="cursor-pointer rounded-[11px] bg-navy px-5 py-[11px] text-[14px] font-semibold text-cream"
+            disabled={submitting}
+            className="cursor-pointer rounded-[11px] bg-navy px-5 py-[11px] text-[14px] font-semibold text-cream disabled:opacity-50"
           >
-            {editing ? "Save changes" : "Add user & send invite"}
+            {editing ? "Save changes" : submitting ? "Đang tạo…" : "Tạo tài khoản"}
           </button>
         </div>
       </div>

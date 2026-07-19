@@ -40,7 +40,7 @@ export function UserTable({
         const status = userStatusMeta[u.status];
         return (
           <div
-            key={u.email}
+            key={u.username}
             className={cn(
               "grid items-center gap-[14px] border-b border-line-soft px-[22px] py-[15px] last:border-b-0",
               COLS,

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Icon } from "@/components/shared/icons";
-import { createClient } from "@/lib/supabase/client";
+import { signIn } from "@/lib/actions/auth";
 import { cn } from "@/lib/utils";
 
 type Audience = "staff" | "family";
@@ -18,42 +18,39 @@ export function LoginView() {
   const [audience, setAudience] = useState<Audience>(
     params.get("as") === "family" ? "family" : "staff",
   );
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [pending, startTransition] = useTransition();
 
-  const canSubmit = email.trim().length > 0 && password.length > 0;
+  const canSubmit = identifier.trim().length > 0 && password.length > 0;
 
-  async function onSubmit(e: React.FormEvent) {
+  function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!canSubmit || loading) return;
-
-    setLoading(true);
+    if (!canSubmit || pending) return;
     setError(null);
 
-    const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
+    const fd = new FormData();
+    fd.set("identifier", identifier);
+    fd.set("password", password);
+
+    startTransition(async () => {
+      const res = await signIn({}, fd);
+      if (res.error) {
+        setError(res.error);
+        return;
+      }
+      const next = params.get("next");
+      const dest =
+        next && next.startsWith("/portal")
+          ? next
+          : audience === "family"
+            ? "/portal/family"
+            : "/portal";
+      router.replace(dest);
+      router.refresh();
     });
-
-    if (signInError) {
-      setError(signInError.message);
-      setLoading(false);
-      return;
-    }
-
-    const next = params.get("next");
-    const dest =
-      next && next.startsWith("/portal")
-        ? next
-        : audience === "family"
-          ? "/portal/family"
-          : "/portal";
-    router.replace(dest);
-    router.refresh();
   }
 
   return (
@@ -92,14 +89,15 @@ export function LoginView() {
         {/* Form */}
         <form onSubmit={onSubmit} className="flex flex-col gap-4">
           <label className="flex flex-col gap-[6px]">
-            <span className="text-[13px] font-semibold text-ink-soft">Email</span>
+            <span className="text-[13px] font-semibold text-ink-soft">Username hoặc email</span>
             <input
-              type="email"
-              inputMode="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@wesleymteden.nz"
+              type="text"
+              autoCapitalize="none"
+              autoCorrect="off"
+              autoComplete="username"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              placeholder="username hoặc you@wesleymteden.nz"
               className="rounded-[11px] border border-input bg-cream-2 px-[14px] py-[12px] text-[15px] text-ink outline-none focus:border-navy"
             />
           </label>
@@ -143,15 +141,15 @@ export function LoginView() {
 
           <button
             type="submit"
-            disabled={!canSubmit || loading}
+            disabled={!canSubmit || pending}
             className={cn(
               "mt-1 rounded-[11px] bg-navy py-[13px] text-[15px] font-semibold text-cream transition",
-              canSubmit && !loading
+              canSubmit && !pending
                 ? "hover:bg-navy/90"
                 : "cursor-not-allowed opacity-50",
             )}
           >
-            {loading ? "Signing in…" : "Sign in"}
+            {pending ? "Signing in…" : "Sign in"}
           </button>
         </form>
 

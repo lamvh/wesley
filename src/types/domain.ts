@@ -279,6 +279,7 @@ export type UserStatus = "Active" | "Invited" | "Suspended";
 
 export interface User {
   name: string;
+  username: string;
   email: string;
   role: UserRole;
   scope: string;
