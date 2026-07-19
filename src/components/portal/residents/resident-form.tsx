@@ -3,10 +3,10 @@
 import { useActionState } from "react";
 import Link from "next/link";
 import { saveResident, deleteResident } from "@/lib/actions/residents";
+import { getRooms } from "@/lib/mock-data/rooms";
 import type { Resident } from "@/types/domain";
 
-const WINGS = ["Rātā", "Kōwhai", "Tōtara"] as const;
-const CARE_TYPES = ["Rest Home", "Hospital", "Dementia", "Respite"] as const;
+const ROOMS = getRooms();
 
 const fieldCls =
   "rounded-[11px] border border-input bg-cream-2 px-[14px] py-[10px] text-[15px] text-ink outline-none focus:border-navy";
@@ -62,22 +62,14 @@ export function ResidentForm({ resident }: { resident?: Resident }) {
           <Field label="Preferred name" name="pref" defaultValue={resident?.pref} placeholder="e.g. Peggy" />
 
           <label className="flex flex-col gap-[6px]">
-            <span className={labelCls}>Wing <span className="text-high">*</span></span>
-            <select name="wing" defaultValue={resident?.wing ?? ""} required className={fieldCls}>
-              <option value="" disabled>Choose a wing…</option>
-              {WINGS.map((w) => <option key={w} value={w}>{w}</option>)}
+            <span className={labelCls}>Room <span className="text-high">*</span></span>
+            <select name="room" defaultValue={resident?.room ?? ""} required className={fieldCls}>
+              <option value="" disabled>Choose a room…</option>
+              {ROOMS.map((r) => (
+                <option key={r.num} value={r.num}>Room {r.num} — {r.wing}</option>
+              ))}
             </select>
           </label>
-
-          <label className="flex flex-col gap-[6px]">
-            <span className={labelCls}>Care type <span className="text-high">*</span></span>
-            <select name="careType" defaultValue={resident?.careType ?? ""} required className={fieldCls}>
-              <option value="" disabled>Choose a care type…</option>
-              {CARE_TYPES.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </label>
-
-          <Field label="Room" name="room" defaultValue={resident?.room} placeholder="e.g. 12" />
           <Field label="Age" name="age" type="number" inputMode="numeric" defaultValue={resident?.age || undefined} placeholder="e.g. 84" />
           <Field label="Diet" name="diet" defaultValue={resident?.diet} placeholder="e.g. Soft, no nuts" />
           <Field label="Mobility" name="mobility" defaultValue={resident?.mobility} placeholder="e.g. Walking frame" />

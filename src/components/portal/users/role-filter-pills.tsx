@@ -1,5 +1,3 @@
-import { ROLE_KEYS } from "@/lib/mock-data";
-import { userRoleMeta } from "@/lib/design-meta";
 import type { User, UserRole } from "@/types/domain";
 import { cn } from "@/lib/utils";
 
@@ -8,19 +6,21 @@ type Filter = UserRole | "all";
 // Role filter pills above the users table. Selected pill = navy fill.
 export function RoleFilterPills({
   users,
+  roles,
   active,
   onSelect,
 }: {
   users: User[];
+  roles: { id: UserRole; label: string }[];
   active: Filter;
   onSelect: (f: Filter) => void;
 }) {
   const filters: { key: Filter; label: string; count: number }[] = [
     { key: "all", label: "All users", count: users.length },
-    ...ROLE_KEYS.map((r) => ({
-      key: r,
-      label: userRoleMeta[r].label,
-      count: users.filter((u) => u.role === r).length,
+    ...roles.map((r) => ({
+      key: r.id,
+      label: r.label,
+      count: users.filter((u) => u.role === r.id).length,
     })),
   ];
 

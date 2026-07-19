@@ -11,7 +11,7 @@ import type {
 import { rosterCellKey } from "@/types/domain";
 import type { RosterBand } from "@/lib/roster-grouping";
 
-export const DUTY_DEFAULTS: Omit<DutyForm, "onCall" | "chef"> = { scope: "week", day: 0 };
+export const DUTY_DEFAULTS: DutyForm = { scope: "week", day: 0 };
 
 // Leading start time of a shift ("6:45 – 15:15" -> 405 minutes) so lines sort
 // by when the shift starts rather than lexically. Unparseable -> end of list.
@@ -34,14 +34,13 @@ function sheetDateLabel(d: RosterDay): string {
 
 // Build one print-ready duty sheet per day in the chosen scope, off the live
 // roster: each role band lists the staff assigned that day with their shift
-// time. On-call + chef names come from the export form. Empty bands are dropped.
+// time. Empty bands are dropped.
 export function buildDutySheets(
   bands: RosterBand[],
   days: RosterDay[],
   grid: RosterGrid,
   shiftTypes: ShiftType[],
   form: DutyForm,
-  onCallByDay: Record<string, string> = {},
 ): DutySheet[] {
   const defs = Object.fromEntries(shiftTypes.map((s) => [s.id, s]));
   const scopeDays =
@@ -49,10 +48,6 @@ export function buildDutySheets(
 
   return scopeDays.map((day) => ({
     dateLabel: sheetDateLabel(day),
-    // Per-day on-call set in the roster grid; the export form's single value is
-    // the fallback for days left unset.
-    onCall: onCallByDay[day.iso] || form.onCall,
-    chef: form.chef,
     sections: bands
       .map((band) => {
         const wesley: DutyRow[] = [];

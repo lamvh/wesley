@@ -6,7 +6,7 @@ export function getMealReportResidents(): MealReportResident[] {
   return getResidents().map((r, idx) => ({
     idx,
     name: r.pref || r.name,
-    room: `${r.wing} ${r.room}`,
+    room: r.room,
     initials: r.avatar,
     color: r.color,
     diet: r.diet,

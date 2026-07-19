@@ -87,7 +87,7 @@ for (const st of staff) {
 out.push("\n-- residents");
 for (const r of getResidents()) {
   out.push(
-    `insert into public.residents (building_id, slug, name, pref, room, wing, care_type, age, diet, mobility, gp, avatar, color, note, flags) values (${s(B)},${s(r.slug)},${s(r.name)},${s(r.pref)},${s(r.room)},${s(r.wing)},${s(r.careType)},${n(r.age)},${s(r.diet)},${s(r.mobility)},${s(r.gp)},${s(r.avatar)},${s(r.color)},${s(r.note)},${arr(r.flags)}) on conflict (building_id, slug) do update set name=excluded.name, pref=excluded.pref, room=excluded.room, wing=excluded.wing, care_type=excluded.care_type, age=excluded.age, diet=excluded.diet, mobility=excluded.mobility, gp=excluded.gp, avatar=excluded.avatar, color=excluded.color, note=excluded.note, flags=excluded.flags;`,
+    `insert into public.residents (building_id, slug, name, pref, room, age, diet, mobility, gp, avatar, color, note, flags) values (${s(B)},${s(r.slug)},${s(r.name)},${s(r.pref)},${s(r.room)},${n(r.age)},${s(r.diet)},${s(r.mobility)},${s(r.gp)},${s(r.avatar)},${s(r.color)},${s(r.note)},${arr(r.flags)}) on conflict (building_id, slug) do update set name=excluded.name, pref=excluded.pref, room=excluded.room, age=excluded.age, diet=excluded.diet, mobility=excluded.mobility, gp=excluded.gp, avatar=excluded.avatar, color=excluded.color, note=excluded.note, flags=excluded.flags;`,
   );
 }
 

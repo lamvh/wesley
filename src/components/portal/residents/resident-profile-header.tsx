@@ -1,6 +1,7 @@
 import { PersonBadge } from "@/components/shared/person-badge";
 import { StatTile } from "./stat-tile";
 import { CareFlag } from "./care-flag";
+import { RoomCard } from "./room-card";
 import type { Resident } from "@/types/domain";
 
 // Full resident profile card: gradient banner (per-record colour → navy), an
@@ -31,8 +32,7 @@ export function ResidentProfileHeader({ resident }: { resident: Resident }) {
               {resident.name}
             </h2>
             <div className="mt-1 text-[14.5px] text-ink-muted">
-              Prefers &ldquo;{resident.pref}&rdquo; · {resident.wing} · Room{" "}
-              {resident.room}
+              Prefers &ldquo;{resident.pref}&rdquo; · Room {resident.room}
             </div>
           </div>
         </div>
@@ -44,7 +44,7 @@ export function ResidentProfileHeader({ resident }: { resident: Resident }) {
           <StatTile label="GP" value={resident.gp} />
         </div>
 
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
           <div className="rounded-xl border border-line-soft bg-cream p-[18px]">
             <div className="text-[13px] font-bold uppercase tracking-[0.3px] text-navy">
               About {resident.pref}
@@ -63,6 +63,7 @@ export function ResidentProfileHeader({ resident }: { resident: Resident }) {
               ))}
             </div>
           </div>
+          <RoomCard room={resident.room} />
         </div>
       </div>
     </div>

@@ -46,3 +46,23 @@ export async function getRosterAssignments(
   }
   return grid;
 }
+
+// Load the on-call assignment (nurse/HCA covering after hours) for each date in
+// [weekStartISO, weekEndISO], keyed by date ISO -> staff id.
+export async function getOnCallByDay(
+  weekStartISO: string,
+  weekEndISO: string,
+): Promise<Record<string, string>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("roster_on_call")
+    .select("on_call_date,staff_id")
+    .eq("building_id", BUILDING)
+    .gte("on_call_date", weekStartISO)
+    .lte("on_call_date", weekEndISO);
+  if (error) throw new Error(`Failed to load on-call: ${error.message}`);
+
+  const byDay: Record<string, string> = {};
+  for (const r of data ?? []) byDay[r.on_call_date] = r.staff_id;
+  return byDay;
+}

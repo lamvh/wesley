@@ -41,21 +41,6 @@ function SectionRule({ label }: { label: string }) {
   );
 }
 
-// One On-call / Chef strip: label · rule · name, boxed on the cream duty strip.
-function DutyMeta({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center gap-[14px] rounded-[11px] border border-line bg-duty-strip px-[18px] py-[11px]">
-      <span className="text-[12px] font-bold uppercase tracking-[2.5px] text-navy-deep">
-        {label}
-      </span>
-      <span className="h-px flex-1 bg-duty-rule" />
-      <span className="text-[15.5px] font-semibold tracking-[0.4px] text-ink">
-        {value || "-"}
-      </span>
-    </div>
-  );
-}
-
 // A single A4 duty sheet (794×1123px on screen, forced to 210×296mm on print).
 // A clean names + times document grouped by role band and split into two
 // per-building columns (Wesley left, The Lodge right) by the building each shift
@@ -89,11 +74,6 @@ export function DutyRosterSheet({ sheet }: { sheet: DutySheet }) {
         <div className="border-l-[1.5px] border-duty-rule text-center text-[19px] font-bold uppercase tracking-[6px] text-navy-deep">
           The Lodge
         </div>
-      </div>
-
-      <div className="mt-4 grid grid-cols-2 gap-[14px]">
-        <DutyMeta label="On call" value={sheet.onCall} />
-        <DutyMeta label="Chef" value={sheet.chef} />
       </div>
 
       {sheet.sections.length === 0 ? (

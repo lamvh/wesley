@@ -23,18 +23,18 @@ export async function signIn(
 
   // Look up by username first, then by email. Two exact-match queries avoid the
   // escaping pitfalls of an .or() filter on free-text input.
-  let row: { username: string; email: string | null } | null = null;
+  let row: { username: string; email: string | null; deleted_at: string | null } | null = null;
   const byUsername = await admin
-    .from("app_users").select("username, email")
+    .from("app_users").select("username, email, deleted_at")
     .eq("username", identifier).maybeSingle();
   row = byUsername.data;
   if (!row) {
     const byEmail = await admin
-      .from("app_users").select("username, email")
+      .from("app_users").select("username, email, deleted_at")
       .eq("email", identifier).maybeSingle();
     row = byEmail.data;
   }
-  if (!row) return { error: GENERIC };
+  if (!row || row.deleted_at != null) return { error: GENERIC };
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({

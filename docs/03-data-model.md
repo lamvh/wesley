@@ -103,9 +103,18 @@ type PermissionMatrix = Record<UserRole, Record<ModuleKey, Permission>>;
 - `src/lib/validation/username.ts` - pure helpers: `normalizeUsername`, `validateUsername` (`^[a-z0-9._-]{3,30}$`, reserved: `admin|root|system|support`), `isValidEmail`, `syntheticAuthEmail`, `resolveAuthEmail(row)` (real email if set, else synthetic).
 - `src/lib/supabase/admin.ts` - service-role client (`createAdminClient`), server-only, bypasses RLS. Only imported by the two actions below.
 - `src/lib/actions/users.ts` (`createUser`) - admin-only (checked server-side: caller's `role_id` must be `super_admin` or `admin`, via `getCurrentUser()`) account creation: `auth.users` + `app_users` row, rolls back the orphaned auth user if the `app_users` insert fails.
-- `src/lib/actions/auth.ts` (`signIn`) - resolves a username-or-email identifier to the account server-side (anonymous users can't read `app_users` under RLS), then signs in via the SSR client. Every failure (no such identifier, wrong password) returns the same generic message to prevent account enumeration.
+- `src/lib/actions/auth.ts` (`signIn`) - resolves a username-or-email identifier to the account server-side (anonymous users can't read `app_users` under RLS), then signs in via the SSR client. Every failure (no such identifier, wrong password) returns the same generic message to prevent account enumeration; a soft-deleted account (`deleted_at is not null`) is refused the same way.
 - `login-view.tsx` takes a single "Username hoặc email" identifier field instead of a dedicated email field.
-- **Known limitation:** Edit/Delete user and the Roles & permissions tab remain local React state only, not persisted - only Add-user writes to the DB this phase. There is no password-reset flow for username-only (no-email) accounts; the admin sets the password directly at creation.
+- **Known limitation:** the Roles & permissions tab remains local React state only, not persisted.
+
+### Users full CRUD - LIVE (`supabase/migrations/0015_app_users_soft_delete.sql`)
+
+`app_users.deleted_at` (nullable timestamptz) is a soft-delete flag: removing an account sets it instead of dropping the row, so it can be recovered. Active-account queries (`listAppUsers`) filter `deleted_at is null`; `listRemovedAppUsers` is the inverse for the "Removed" toggle.
+
+- `src/lib/actions/users.ts` - `updateUser` (rewrites every editable field: name/username/email/password/role/scope/building, syncing `auth.users` via `updateUserById`), `deleteUser` (soft, sets `deleted_at`), `recoverUser` (clears it). All admin-only via the shared `requireAdmin()` guard.
+- Role options come from `public.roles` (`src/lib/data/user-roles.ts::listUserRoles`), not the `ROLE_KEYS` mock - source of truth matches what's actually stored in `app_users.role_id`.
+- Building options come from `public.buildings` (`src/lib/data/buildings.ts::listBuildings`); Add/Edit user modal lets an admin pick the building, replacing the previous hardcoded `'wesley'`.
+- `src/app/portal/users/page.tsx` loads users, removed users, roles, and buildings in parallel and passes them to the `UsersView` client island.
 
 ## Meal intake logs (`lib/mock-data/meal-report.ts`)
 

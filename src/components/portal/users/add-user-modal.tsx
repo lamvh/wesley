@@ -1,6 +1,5 @@
 "use client";
 
-import { ROLE_KEYS } from "@/lib/mock-data";
 import { userRoleMeta } from "@/lib/design-meta";
 import type { UserRole } from "@/types/domain";
 import { cn } from "@/lib/utils";
@@ -12,6 +11,7 @@ export interface AddUserForm {
   password: string;
   role: UserRole;
   scope: string;
+  building: string;
 }
 
 const FIELD =
@@ -26,6 +26,8 @@ export function AddUserModal({
   editing = false,
   error = null,
   submitting = false,
+  roles,
+  buildings,
   onChange,
   onClose,
   onSubmit,
@@ -34,6 +36,8 @@ export function AddUserModal({
   editing?: boolean;
   error?: string | null;
   submitting?: boolean;
+  roles: { id: UserRole; label: string }[];
+  buildings: { id: string; name: string }[];
   onChange: (patch: Partial<AddUserForm>) => void;
   onClose: () => void;
   onSubmit: () => void;
@@ -111,30 +115,38 @@ export function AddUserModal({
           <div>
             <label className={LABEL}>Role</label>
             <div className="grid grid-cols-2 gap-[9px]">
-              {ROLE_KEYS.map((r) => {
-                const meta = userRoleMeta[r];
-                const on = form.role === r;
+              {roles.map((r) => {
+                const meta = userRoleMeta[r.id];
+                const on = form.role === r.id;
                 return (
                   <button
-                    key={r}
+                    key={r.id}
                     type="button"
-                    onClick={() => onChange({ role: r })}
+                    onClick={() => onChange({ role: r.id })}
                     className={cn(
                       "rounded-[11px] border-[1.5px] px-3 py-[10px] text-left text-[13px] font-semibold transition-colors",
                       on
-                        ? cn(
-                            meta.badge.split(" ")[0],
-                            meta.dot.replace("bg-", "border-"),
-                            meta.text,
-                          )
+                        ? cn(meta?.badge.split(" ")[0], meta?.dot.replace("bg-", "border-"), meta?.text)
                         : "border-line-soft bg-cream-2 text-ink-soft",
                     )}
                   >
-                    {meta.label}
+                    {r.label}
                   </button>
                 );
               })}
             </div>
+          </div>
+          <div>
+            <label className={LABEL}>Toà nhà</label>
+            <select
+              value={form.building}
+              onChange={(e) => onChange({ building: e.target.value })}
+              className={FIELD}
+            >
+              {buildings.map((b) => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </select>
           </div>
           <div>
             <label className={LABEL}>

@@ -7,11 +7,8 @@ interface DutyRosterModalProps {
   open: boolean;
   form: DutyForm;
   dayOptions: DutyOption[];
-  staffOptions: DutyOption[];
   onScope: (scope: DutyForm["scope"]) => void;
   onDay: (day: number) => void;
-  onOnCall: (name: string) => void;
-  onChef: (name: string) => void;
   onCancel: () => void;
   onGenerate: () => void;
 }
@@ -21,17 +18,14 @@ const selectCls =
 const labelCls = "mb-[7px] block text-[12.5px] font-bold text-ink-nav";
 
 // Config step of the "Export duty roster" flow: pick a scope (single day /
-// whole week), and the on-call + chef names printed on every sheet. The parent
-// (RosterView) owns `form`; "Generate & preview" hands off to the print overlay.
+// whole week). The parent (RosterView) owns `form`; "Generate & preview" hands
+// off to the print overlay.
 export function DutyRosterModal({
   open,
   form,
   dayOptions,
-  staffOptions,
   onScope,
   onDay,
-  onOnCall,
-  onChef,
   onCancel,
   onGenerate,
 }: DutyRosterModalProps) {
@@ -100,29 +94,6 @@ export function DutyRosterModal({
               </select>
             </label>
           )}
-
-          <div className="grid grid-cols-2 gap-[14px]">
-            <label className="block">
-              <span className={labelCls}>On call</span>
-              <select value={form.onCall} onChange={(e) => onOnCall(e.target.value)} className={selectCls}>
-                {staffOptions.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="block">
-              <span className={labelCls}>Chef</span>
-              <select value={form.chef} onChange={(e) => onChef(e.target.value)} className={selectCls}>
-                {staffOptions.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
         </div>
 
         <div className="flex justify-end gap-[10px] px-[26px] pb-[22px] pt-4">

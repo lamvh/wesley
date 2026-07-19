@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-const TIERS = ["All", "VIP", "Premium", "Normal"] as const;
+const TIERS = ["All", "VIP", "Premium", "Standard"] as const;
 
 // Visual-only care-tier filter. Holds local active state and restyles the
 // active pill; it does not filter the grid this phase.

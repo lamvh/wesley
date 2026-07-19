@@ -12,14 +12,18 @@ import {
   shiftWeek,
   totalShifts,
 } from "@/lib/mock-data";
-import { clearRosterCell, toggleRosterShift } from "@/lib/actions/roster";
+import {
+  clearOnCallDay,
+  clearRosterCell,
+  setOnCallDay,
+  toggleRosterShift,
+} from "@/lib/actions/roster";
 import { groupStaffForRoster, rosterPickersFor } from "@/lib/roster-grouping";
 import {
   DUTY_DEFAULTS,
   buildDutySheets,
   dutyDayOptions,
   dutySheetTitle,
-  dutyStaffOptions,
 } from "@/lib/duty-roster";
 import type {
   DutyForm,
@@ -39,6 +43,8 @@ interface RosterViewProps {
   roles: RoleDef[];
   groups: RoleGroup[];
   weekStartISO: string;
+  /** on-call staff id per date ISO, persisted for the visible week. */
+  initialOnCallByDay: Record<string, string>;
   /** open the duty-roster print preview on mount (roster?duty=1 deep-link). */
   initialDutyPreview?: boolean;
 }
@@ -55,6 +61,7 @@ export function RosterView({
   roles,
   groups,
   weekStartISO,
+  initialOnCallByDay,
   initialDutyPreview = false,
 }: RosterViewProps) {
   const router = useRouter();
@@ -63,26 +70,26 @@ export function RosterView({
   const [published, setPublished] = useState(false);
   const [, startTransition] = useTransition();
 
-  // On-call carer per day (keyed by day ISO, value = staff name). Feeds the
-  // duty-roster export; the picker offers nurses first, then HCAs.
-  const [onCallByDay, setOnCallByDay] = useState<Record<string, string>>({});
-  const setOnCall = (dateISO: string, value: string) =>
+  // On-call carer per day (keyed by day ISO, value = staff id). The picker
+  // offers nurses first, then HCAs. Auto-saves to Supabase on every change,
+  // mirroring the shift-cell grid's optimistic-update + server-action pattern.
+  const [onCallByDay, setOnCallByDay] = useState<Record<string, string>>(initialOnCallByDay);
+  const setOnCall = (dateISO: string, value: string) => {
     setOnCallByDay((prev) => {
       const next = { ...prev };
       if (value) next[dateISO] = value;
       else delete next[dateISO];
       return next;
     });
+    startTransition(() => {
+      void (value ? setOnCallDay(dateISO, value) : clearOnCallDay(dateISO));
+    });
+  };
 
   // "Export duty roster" flow: config modal -> full-screen A4 print preview.
-  // On-call / chef default to the first two staff so the selects are populated.
   const [dutyOpen, setDutyOpen] = useState(false);
   const [dutyPreview, setDutyPreview] = useState(initialDutyPreview);
-  const [dutyForm, setDutyForm] = useState<DutyForm>({
-    ...DUTY_DEFAULTS,
-    onCall: staff[0]?.name ?? "",
-    chef: staff[staff.length - 1]?.name ?? staff[0]?.name ?? "",
-  });
+  const [dutyForm, setDutyForm] = useState<DutyForm>({ ...DUTY_DEFAULTS });
   const patchDuty = (patch: Partial<DutyForm>) => setDutyForm((prev) => ({ ...prev, ...patch }));
 
   // Picker vocabulary is the real shift templates. `defs` indexes them by id for
@@ -96,7 +103,7 @@ export function RosterView({
   // On-call options follow the band order, so nurses & HCAs surface first.
   const onCallOptions = bands.flatMap((b) =>
     b.staff.map((s) => ({
-      value: s.name,
+      value: s.id,
       label: s.name,
       initials: s.initials,
       color: s.color,
@@ -117,12 +124,11 @@ export function RosterView({
 
   // Duty sheets rebuild whenever the grid or export config changes.
   const dutySheets = useMemo(
-    () => buildDutySheets(bands, days, grid, shiftTypes, dutyForm, onCallByDay),
-    [bands, days, grid, shiftTypes, dutyForm, onCallByDay],
+    () => buildDutySheets(bands, days, grid, shiftTypes, dutyForm),
+    [bands, days, grid, shiftTypes, dutyForm],
   );
   const dutyTitle = dutySheetTitle(days, dutyForm);
   const dayOptions = dutyDayOptions(days);
-  const staffOptions = dutyStaffOptions(staff);
 
   const openRosterCell = (key: string) =>
     setOpenCell((prev) => (prev === key ? null : key));
@@ -239,11 +245,8 @@ export function RosterView({
         open={dutyOpen}
         form={dutyForm}
         dayOptions={dayOptions}
-        staffOptions={staffOptions}
         onScope={(scope) => patchDuty({ scope })}
         onDay={(day) => patchDuty({ day })}
-        onOnCall={(onCall) => patchDuty({ onCall })}
-        onChef={(chef) => patchDuty({ chef })}
         onCancel={() => setDutyOpen(false)}
         onGenerate={() => {
           setDutyOpen(false);

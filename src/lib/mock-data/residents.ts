@@ -1,9 +1,8 @@
 import type { Resident } from "@/types/domain";
 import { slugify } from "@/lib/utils";
 
-// Raw resident facts transcribed from the design source. Presentation
-// (care-tier colour) is derived from `wing`; only the per-person avatar
-// `color` is stored as data. `flags` drive the care-flags pills on the
+// Raw resident facts transcribed from the design source. Only the per-person
+// avatar `color` is stored as data. `flags` drive the care-flags pills on the
 // resident detail screen.
 type ResidentSeed = Omit<Resident, "slug">;
 
@@ -12,8 +11,6 @@ const seed: ResidentSeed[] = [
     name: "Margaret Whitcombe",
     pref: "Peggy",
     room: "12",
-    wing: "Rātā",
-    careType: "Rest Home",
     age: 84,
     diet: "Soft, no nuts",
     mobility: "Walking frame",
@@ -27,8 +24,6 @@ const seed: ResidentSeed[] = [
     name: "Henry Fitzgerald",
     pref: "Harry",
     room: "07",
-    wing: "Rātā",
-    careType: "Rest Home",
     age: 88,
     diet: "Diabetic",
     mobility: "Independent",
@@ -42,8 +37,6 @@ const seed: ResidentSeed[] = [
     name: "Dorothy Nguyen",
     pref: "Dot",
     room: "21",
-    wing: "Kōwhai",
-    careType: "Hospital",
     age: 91,
     diet: "Puree, thickened",
     mobility: "Hoist transfer",
@@ -57,8 +50,6 @@ const seed: ResidentSeed[] = [
     name: "William Toop",
     pref: "Bill",
     room: "18",
-    wing: "Kōwhai",
-    careType: "Hospital",
     age: 86,
     diet: "Normal",
     mobility: "Wheelchair",
@@ -72,8 +63,6 @@ const seed: ResidentSeed[] = [
     name: "Ngaire Thompson",
     pref: "Ngaire",
     room: "30",
-    wing: "Tōtara",
-    careType: "Dementia",
     age: 79,
     diet: "Finger foods",
     mobility: "Independent",
@@ -87,8 +76,6 @@ const seed: ResidentSeed[] = [
     name: "Robert McKenzie",
     pref: "Bob",
     room: "33",
-    wing: "Tōtara",
-    careType: "Dementia",
     age: 82,
     diet: "Soft",
     mobility: "Walking frame",
@@ -102,8 +89,6 @@ const seed: ResidentSeed[] = [
     name: "Patricia Vaughan",
     pref: "Pat",
     room: "05",
-    wing: "Rātā",
-    careType: "Rest Home",
     age: 80,
     diet: "Vegetarian",
     mobility: "Independent",
@@ -117,8 +102,6 @@ const seed: ResidentSeed[] = [
     name: "George Aleki",
     pref: "George",
     room: "24",
-    wing: "Kōwhai",
-    careType: "Respite",
     age: 77,
     diet: "Normal",
     mobility: "Walking stick",
@@ -132,8 +115,6 @@ const seed: ResidentSeed[] = [
     name: "Joan Ferris",
     pref: "Joan",
     room: "15",
-    wing: "Rātā",
-    careType: "Rest Home",
     age: 85,
     diet: "Gluten free",
     mobility: "Walking frame",

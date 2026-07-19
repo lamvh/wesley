@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { getDefaultPermissions } from "@/lib/mock-data";
-import { createUser } from "@/lib/actions/users";
+import { createUser, updateUser, deleteUser, recoverUser } from "@/lib/actions/users";
 import type {
   ModuleKey,
   PermissionAction,
@@ -20,13 +20,23 @@ import { ConfirmDeleteModal } from "@/components/portal/stock/confirm-delete-mod
 type Tab = "users" | "roles";
 type Filter = UserRole | "all";
 
-const EMPTY_FORM: AddUserForm = { name: "", username: "", email: "", password: "", role: "carer", scope: "" };
+const EMPTY_FORM: AddUserForm = { name: "", username: "", email: "", password: "", role: "carer", scope: "", building: "wesley" };
 
-export function UsersView({ initialUsers }: { initialUsers: User[] }) {
+export function UsersView({
+  initialUsers,
+  removedUsers,
+  roles,
+  buildings,
+}: {
+  initialUsers: User[];
+  removedUsers: User[];
+  roles: { id: UserRole; label: string; isSystem: boolean }[];
+  buildings: { id: string; name: string }[];
+}) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [formError, setFormError] = useState<string | null>(null);
-  const [users, setUsers] = useState<User[]>(initialUsers);
+  const users = initialUsers;
   const [tab, setTab] = useState<Tab>("users");
   const [roleFilter, setRoleFilter] = useState<Filter>("all");
   const [selectedRole, setSelectedRole] = useState<UserRole>("admin");
@@ -38,6 +48,14 @@ export function UsersView({ initialUsers }: { initialUsers: User[] }) {
   // reordering unlike an index would.
   const [editingUsername, setEditingUsername] = useState<string | null>(null);
   const [confirmUser, setConfirmUser] = useState<User | null>(null);
+  const [showRemoved, setShowRemoved] = useState(false);
+
+  function recover(username: string) {
+    startTransition(async () => {
+      await recoverUser(username);
+      router.refresh();
+    });
+  }
 
   function togglePerm(role: UserRole, module: ModuleKey, action: PermissionAction) {
     if (role === "super_admin") return;
@@ -65,6 +83,7 @@ export function UsersView({ initialUsers }: { initialUsers: User[] }) {
       password: "",
       role: user.role,
       scope: user.scope === "-" ? "" : user.scope,
+      building: user.buildingId,
     });
     setEditingUsername(user.username);
     setAddUserOpen(true);
@@ -82,18 +101,25 @@ export function UsersView({ initialUsers }: { initialUsers: User[] }) {
     if (!name) return;
 
     if (editingUsername) {
-      // Edit stays local for now (persisting edits is out of scope here).
-      const parts = name.split(/\s+/);
-      const initials = (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase();
-      const scope = form.scope.trim() || "-";
-      setUsers((prev) =>
-        prev.map((u) =>
-          u.username === editingUsername
-            ? { ...u, name, email: form.email.trim(), role: form.role, scope, initials }
-            : u,
-        ),
-      );
-      closeModal();
+      setFormError(null);
+      const fd = new FormData();
+      fd.set("originalUsername", editingUsername);
+      fd.set("name", name);
+      fd.set("username", form.username);
+      fd.set("email", form.email);
+      fd.set("password", form.password);
+      fd.set("role", form.role);
+      fd.set("scope", form.scope);
+      fd.set("building", form.building);
+      startTransition(async () => {
+        const res = await updateUser({}, fd);
+        if (res.error) {
+          setFormError(res.error);
+          return;
+        }
+        closeModal();
+        router.refresh();
+      });
       return;
     }
 
@@ -105,6 +131,7 @@ export function UsersView({ initialUsers }: { initialUsers: User[] }) {
     fd.set("password", form.password);
     fd.set("role", form.role);
     fd.set("scope", form.scope);
+    fd.set("building", form.building);
 
     startTransition(async () => {
       const res = await createUser({}, fd);
@@ -119,8 +146,12 @@ export function UsersView({ initialUsers }: { initialUsers: User[] }) {
 
   function doDelete() {
     if (!confirmUser) return;
-    setUsers((prev) => prev.filter((u) => u.username !== confirmUser.username));
-    setConfirmUser(null);
+    const username = confirmUser.username;
+    startTransition(async () => {
+      await deleteUser(username);
+      setConfirmUser(null);
+      router.refresh();
+    });
   }
 
   const tabClass = (active: boolean) =>
@@ -164,12 +195,51 @@ export function UsersView({ initialUsers }: { initialUsers: User[] }) {
 
       {tab === "users" ? (
         <>
-          <RoleFilterPills users={users} active={roleFilter} onSelect={setRoleFilter} />
-          <UserTable users={filteredUsers} onEdit={openEdit} onDelete={setConfirmUser} />
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+            <RoleFilterPills users={users} roles={roles} active={roleFilter} onSelect={setRoleFilter} />
+            <button
+              type="button"
+              onClick={() => setShowRemoved((v) => !v)}
+              className="text-[13px] font-semibold text-ink-muted underline"
+            >
+              {showRemoved ? "Xem đang hoạt động" : `Đã xoá (${removedUsers.length})`}
+            </button>
+          </div>
+          {showRemoved ? (
+            <div className="mt-4 flex flex-col gap-2">
+              {removedUsers.length === 0 ? (
+                <div className="rounded-[16px] border border-dashed border-line-strong bg-cream-2 px-6 py-[40px] text-center text-[14px] text-ink-muted">
+                  Không có tài khoản nào đã xoá.
+                </div>
+              ) : (
+                removedUsers.map((u) => (
+                  <div
+                    key={u.username}
+                    className="flex items-center justify-between rounded-[11px] border border-line-soft bg-cream-2 px-[16px] py-[12px]"
+                  >
+                    <div>
+                      <div className="text-[14px] font-semibold text-ink">{u.name}</div>
+                      <div className="text-[12.5px] text-ink-faint">@{u.username}</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => recover(u.username)}
+                      className="cursor-pointer rounded-[9px] border border-line-soft bg-cream px-[14px] py-[8px] text-[13px] font-semibold text-ink-nav"
+                    >
+                      Khôi phục
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          ) : (
+            <UserTable users={filteredUsers} roles={roles} onEdit={openEdit} onDelete={setConfirmUser} />
+          )}
         </>
       ) : (
         <RolesPermissions
           users={users}
+          roles={roles}
           perms={perms}
           selectedRole={selectedRole}
           onSelectRole={setSelectedRole}
@@ -183,6 +253,8 @@ export function UsersView({ initialUsers }: { initialUsers: User[] }) {
           editing={editingUsername !== null}
           error={formError}
           submitting={isPending}
+          roles={roles}
+          buildings={buildings}
           onChange={(patch) => setForm((f) => ({ ...f, ...patch }))}
           onClose={closeModal}
           onSubmit={submitUser}

@@ -144,15 +144,15 @@ async function main() {
   for (const r of getResidents()) {
     await client.query(
       `insert into public.residents
-         (building_id, slug, name, pref, room, wing, care_type, age, diet, mobility, gp, avatar, color, note, flags)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+         (building_id, slug, name, pref, room, age, diet, mobility, gp, avatar, color, note, flags)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
        on conflict (building_id, slug) do update set
-         name = excluded.name, pref = excluded.pref, room = excluded.room, wing = excluded.wing,
-         care_type = excluded.care_type, age = excluded.age, diet = excluded.diet,
+         name = excluded.name, pref = excluded.pref, room = excluded.room,
+         age = excluded.age, diet = excluded.diet,
          mobility = excluded.mobility, gp = excluded.gp, avatar = excluded.avatar,
          color = excluded.color, note = excluded.note, flags = excluded.flags`,
       [
-        DEFAULT_BUILDING, r.slug, r.name, r.pref, r.room, r.wing, r.careType, r.age,
+        DEFAULT_BUILDING, r.slug, r.name, r.pref, r.room, r.age,
         r.diet, r.mobility, r.gp, r.avatar, r.color, r.note, r.flags,
       ],
     );

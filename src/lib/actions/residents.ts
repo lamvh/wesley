@@ -4,10 +4,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { slugify, initials } from "@/lib/utils";
+import { getRooms } from "@/lib/mock-data/rooms";
 
 const BUILDING = "wesley";
-const WINGS = ["Rātā", "Kōwhai", "Tōtara"];
-const CARE_TYPES = ["Rest Home", "Hospital", "Dementia", "Respite"];
 
 // Avatar palette (mirrors the person colours used across the mock data). A new
 // resident gets a stable colour derived from their name.
@@ -39,10 +38,8 @@ export async function saveResident(
   const name = str(formData, "name");
   if (!name) return { error: "Name is required." };
 
-  const wing = str(formData, "wing");
-  if (!WINGS.includes(wing)) return { error: "Please choose a wing." };
-  const careType = str(formData, "careType");
-  if (!CARE_TYPES.includes(careType)) return { error: "Please choose a care type." };
+  const room = str(formData, "room");
+  if (!getRooms().some((r) => r.num === room)) return { error: "Please choose a room." };
 
   const ageRaw = str(formData, "age");
   const age = ageRaw ? Number(ageRaw) : null;
@@ -58,9 +55,7 @@ export async function saveResident(
   const fields = {
     name,
     pref: str(formData, "pref") || null,
-    room: str(formData, "room") || null,
-    wing,
-    care_type: careType,
+    room,
     age,
     diet: str(formData, "diet") || null,
     mobility: str(formData, "mobility") || null,

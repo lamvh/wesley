@@ -1,7 +1,7 @@
 import { PersonBadge } from "@/components/shared/person-badge";
 import { Icon } from "@/components/shared/icons";
 import { userRoleMeta, userStatusMeta } from "@/lib/design-meta";
-import type { User } from "@/types/domain";
+import type { User, UserRole } from "@/types/domain";
 import { cn } from "@/lib/utils";
 
 const COLS = "grid-cols-[2.2fr_1.3fr_1.5fr_1fr_1fr_88px]";
@@ -11,10 +11,12 @@ const COLS = "grid-cols-[2.2fr_1.3fr_1.5fr_1fr_1fr_88px]";
 // edit/delete act on the user identity, not the filtered index.
 export function UserTable({
   users,
+  roles,
   onEdit,
   onDelete,
 }: {
   users: User[];
+  roles: { id: UserRole; label: string }[];
   onEdit: (user: User) => void;
   onDelete: (user: User) => void;
 }) {
@@ -37,6 +39,7 @@ export function UserTable({
 
       {users.map((u) => {
         const role = userRoleMeta[u.role];
+        const roleLabel = roles.find((r) => r.id === u.role)?.label ?? role.label;
         const status = userStatusMeta[u.status];
         return (
           <div
@@ -69,7 +72,7 @@ export function UserTable({
                   role.badge,
                 )}
               >
-                {role.label}
+                {roleLabel}
               </span>
             </div>
 

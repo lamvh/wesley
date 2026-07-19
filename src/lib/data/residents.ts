@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { Resident, Wing, CareType } from "@/types/domain";
+import type { Resident } from "@/types/domain";
 
 // Real Supabase-backed resident accessors (replaces the mock for the residents
 // screens). Runs under the signed-in user's session, so RLS applies. Rows are
@@ -7,15 +7,13 @@ import type { Resident, Wing, CareType } from "@/types/domain";
 // (care-tier colour) stays derived in the component layer.
 
 const COLUMNS =
-  "slug,name,pref,room,wing,care_type,age,diet,mobility,gp,avatar,color,note,flags,created_at";
+  "slug,name,pref,room,age,diet,mobility,gp,avatar,color,note,flags,created_at";
 
 interface ResidentRow {
   slug: string;
   name: string;
   pref: string | null;
   room: string | null;
-  wing: string | null;
-  care_type: string | null;
   age: number | null;
   diet: string | null;
   mobility: string | null;
@@ -32,8 +30,6 @@ function toResident(r: ResidentRow): Resident {
     name: r.name,
     pref: r.pref ?? "",
     room: r.room ?? "",
-    wing: (r.wing ?? "Rātā") as Wing,
-    careType: (r.care_type ?? "Rest Home") as CareType,
     age: r.age ?? 0,
     diet: r.diet ?? "",
     mobility: r.mobility ?? "",

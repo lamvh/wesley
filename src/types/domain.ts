@@ -14,8 +14,6 @@ export interface Resident {
   name: string;
   pref: string;
   room: string;
-  wing: Wing;
-  careType: CareType;
   age: number;
   diet: string;
   mobility: string;
@@ -283,6 +281,7 @@ export interface User {
   email: string;
   role: UserRole;
   scope: string;
+  buildingId: string;
   status: UserStatus;
   last: string;
   initials: string;
@@ -380,8 +379,6 @@ export interface DutyForm {
   scope: "day" | "week";
   /** index into the visible week's days when scope is "day". */
   day: number;
-  onCall: string;
-  chef: string;
 }
 /** One printed line on a duty sheet: a shift time segment + a staff name. */
 export interface DutyRow { time: string; name: string; }
@@ -391,12 +388,25 @@ export interface DutySection { label: string; wesley: DutyRow[]; lodge: DutyRow[
 /** One A4 duty sheet (one per day; a whole-week export yields up to seven). */
 export interface DutySheet {
   dateLabel: string;
-  onCall: string;
-  chef: string;
   sections: DutySection[];
 }
 /** `<option>` for the duty modal's day / staff selects. */
 export interface DutyOption { value: string; label: string; }
+
+// ---- public today-on-duty board (/today) ----
+/** One raw row from the today_on_duty RPC. */
+export interface TodayDutyRow { buildingId: string; role: string; name: string; time: string; }
+/** A role band on the public board, split into per-building columns. */
+export interface TodayBand { label: string; wesley: { time: string; name: string }[]; lodge: { time: string; name: string }[]; }
+/** The whole public board: role bands + a Kitchen band (Lodge column stays empty). */
+export interface TodayBoardSheet { sections: TodayBand[]; kitchen: { time: string; name: string }[]; }
+
+/** One raw row from the today_on_duty rpc (public board). */
+export interface TodayDutyRow { buildingId: string; role: string; name: string; time: string; }
+/** A role band on the public board, split into per-building columns. */
+export interface TodayBand { label: string; wesley: { time: string; name: string }[]; lodge: { time: string; name: string }[]; }
+/** The whole public board: role bands + a Kitchen band (Lodge column stays empty). */
+export interface TodayBoardSheet { sections: TodayBand[]; kitchen: { time: string; name: string }[]; }
 
 // ---- stock: providers, catalog, ordering ----
 export interface Provider {

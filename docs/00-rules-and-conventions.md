@@ -52,6 +52,7 @@ Next.js (latest, App Router + RSC) · TypeScript (strict) · Tailwind CSS v4 · 
 - Screens/components import accessors, never inline fixtures. Swapping to Supabase later must touch **only** `lib/mock-data/` + accessors, not screens.
 - Types live in `src/types/domain.ts`. Mock shapes mirror the future DB row shape (DB-ready).
 - Derived/presentation values (status color, initials, occupancy %, care tier from wing) are computed in the data/accessor layer or a pure helper - not recomputed inline in JSX.
+- **DB migrations & verify are run by the user, manually.** Claude writes the migration SQL (`supabase/migrations/NNNN_*.sql`) and verify scripts (`scripts/db/verify-*.mts`), but does **not** run `apply-migration.mts` or the verify scripts itself, and must **not** treat un-run migrations / un-run DB verification as a blocker. The user applies migrations and checks the DB (Supabase dashboard / psql) on their own. "Code done" = `tsc --noEmit` + eslint clean; DB apply + verify is the user's manual step, tracked as an unchecked item in the plan.
 
 ## 8. Routing & role
 

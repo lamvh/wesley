@@ -17,13 +17,14 @@ Header (title + Add user) → pill tabs (Users / Roles & permissions) → tab bo
 | Header | inline in `users-view` | "Super admin" eyebrow, title, **+ Add user** (opens modal) |
 | Tabs | inline | "Users · {count}" / "Roles & permissions"; active = navy fill |
 | Users tab | `role-filter-pills` + `user-table` | filter pills (All + per-role counts); table cols `2.2fr 1.3fr 1.5fr 1fr 1fr 40px` = User / Role / Scope / Status / Last active / ⋯ |
-| Roles tab | `roles-permissions` | left: role cards (dot, label, count, desc, "{granted} permissions"); right: permission matrix for `selectedRole` |
+| Roles tab | `roles-permissions` | left: role cards (dot, label, count, desc, "{granted} permissions") - sourced from real `public.roles` (`roles` prop), not the `ROLE_KEYS` mock; inline **rename** (pencil icon) on non-system roles → `renameUserRole`; right: permission matrix for `selectedRole`, header now shows the real role label |
 | Permission matrix | `permission-switch` per cell | rows = modules (10), cols = View/Create/Edit/Delete; super_admin locked |
-| Add user | `add-user-modal` | name, email, role grid, scope; Cancel / Add (inert) |
+| Add / edit user | `add-user-modal` | name, username, email, password, role grid (real `roles`), building select, scope |
+| Removed toggle | inline in `users-view` | "Đã xoá (N)" link swaps the table for a recoverable list |
 
 ## Data consumed
-- `getUsers()` → `User[]`; `getModules()` → `AppModule[]` (10); `getDefaultPermissions()` → `PermissionMatrix`; `countGranted(modules, perms[role])`; `ROLE_KEYS`.
-- `userRoleMeta[role]` (badge/label/desc), `userStatusMeta[status]` (text/dot).
+- `listAppUsers()` / `listRemovedAppUsers()` (`src/lib/data/users.ts`) → `User[]`; `listUserRoles()` (`src/lib/data/user-roles.ts`) → real `public.roles` incl. `is_system`; `listBuildings()` (`src/lib/data/buildings.ts`) → `public.buildings`; `getModules()` → `AppModule[]` (10); `getDefaultPermissions()` → `PermissionMatrix`; `countGranted(modules, perms[role])`.
+- `userRoleMeta[role]` supplies **presentation only** (dot colour, badge tint, description) - the rendered role **name/label** everywhere (role cards, permission-matrix header, user-table badge, add/edit-user role grid, filter pills) comes from the real `roles` prop, not `userRoleMeta[role].label`. `userStatusMeta[status]` (text/dot) is still fully static (no per-status DB row exists).
 
 ## Variants & states (client)
 - `tab` ∈ {users, roles}; `roleFilter` ∈ {all, …roles}; `selectedRole` (default admin); `perms` (editable matrix copy); `addUserOpen`; `form`.
@@ -34,16 +35,17 @@ Header (title + Add user) → pill tabs (Users / Roles & permissions) → tab bo
 ## Interactions
 - Tab switch, role-filter select, role-card select - client state.
 - Toggle permission → `togglePerm(role, moduleKey, action)` (no-op for super_admin), flips a cloned matrix.
-- Add user modal open/close; submit **inert** (no persistence this phase).
+- Add user modal open/close; **Add** → `createUser` server action; **Save changes** (editing) → `updateUser`; row ⋯ **Delete** → `deleteUser` (soft), confirm modal first; "Đã xoá" toggle → recoverable list, **Khôi phục** → `recoverUser`. All four `router.refresh()` on success.
+- Role card **rename** (pencil icon, hidden for `is_system` roles i.e. `super_admin`) → inline edit → `renameUserRole(id, label)` server action, updates `public.roles.label` via the service-role client (no write RLS policy exists for regular sessions); `revalidatePath` refreshes every screen that reads `listUserRoles()`.
 
 ## Tokens
 `userRoleMeta` (super_admin=navy, admin=rust, nurse=cat-craft, carer=sage, activities=gold, family=cat-music); switch on=`bg-sage`, off=`bg-line-strong`; navy active tabs/pills.
 
 ## Out of scope (this phase)
-Creating/inviting/suspending users, persisting permission edits, the ⋯ row menu - UI-only until DB + auth land.
+Persisting Roles & permissions matrix edits, wiring nav/route guards to per-module `role_permissions` (today gating is the coarse admin/staff map), Supabase invite email flow.
 
 ## Definition of Done
-Both tabs render; filters + role selection + permission toggles work in-session; super_admin locked; modal opens/closes; tokens only; RSC page + client island; `tsc`/`lint`/`build` clean.
+Both tabs render; filters + role selection + permission toggles work in-session; super_admin locked; modal opens/closes; Create/Read/Update/soft-Delete/Recover all persist to Supabase; role/building options come from real data; `tsc`/`lint`/`build` clean.
 
 ## DB status
-The RBAC tables are **live in the DB** (`supabase/migrations/0001_core_schema.sql`, applied + seeded): `roles` (6), `role_permissions` (the full 6×10×4 = 240 grant matrix, seeded from `getDefaultPermissions()`), and `app_users` (name/email/`role_id`/`status`, linked to `auth.users` by `auth_id`). The signed-in user's `app_users` row **already gates portal access + role** (`lib/supabase/current-user.ts`, verified end-to-end) - "only assigned users are shown". Still pending: this screen still reads mock data (not yet the DB); `togglePerm` → upsert `role_permissions`, Add user → insert `app_users` (`Invited`) + Supabase invite; wiring nav/route guards to the `role_permissions` matrix (today gating is the coarse admin/staff map). `user_scopes` remains deferred (see docs/03-data-model.md).
+The RBAC tables are **live in the DB** (`supabase/migrations/0001_core_schema.sql`, applied + seeded): `roles` (6), `role_permissions` (the full 6×10×4 = 240 grant matrix, seeded from `getDefaultPermissions()`), and `app_users` (name/email/`role_id`/`status`/`building_id`/`deleted_at`, linked to `auth.users` by `auth_id`). Full account CRUD is **live** - Create, Read, Update (all fields incl. username/email/password), soft-Delete + Recover (`supabase/migrations/0015_app_users_soft_delete.sql`) - see "Users full CRUD" in `docs/03-data-model.md`. Still pending: `togglePerm` → upsert `role_permissions`; wiring nav/route guards to the `role_permissions` matrix. `user_scopes` remains deferred (see docs/03-data-model.md).

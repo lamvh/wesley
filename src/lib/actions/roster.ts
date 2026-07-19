@@ -51,3 +51,30 @@ export async function clearRosterCell(staffId: string, dateISO: string): Promise
   if (error) throw new Error(`Failed to clear roster cell: ${error.message}`);
   revalidatePath("/portal/roster");
 }
+
+// Auto-save the on-call picker for one date: upsert the covering staffer.
+export async function setOnCallDay(dateISO: string, staffId: string): Promise<void> {
+  if (!dateISO || !staffId) return;
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("roster_on_call")
+    .upsert(
+      { building_id: BUILDING, on_call_date: dateISO, staff_id: staffId },
+      { onConflict: "building_id,on_call_date" },
+    );
+  if (error) throw new Error(`Failed to set on-call: ${error.message}`);
+  revalidatePath("/portal/roster");
+}
+
+// Clear the on-call assignment for a date (picker set back to "—").
+export async function clearOnCallDay(dateISO: string): Promise<void> {
+  if (!dateISO) return;
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("roster_on_call")
+    .delete()
+    .eq("building_id", BUILDING)
+    .eq("on_call_date", dateISO);
+  if (error) throw new Error(`Failed to clear on-call: ${error.message}`);
+  revalidatePath("/portal/roster");
+}

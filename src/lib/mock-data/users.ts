@@ -8,16 +8,16 @@ import type {
 } from "@/types/domain";
 
 const users: User[] = [
-  { name: "Sarah Beckett", username: "sarah.beckett", email: "sarah.beckett@wesley.nz", role: "admin", scope: "All wings", status: "Active", last: "Online now", initials: "SB", color: "#BE7350" },
-  { name: "IT Administrator", username: "it", email: "it@wesley.nz", role: "super_admin", scope: "System", status: "Active", last: "2h ago", initials: "IT", color: "#2C3563" },
-  { name: "Aroha Ngata", username: "aroha.ngata", email: "aroha.ngata@wesley.nz", role: "nurse", scope: "Rātā wing", status: "Active", last: "12m ago", initials: "AN", color: "#6E875E" },
-  { name: "David Cho", username: "david.cho", email: "david.cho@wesley.nz", role: "nurse", scope: "Kōwhai wing", status: "Active", last: "1h ago", initials: "DC", color: "#8a6ba3" },
-  { name: "Mere Solomon", username: "mere.solomon", email: "mere.solomon@wesley.nz", role: "carer", scope: "Rātā wing", status: "Active", last: "25m ago", initials: "MS", color: "#b06a5a" },
-  { name: "Tomasi Fifita", username: "tomasi.fifita", email: "tomasi.fifita@wesley.nz", role: "carer", scope: "Kōwhai wing", status: "Active", last: "Yesterday", initials: "TF", color: "#5b8f9a" },
-  { name: "Grace Lin", username: "grace.lin", email: "grace.lin@wesley.nz", role: "activities", scope: "All wings", status: "Active", last: "3h ago", initials: "GL", color: "#c08a3e" },
-  { name: "Priya Nair", username: "priya.nair", email: "priya.nair@wesley.nz", role: "carer", scope: "Kōwhai wing", status: "Invited", last: "Pending", initials: "PN", color: "#7e9b6a" },
-  { name: "David Whitcombe", username: "d.whitcombe", email: "d.whitcombe@gmail.com", role: "family", scope: "Peggy W. · Rātā 12", status: "Active", last: "2d ago", initials: "DW", color: "#6e879e" },
-  { name: "Katherine Ruatoto", username: "k.ruatoto", email: "k.ruatoto@gmail.com", role: "family", scope: "Joan F. · Rātā 15", status: "Suspended", last: "2 wk ago", initials: "KR", color: "#9a7b4f" },
+  { name: "Sarah Beckett", username: "sarah.beckett", email: "sarah.beckett@wesley.nz", role: "admin", scope: "All wings", buildingId: "wesley", status: "Active", last: "Online now", initials: "SB", color: "#BE7350" },
+  { name: "IT Administrator", username: "it", email: "it@wesley.nz", role: "super_admin", scope: "System", buildingId: "wesley", status: "Active", last: "2h ago", initials: "IT", color: "#2C3563" },
+  { name: "Aroha Ngata", username: "aroha.ngata", email: "aroha.ngata@wesley.nz", role: "nurse", scope: "Rātā wing", buildingId: "wesley", status: "Active", last: "12m ago", initials: "AN", color: "#6E875E" },
+  { name: "David Cho", username: "david.cho", email: "david.cho@wesley.nz", role: "nurse", scope: "Kōwhai wing", buildingId: "wesley", status: "Active", last: "1h ago", initials: "DC", color: "#8a6ba3" },
+  { name: "Mere Solomon", username: "mere.solomon", email: "mere.solomon@wesley.nz", role: "carer", scope: "Rātā wing", buildingId: "wesley", status: "Active", last: "25m ago", initials: "MS", color: "#b06a5a" },
+  { name: "Tomasi Fifita", username: "tomasi.fifita", email: "tomasi.fifita@wesley.nz", role: "carer", scope: "Kōwhai wing", buildingId: "wesley", status: "Active", last: "Yesterday", initials: "TF", color: "#5b8f9a" },
+  { name: "Grace Lin", username: "grace.lin", email: "grace.lin@wesley.nz", role: "activities", scope: "All wings", buildingId: "wesley", status: "Active", last: "3h ago", initials: "GL", color: "#c08a3e" },
+  { name: "Priya Nair", username: "priya.nair", email: "priya.nair@wesley.nz", role: "carer", scope: "Kōwhai wing", buildingId: "wesley", status: "Invited", last: "Pending", initials: "PN", color: "#7e9b6a" },
+  { name: "David Whitcombe", username: "d.whitcombe", email: "d.whitcombe@gmail.com", role: "family", scope: "Peggy W. · Rātā 12", buildingId: "wesley", status: "Active", last: "2d ago", initials: "DW", color: "#6e879e" },
+  { name: "Katherine Ruatoto", username: "k.ruatoto", email: "k.ruatoto@gmail.com", role: "family", scope: "Joan F. · Rātā 15", buildingId: "wesley", status: "Suspended", last: "2 wk ago", initials: "KR", color: "#9a7b4f" },
 ];
 
 const modules: AppModule[] = [

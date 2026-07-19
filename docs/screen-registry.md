@@ -18,6 +18,7 @@ Ported from Claude Design project `Wesley MtEden` (`Victoria at Mt Eden.dc.html`
 | - | Our home | `/our-home` | v1.0 | [our-home](./features/marketing/our-home.md) |
 | - | Careers | `/careers` | v1.0 | [careers](./features/marketing/careers.md) |
 | - | Contact | `/contact` | v1.0 | [contact](./features/marketing/contact.md) |
+| U1 | Today roster (public duty board) | `/today` | v3.0 | [today-roster](./features/marketing/today-roster.md) |
 
 ## Portal
 
