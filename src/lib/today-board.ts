@@ -31,8 +31,13 @@ function segments(time: string): string[] {
 
 // Group raw rows into the design's bands (Nurse/A-C/HCA/Care Taker) + Kitchen,
 // each split into Wesley (left) and Lodge (right) columns. Roles that match no
-// band fall into a trailing "OTHER" band so nobody is dropped.
-export function buildTodayBoard(rows: TodayDutyRow[]): TodayBoardSheet {
+// band fall into a trailing "OTHER" band so nobody is dropped. `onCallRows` is
+// the today_on_call rpc result - Wesley only, since that's the only building
+// the on-call picker tracks (mirrors the roster grid's on-call feature).
+export function buildTodayBoard(
+  rows: TodayDutyRow[],
+  onCallRows: { buildingId: string; name: string }[] = [],
+): TodayBoardSheet {
   const sections: TodayBand[] = BANDS.map((b) => ({ label: b.label, wesley: [], lodge: [] }));
   const other: TodayBand = { label: "OTHER", wesley: [], lodge: [] };
   const kitchen: { time: string; name: string }[] = [];
@@ -49,5 +54,6 @@ export function buildTodayBoard(rows: TodayDutyRow[]): TodayBoardSheet {
   }
 
   const out = [...sections, other].filter((b) => b.wesley.length > 0 || b.lodge.length > 0);
-  return { sections: out, kitchen };
+  const onCall = onCallRows.find((r) => r.buildingId === "wesley")?.name ?? "";
+  return { sections: out, kitchen, onCall };
 }

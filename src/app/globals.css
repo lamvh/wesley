@@ -208,6 +208,22 @@
   body:has(.duty-sheets) .duty-sheets * {
     visibility: visible !important;
   }
+  /* Per CSS2.1 §9.3.1, a `position: fixed` box is recommended to repeat on
+     every printed page (browsers implement this - it's how print CSS makes
+     running headers/footers). `duty-preview-overlay` is the full-screen
+     `position: fixed` wrapper around `.duty-sheets`; left as `fixed`, the
+     first sheet redraws on top of every subsequent page instead of the real
+     per-day content flowing through (reproduced 2026-07-20: single-day
+     export printed as two duplicate pages; whole-week export showed Monday
+     repeated instead of the other days). Dropping it to `static` for print
+     lets `.duty-sheets`' own `position: absolute` + `page-break-after`
+     below drive pagination normally.  */
+  .duty-preview-overlay {
+    position: static !important;
+    inset: auto !important;
+    overflow: visible !important;
+    background: none !important;
+  }
   .duty-sheets {
     position: absolute;
     left: 0;
@@ -224,13 +240,14 @@
     margin: 0 !important;
     width: 210mm !important;
     max-width: none !important;
-    /* Fixed page-box height (just under A4's 297mm) + clip so a single day never
-       spills onto a second sheet. Whole-week export still breaks one page/day. */
+    /* Fixed page-box height (just under A4's 297mm) so the flex column's
+       mt-auto footer sits at the bottom of the sheet. No `overflow: hidden` -
+       content is sized to fit one page by design (v2.5 trim); if a future
+       change makes a day's content taller than 296mm it should legitimately
+       spill onto a second page rather than being silently clipped. */
     height: 296mm !important;
     min-height: 0 !important;
-    overflow: hidden !important;
     border-radius: 0 !important;
-    break-inside: avoid;
   }
   .duty-sheet:not(:last-child) {
     page-break-after: always;

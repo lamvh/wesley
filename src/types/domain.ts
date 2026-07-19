@@ -388,6 +388,8 @@ export interface DutySection { label: string; wesley: DutyRow[]; lodge: DutyRow[
 /** One A4 duty sheet (one per day; a whole-week export yields up to seven). */
 export interface DutySheet {
   dateLabel: string;
+  /** on-call staff name for this day (grid's per-day on-call row); "" if unset. */
+  onCall: string;
   sections: DutySection[];
 }
 /** `<option>` for the duty modal's day / staff selects. */
@@ -399,14 +401,12 @@ export interface TodayDutyRow { buildingId: string; role: string; name: string; 
 /** A role band on the public board, split into per-building columns. */
 export interface TodayBand { label: string; wesley: { time: string; name: string }[]; lodge: { time: string; name: string }[]; }
 /** The whole public board: role bands + a Kitchen band (Lodge column stays empty). */
-export interface TodayBoardSheet { sections: TodayBand[]; kitchen: { time: string; name: string }[]; }
-
-/** One raw row from the today_on_duty rpc (public board). */
-export interface TodayDutyRow { buildingId: string; role: string; name: string; time: string; }
-/** A role band on the public board, split into per-building columns. */
-export interface TodayBand { label: string; wesley: { time: string; name: string }[]; lodge: { time: string; name: string }[]; }
-/** The whole public board: role bands + a Kitchen band (Lodge column stays empty). */
-export interface TodayBoardSheet { sections: TodayBand[]; kitchen: { time: string; name: string }[]; }
+export interface TodayBoardSheet {
+  sections: TodayBand[];
+  kitchen: { time: string; name: string }[];
+  /** today's on-call staff name (Wesley only - the only building on-call tracks); "" if unset. */
+  onCall: string;
+}
 
 // ---- stock: providers, catalog, ordering ----
 export interface Provider {

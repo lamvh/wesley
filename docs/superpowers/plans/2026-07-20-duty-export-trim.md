@@ -8,6 +8,8 @@
 
 **Tech Stack:** Next.js 16 (App Router), React client components, TypeScript, Tailwind, CSS `@media print`.
 
+> **Cập nhật 2026-07-20 (sau khi plan này hoàn thành):** bạn yêu cầu đảo ngược một phần quyết định trên — **On call quay lại** tờ in xuất (không phải qua modal input như trước, mà lấy live từ roster grid's per-day on-call row, cùng nguồn với Luồng A5). **Chef vẫn bỏ** (không nằm trong yêu cầu, chưa từng được persist). Xem `docs/features/portal/roster-shifts.md` mục Duty roster export cho chi tiết hiện tại.
+
 ## Global Constraints
 
 - **Nguồn design:** Claude Design `Victoria at Mt Eden.dc.html` v2.5 (modal chỉ còn *What to export* + *Day*; tờ in không có dòng On call/Chef).

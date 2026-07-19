@@ -26,6 +26,21 @@ function DutyColumn({ rows, divider }: { rows: DutyRow[]; divider?: boolean }) {
   );
 }
 
+// On-call strip: label · rule · name, boxed on the cream duty strip.
+function OnCallStrip({ value }: { value: string }) {
+  return (
+    <div className="flex items-center gap-[14px] rounded-[11px] border border-line bg-duty-strip px-[18px] py-[11px]">
+      <span className="text-[12px] font-bold uppercase tracking-[2.5px] text-navy-deep">
+        On call
+      </span>
+      <span className="h-px flex-1 bg-duty-rule" />
+      <span className="text-[15.5px] font-semibold tracking-[0.4px] text-ink">
+        {value || "-"}
+      </span>
+    </div>
+  );
+}
+
 // Centred section header: a hairline rule flanks the label on both sides so every
 // band reads the same way down the sheet. Label colour is uniform (bronze) rather
 // than the band's roster colour - the print document stays monochrome-calm.
@@ -55,7 +70,7 @@ export function DutyRosterSheet({ sheet }: { sheet: DutySheet }) {
 
       <div className="text-center">
         <div className="text-[11.5px] font-semibold uppercase tracking-[5px] text-bronze-text">
-          Victoria at Mt Eden
+          Wesley Home &amp; Care
         </div>
         <div className="mt-2 font-serif text-[66px] font-medium leading-none tracking-[0.5px] text-navy-deep">
           Duty Roster
@@ -76,6 +91,10 @@ export function DutyRosterSheet({ sheet }: { sheet: DutySheet }) {
         </div>
       </div>
 
+      <div className="mt-4">
+        <OnCallStrip value={sheet.onCall} />
+      </div>
+
       {sheet.sections.length === 0 ? (
         <div className="mt-[60px] text-center text-[15px] text-duty-empty">
           No shifts assigned for this day.
@@ -93,10 +112,7 @@ export function DutyRosterSheet({ sheet }: { sheet: DutySheet }) {
       )}
 
       <div className="mt-auto pt-7">
-        <div className="flex items-center justify-between border-t-2 border-navy-deep pt-[13px]">
-          <span className="text-[11px] font-semibold uppercase tracking-[2px] text-duty-foot">
-            Prepared from published roster
-          </span>
+        <div className="flex items-center justify-end border-t-2 border-navy-deep pt-[13px]">
           <span className="text-[16px] font-bold tracking-[2px] text-navy-deep">
             {sheet.dateLabel}
           </span>

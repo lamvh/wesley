@@ -16,3 +16,15 @@ export async function getTodayOnDuty(): Promise<TodayDutyRow[]> {
     time: r.shift_time,
   }));
 }
+
+// Public board data via the today_on_call SECURITY DEFINER rpc (anon-callable).
+// Returns today's (Auckland local) on-call staff name per building.
+export async function getTodayOnCall(): Promise<{ buildingId: string; name: string }[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("today_on_call");
+  if (error || !data) return [];
+  return (data as { building_id: string; staff_name: string }[]).map((r) => ({
+    buildingId: r.building_id,
+    name: r.staff_name,
+  }));
+}

@@ -122,10 +122,16 @@ export function RosterView({
   const total = totalShifts(grid);
   const weekTitle = rosterWeekTitle(days);
 
-  // Duty sheets rebuild whenever the grid or export config changes.
+  // Resolve on-call staff id -> name for the print sheet (onCallOptions' label).
+  const onCallNames = Object.fromEntries(onCallOptions.map((o) => [o.value, o.label]));
+  const onCallNameByDay = Object.fromEntries(
+    Object.entries(onCallByDay).map(([iso, staffId]) => [iso, onCallNames[staffId] ?? ""]),
+  );
+
+  // Duty sheets rebuild whenever the grid, on-call, or export config changes.
   const dutySheets = useMemo(
-    () => buildDutySheets(bands, days, grid, shiftTypes, dutyForm),
-    [bands, days, grid, shiftTypes, dutyForm],
+    () => buildDutySheets(bands, days, grid, shiftTypes, dutyForm, onCallNameByDay),
+    [bands, days, grid, shiftTypes, dutyForm, onCallNameByDay],
   );
   const dutyTitle = dutySheetTitle(days, dutyForm);
   const dayOptions = dutyDayOptions(days);
