@@ -19,12 +19,12 @@ Cập nhật lần cuối: **2026-07-20**.
 
 | # | Luồng | Trạng thái | Plan / spec |
 |---|-------|------------|-------------|
-| A | Design sync + Website CMS | ✅ done (A5 code xong — verify DB pending; A6 ⏳) | [plan.md](./20260718-2250-design-sync-and-cms/plan.md) |
+| A | Design sync + Website CMS | ✅ done (A5 code xong; A6 ⏳) | [plan.md](./20260718-2250-design-sync-and-cms/plan.md) |
 | B | Login username + email (email optional) | ✅ done (code + review + verify e2e) | [spec](../docs/superpowers/specs/2026-07-20-username-email-login-design.md) · [plan](../docs/superpowers/plans/2026-07-20-username-email-login.md) |
 | C | Backlog Resident CRUD parity | ✅ done (C1–C5) | [residents.md](../docs/features/portal/residents.md#design-parity--open-items) |
-| D | Today roster U1 — public `/today` (iPad lễ tân) | ✅ code xong (`tsc`/eslint sạch) — verify DB pending | [spec](../docs/superpowers/specs/2026-07-20-today-roster-design.md) · [plan](../docs/superpowers/plans/2026-07-20-today-roster-public-page.md) |
+| D | Today roster U1 — public `/today` (iPad lễ tân) | ✅ code xong (`tsc`/eslint sạch) | [spec](../docs/superpowers/specs/2026-07-20-today-roster-design.md) · [plan](../docs/superpowers/plans/2026-07-20-today-roster-public-page.md) |
 | E | Duty export trim (P4) — bỏ chef + fix in 1 trang; **on-call quay lại (2026-07-20)** | ✅ done (code, `tsc`/eslint sạch) | [plan](../docs/superpowers/plans/2026-07-20-duty-export-trim.md) |
-| F | Users full CRUD parity — update/soft-delete/recover + role/building real-data | ✅ code xong — verify DB pending (password stale) | [plan](../docs/superpowers/plans/2026-07-20-users-full-crud.md) |
+| F | Users full CRUD parity — update/soft-delete/recover + role/building real-data | ✅ code xong | [plan](../docs/superpowers/plans/2026-07-20-users-full-crud.md) |
 
 > Chi tiết từng luồng đã hoàn thành → xem **Track log** + file plan/spec/journal tương ứng. Phần dưới chỉ liệt kê **việc còn mở**.
 
@@ -32,7 +32,7 @@ Cập nhật lần cuối: **2026-07-20**.
 
 ## Việc còn mở (open items)
 
-> Migration + verify DB do **bạn tự chạy manual** (bỏ qua vấn đề `SUPABASE_DB_PASSWORD` local). Các mục dưới là checklist để bạn tick khi chạy xong; không còn coi là blocker.
+> Migration + verify DB do **bạn tự chạy manual**. Các mục dưới là checklist để bạn tick khi chạy xong; không còn coi là blocker.
 
 ### Luồng D — Today page (bạn chạy manual)
 - [ ] **D-v1.** Apply `supabase/migrations/0016_today_on_duty.sql` + `0018_today_on_call.sql`.
@@ -51,7 +51,7 @@ Cập nhật lần cuối: **2026-07-20**.
 - [ ] **E-v1. ⚠️ CẦN BẠN TEST TRỰC TIẾP** (không tự động verify được, xem E-v3): `/portal/roster` → Export → Single day → Print = **1 trang** (không phải 2 trang giống nhau); Export → Whole week → Print = **7 trang khác nhau theo thứ** (không phải lặp Monday); strip **On call** hiện đúng tên đã chọn ở grid cho ngày đó.
 - [x] ✅ **E-v2. On-call quay lại export (2026-07-20)** — đảo ngược một phần quyết định E gốc (design v2.5 đã bỏ on-call+chef khỏi export) theo yêu cầu của bạn. Chỉ **on-call** quay lại (không phải qua modal input như bản cũ, mà lấy **live từ roster grid's on-call row** — cùng nguồn A5); **Chef vẫn bỏ** (không được yêu cầu, chưa từng persist). `DutySheet.onCall`, `buildDutySheets(..., onCallNameByDay)`, `OnCallStrip` trong `duty-roster-sheet.tsx`. Ghi chú đảo ngược trong [duty-export-trim.md](../docs/superpowers/plans/2026-07-20-duty-export-trim.md).
 - [x] 🐛 **E-v3. Fix duty print bị lặp trang (2026-07-20)** — 2 root cause: (1) `DUTY_DEFAULTS.scope` sai là `"week"` (đúng theo design là `"day"`) → bấm print mặc định export cả tuần thay vì 1 ngày; (2) `DutyRosterPreview` overlay là `position: fixed` — theo CSS spec, phần tử fixed **lặp lại trên mọi trang khi in**, khiến trang đầu (Monday/ngày đang chọn) đè lên mọi trang sau thay vì nội dung thật chảy sang trang tiếp. Fix: đổi default sang `"day"`; thêm class `duty-preview-overlay` + override `position: static` trong `@media print`. **Chưa verify bằng công cụ tự động được** (headless print-to-pdf repro không đáng tin — không phân trang đúng cả với case test 3 trang đơn giản) — `tsc`/eslint/`next build` sạch nhưng **bạn cần tự test bằng mắt** (xem E-v1). Chi tiết: [roster-shifts.md](../docs/features/portal/roster-shifts.md#fixed-2026-07-20-duty-print-showed-duplicate-pages).
-- [x] ✅ **E-v4. Sửa nội dung print sheet (2026-07-20)** — theo yêu cầu của bạn: eyebrow đổi "Victoria at Mt Eden" (tên cơ sở, không phải brand công khai) → "Wesley Home & Care" (đúng brand dùng xuyên suốt app: nav, footer, login, `layout.tsx`); bỏ dòng "Prepared from published roster" ở footer, chỉ còn ngày (căn phải). **Chỉ sửa `duty-roster-sheet.tsx`** — text giống hệt cũng có ở `today-board.tsx` (`/today`, luồng D) nhưng đó là nội dung **đã duyệt theo spec D3** (lấy nguyên từ file design `Victoria at Mt Eden.dc.html`), nên tôi không tự ý đổi — báo bạn biết, nếu muốn đổi luôn `/today` thì nói riêng.
+- [x] ✅ **E-v4. Sửa nội dung print sheet (2026-07-20)** — theo yêu cầu của bạn: eyebrow đổi "Victoria at Mt Eden" (tên cơ sở, không phải brand công khai) → "Wesley Home & Care" (đúng brand dùng xuyên suốt app: nav, footer, login, `layout.tsx`); bỏ dòng "Prepared from published roster" ở footer, chỉ còn ngày (căn phải). Áp dụng cho cả `duty-roster-sheet.tsx` (luồng E) và `today-board.tsx` (`/today`, luồng D — bạn xác nhận "sửa luôn") — 2 màn share chung pattern masthead/footer này. Đã cập nhật spec D3 (`today-roster-design.md`) + `today-roster.md` cho khớp code (đảo ngược có ghi chú, không âm thầm). `tsc`/eslint/`next build` sạch.
 
 ### Luồng A5 — Persist on-call (bạn chạy manual)
 - [x] ✅ **A5-code.** Persist on-call theo ngày lên Supabase — migration `0017_roster_on_call.sql` (bảng `roster_on_call`, `unique(building_id, on_call_date)`), `getOnCallByDay()` + `setOnCallDay`/`clearOnCallDay` (mirror `roster_shifts` auto-save), `RosterView` seed từ `initialOnCallByDay`, picker value đổi từ **tên** sang **staff id**. `tsc`/eslint sạch. Docs: [roster-shifts.md](../docs/features/portal/roster-shifts.md).
@@ -93,6 +93,5 @@ Ghi theo ngày, mới nhất trên cùng.
 
 ## Câu hỏi chưa giải quyết
 
-1. **P0 rotate `SUPABASE_DB_PASSWORD`** — ai làm, khi nào? (chặn verify DB của D + F).
-2. Luồng A6: chạy ngay hay gộp đợt tích hợp DB chung? (A5 đã code xong, chỉ còn verify DB thủ công — xem open items)
-3. Luồng D: xác nhận `staff.role` thật để chốt mapping band (hiện fallback "OTHER" an toàn); có cần chấm "Live" nhấp nháy không?
+1. Luồng A6: chạy ngay hay gộp đợt tích hợp DB chung? (A5 đã code xong, chỉ còn verify DB thủ công — xem open items)
+2. Luồng D: xác nhận `staff.role` thật để chốt mapping band (hiện fallback "OTHER" an toàn); có cần chấm "Live" nhấp nháy không?

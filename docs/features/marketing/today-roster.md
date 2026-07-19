@@ -21,6 +21,7 @@ Reception-iPad board showing today's on-duty staff by building (Wesley / The Lod
 - **The Lodge:** option (a) — keep 2 columns; empty column shows `—` (Lodge has no roster data yet).
 - **Clock:** computed client-side (reception iPad set to NZ time).
 - **Band mapping:** by `staff.role` substring; adjust `BANDS` in `today-board.ts` if real role values differ.
+- **Masthead/footer text (2026-07-20):** eyebrow changed from the design's literal "Victoria at Mt Eden" (the facility name) to "Wesley Home & Care" (the org's public brand, used everywhere else in the app - nav, footer, login, `layout.tsx`); footer's "Prepared from published roster" line dropped, footer now shows only the date, right-aligned. Mirrors the same change in the duty-roster export sheet (`duty-roster-sheet.tsx`) - both screens share this masthead/footer pattern.
 
 ## Verify
 

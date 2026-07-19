@@ -17,10 +17,10 @@ Trang **public** `/today` — bảng "Today on duty" cho **iPad ở quầy lễ 
 
 - Wrapper nền `#ECE4D4`, sheet "A4" `width:794px; min-height:1123px`, viền trên navy 6px + brass 2px, shadow lớn.
 - **Header (trên sheet):** trái = chấm "Live" xanh `#6E875E` (glow ring) + `todayDateLabel` (VD "Monday, 20 July 2026"); phải = đồng hồ `todayClock` `HH:MM` (Instrument Sans, tabular-nums, 22px, `#232A4C`).
-- **Masthead:** eyebrow "VICTORIA AT MT EDEN" (letter-spacing 5px, `#B07C22`); title serif Newsreader 66px "Duty Roster"; subtitle italic + ngày.
+- **Masthead:** eyebrow "WESLEY HOME & CARE" (letter-spacing 5px, `#B07C22`; đổi từ "VICTORIA AT MT EDEN" — tên cơ sở — sang brand công khai đang dùng xuyên suốt app, 2026-07-20 theo yêu cầu của bạn); title serif Newsreader 66px "Duty Roster"; subtitle italic + ngày.
 - **Header 2 cột:** `WESLEY | THE LODGE` (letter-spacing 6px), ruled trên/dưới navy 2px, cột phải có `border-left`.
 - **Bands:** NURSE / A/C / HCA / CARE TAKER, rồi **Kitchen** (cột Lodge trống). Mỗi band: label giữa 2 hairline (`#E0D5C0`, `#B07C22`, letter-spacing 3.5px). Mỗi dòng: `{time}` (min-width 120px, tabular, `#8A8172`) + `{name}` in đậm 15px `#22201C`. Cột rỗng → `—` (`#C9C2B3`).
-- **Footer:** "Prepared from published roster" + ngày, ruled navy 2px.
+- **Footer:** ngày, căn phải, ruled navy 2px (bỏ "Prepared from published roster" 2026-07-20 theo yêu cầu của bạn).
 - **Fonts:** Newsreader (serif titles) + Instrument Sans (còn lại). Đã có token Tailwind: `navy-deep`, `bronze-text`, `duty-rule`, `duty-time`, `duty-ink`, `duty-empty`, `duty-foot` (dùng lại từ `DutyRosterSheet`).
 
 ## Hành vi động
