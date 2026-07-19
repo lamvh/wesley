@@ -20,15 +20,12 @@ Cập nhật lần cuối: **2026-07-20**.
 | # | Luồng | Trạng thái | Plan / spec |
 |---|-------|------------|-------------|
 | A | Design sync + Website CMS | ✅ done (A5 code xong; A6 ⏳) | [plan.md](./20260718-2250-design-sync-and-cms/plan.md) |
-| B | Login username + email (email optional) | ✅ done (code + review + verify e2e) | [spec](../docs/superpowers/specs/2026-07-20-username-email-login-design.md) · [plan](../docs/superpowers/plans/2026-07-20-username-email-login.md) |
-| C | Backlog Resident CRUD parity | ✅ done (C1–C5) | [residents.md](../docs/features/portal/residents.md#design-parity--open-items) |
-| D | Today roster U1 — public `/today` (iPad lễ tân) | ✅ code xong (`tsc`/eslint sạch) | [spec](../docs/superpowers/specs/2026-07-20-today-roster-design.md) · [plan](../docs/superpowers/plans/2026-07-20-today-roster-public-page.md) |
-| E | Duty export trim (P4) — bỏ chef + fix in 1 trang; **on-call quay lại (2026-07-20)** | ✅ done (code, `tsc`/eslint sạch) | [plan](../docs/superpowers/plans/2026-07-20-duty-export-trim.md) |
-| F | Users full CRUD parity — update/soft-delete/recover + role/building real-data | ✅ code xong | [plan](../docs/superpowers/plans/2026-07-20-users-full-crud.md) |
-| G | User role mới: `stock_manager` (Stock Manager) | ✅ code xong — verify DB thủ công (xem open items) | [users-access.md](../docs/features/portal/users-access.md#stock_manager-role-2026-07-20) |
 | H | Preferred name cho Staff/User | ⏳ backlog — chờ quyết định | — |
 | I | Roster shift picker — group theo role: Group role → role → shift | ⏳ backlog — chờ quyết định | — |
-| J | Roster — mỗi ca 1 màu riêng biệt; tách group "Nurse" và "HCA" riêng | ✅ code xong — cần apply migration `0020` + `0021` (xem open items) | [roster-shifts.md](../docs/features/portal/roster-shifts.md) |
+| K | Roster — copy lịch tuần trước cho từng staff | ⏳ backlog — chờ quyết định | — |
+| L | Roster — gợi ý ca mà staff đó thường làm | ⏳ backlog — chờ quyết định | — |
+
+> Các luồng đã done cả code (B, C, D, E, F, G, J) đã gỡ khỏi bảng này — xem **Track log** bên dưới để biết chi tiết.
 
 > Chi tiết từng luồng đã hoàn thành → xem **Track log** + file plan/spec/journal tương ứng. Phần dưới chỉ liệt kê **việc còn mở**.
 
