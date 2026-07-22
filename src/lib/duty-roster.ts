@@ -13,6 +13,7 @@ import type {
 } from "@/types/domain";
 import { rosterCellKey } from "@/types/domain";
 import type { RosterBand } from "@/lib/roster-grouping";
+import { staffDisplayName } from "@/lib/staff-display";
 import { isKitchen } from "@/lib/today-board";
 
 // Design default is "day" (.design-src, `dutyForm: { scope: pick('dutyScope', 'day'), ... }`) -
@@ -95,7 +96,7 @@ export function buildDutySheets(
         // per segment. Each line lands in the column of its building (Lodge
         // right, else Wesley left) — except kitchen groups, which share one list.
         for (const tm of String(d.time || d.label).split(" + ")) {
-          const row = { time: tm, name: st.name };
+          const row = { time: tm, name: staffDisplayName(st) };
           if (gid && kitchenGroupIds.has(gid)) {
             kitchen.push(row);
           } else if (gid) {

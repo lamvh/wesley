@@ -1,3 +1,7 @@
+-- SUPERSEDED BY 0023_staff_preferred_name.sql (recreates today_on_duty with the
+-- same role+building logic plus preferred-name display). Apply 0023 instead;
+-- kept here for history. Applying 0022 first is harmless (0023 overrides it).
+--
 -- Group the public "today on duty" board by the *shift's* role AND *shift's*
 -- building, not the staff's role or the roster page's building. A staffer who
 -- works a shift outside their own role (e.g. a nurse covering a kitchen shift),

@@ -153,6 +153,13 @@ export function StaffForm({
             placeholder="e.g. Ana Reti"
           />
 
+          <Field
+            label="Preferred name"
+            name="preferredName"
+            defaultValue={staff?.preferredName}
+            placeholder="e.g. Ana"
+          />
+
           <StaffRolePicker
             roles={roles}
             selectedRoles={selectedRoles}

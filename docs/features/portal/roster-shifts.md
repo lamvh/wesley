@@ -69,6 +69,11 @@ Note: the **Duty roster export** was reinstated (rebuilt on real staff + real te
 - Grid keys use `staffId::date` (not a positional row/col index) so assignments stay attached to the right person when the staff list reorders.
 - **Table:** `roster_on_call(id, building_id, on_call_date, staff_id, created_at)` - one row per date, `unique(building_id, on_call_date)` (a later pick replaces via upsert), `staff_id` FK `on delete cascade`, RLS read/write for authenticated. Migration `supabase/migrations/0017_roster_on_call.sql`. `getOnCallByDay(weekStartISO, weekEndISO)` (`lib/data/roster.ts`) loads the visible week's assignments; option `value` in the picker is the staff **id** (not name), matching how it's now stored.
 
+## Preferred name (2026-07-22)
+- `staff.preferred_name` (nullable, migration `0023_staff_preferred_name.sql`) — the name a staffer likes to be called. When set, it shows **in place of** the legal name on the roster grid (staff-row chip), the on-call picker/row, and the **duty-export sheet** — all via the shared helper `staffDisplayName(s) = s.preferredName || s.name` (`src/lib/staff-display.ts`). Falls back to `name` when empty.
+- Entered on the **Staff form** ("Preferred name" field, optional); persisted by `saveStaff` (`preferred_name`). Avatar **initials/colour stay derived from `name`** (unchanged). The Staff Team table keeps showing the legal `name`.
+- `/today` applies the same fallback server-side in the `today_on_duty`/`today_on_call` RPCs — see [today-roster.md](../marketing/today-roster.md).
+
 ## Out of scope (this phase)
 Copy-last-week, publishing a locked/`published_at` week. Assignment persistence + week navigation are now implemented.
 

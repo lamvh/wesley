@@ -177,6 +177,8 @@ Data layer: `src/lib/data/stock.ts` (`getProviders`, `getProducts`, `getMovement
 
 Backs the **Staff** screen (Team / Shift templates / Leave requests). **Schema defined; DB apply/seed deferred** until the DB is reachable from the build env (same handoff as core/Stock - run the migration, then `npx tsx scripts/db/seed-staff.mts`).
 
+> `staff.preferred_name text` (nullable, optional) — added in `0023_staff_preferred_name.sql`. The name a staffer likes to be called (e.g. "Bob" for "Robert Smith"). Shown in place of `name` on the roster grid, duty-export sheet and `/today` (via `staffDisplayName()` + the `today_on_duty`/`today_on_call` RPCs); the Staff table, sidebar and Users table keep the legal `name`, and avatar initials stay derived from `name`.
+
 ```sql
 -- extends the existing `staff` table (from 0001_core_schema.sql)
 alter table public.staff

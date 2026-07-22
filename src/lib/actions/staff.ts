@@ -27,6 +27,7 @@ export async function saveStaff(_prev: StaffFormState, fd: FormData): Promise<St
   const noExpiry = visaType === "NZ Citizen" || visaType === "Permanent Resident";
   const fields = {
     name, roles, role: roles[0], // `role` (NOT NULL) mirrors the primary role
+    preferred_name: str(fd, "preferredName") || null,
     contract: contract || null, hours: CONTRACT_HOURS[contract] ?? 0,
     phone: str(fd, "phone") || null, initials: initialsOf(name),
     visa_type: visaType || null,

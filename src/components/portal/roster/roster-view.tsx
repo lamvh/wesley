@@ -19,6 +19,7 @@ import {
   toggleRosterShift,
 } from "@/lib/actions/roster";
 import { groupStaffForRoster, rosterPickersFor } from "@/lib/roster-grouping";
+import { staffDisplayName } from "@/lib/staff-display";
 import {
   DUTY_DEFAULTS,
   buildDutySheets,
@@ -104,7 +105,7 @@ export function RosterView({
   const onCallOptions = bands.flatMap((b) =>
     b.staff.map((s) => ({
       value: s.id,
-      label: s.name,
+      label: staffDisplayName(s),
       initials: s.initials,
       color: s.color,
     })),

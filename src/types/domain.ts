@@ -475,6 +475,9 @@ export interface StaffRecord {
   id: string; name: string; roles: string[];
   contract: string; hours: number; phone: string; start: string;
   status: string; initials: string; color: string;
+  /** preferred display name (the name they like to be called); "" if unset.
+   *  Shown in place of `name` on the roster grid, duty export and /today. */
+  preferredName: string;
   annual: number; taken: number;
   /** work-visa type (e.g. "Work Visa"); "" if unset. */
   visaType: string;

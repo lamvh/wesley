@@ -4,6 +4,7 @@ import { rosterCellKey } from "@/types/domain";
 import type { RosterBand } from "@/lib/roster-grouping";
 import { PersonBadge } from "@/components/shared/person-badge";
 import { RosterCell } from "@/components/portal/roster/roster-cell";
+import { staffDisplayName } from "@/lib/staff-display";
 
 /** One selectable on-call candidate (nurses first, then HCAs, then the rest). */
 export interface OnCallOption {
@@ -165,7 +166,7 @@ export function RosterGrid({
                           className="size-[30px] rounded-full text-[11px]"
                         />
                         <span className="text-[13.5px] font-semibold leading-[1.15] text-ink">
-                          {st.name}
+                          {staffDisplayName(st)}
                         </span>
                       </div>
                     </td>
@@ -179,7 +180,7 @@ export function RosterGrid({
                           ids={grid[cellKey] ?? []}
                           defs={defs}
                           pickerDefs={pickers[st.id] ?? []}
-                          staffName={st.name}
+                          staffName={staffDisplayName(st)}
                           staffRole={st.roles[0] ?? ""}
                           dayLabel={`${d.dow} ${d.date}`}
                           isOpen={openCell === cellKey}
