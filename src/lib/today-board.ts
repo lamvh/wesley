@@ -1,4 +1,4 @@
-import type { TodayDutyRow, TodayBand, TodayBoardSheet } from "@/types/domain";
+import type { DutyRow, DutySection, TodayDutyRow, TodayBoardSheet } from "@/types/domain";
 
 // Display band order for the public board. Each entry matches one or more raw
 // staff.role values (case-insensitive substring). Kitchen is handled separately.
@@ -18,7 +18,9 @@ function bandIndex(role: string): number {
   return -1;
 }
 
-function isKitchen(role: string): boolean {
+// True when a role (or a roster band label) reads as kitchen — shared by the
+// export builder so both group kitchen the same way.
+export function isKitchen(role: string): boolean {
   const r = role.toLowerCase();
   return KITCHEN.some((m) => r.includes(m));
 }
@@ -38,9 +40,9 @@ export function buildTodayBoard(
   rows: TodayDutyRow[],
   onCallRows: { buildingId: string; name: string }[] = [],
 ): TodayBoardSheet {
-  const sections: TodayBand[] = BANDS.map((b) => ({ label: b.label, wesley: [], lodge: [] }));
-  const other: TodayBand = { label: "OTHER", wesley: [], lodge: [] };
-  const kitchen: { time: string; name: string }[] = [];
+  const sections: DutySection[] = BANDS.map((b) => ({ label: b.label, wesley: [], lodge: [] }));
+  const other: DutySection = { label: "OTHER", wesley: [], lodge: [] };
+  const kitchen: DutyRow[] = [];
 
   for (const row of rows) {
     if (isKitchen(row.role)) {

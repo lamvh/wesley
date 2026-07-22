@@ -1,4 +1,4 @@
-import type { DutyRow, DutySheet } from "@/types/domain";
+import type { DutyRow, DutySection } from "@/types/domain";
 
 // One printed line: shift-time segment (tabular, muted) + staff name in caps.
 function DutyLine({ time, name }: DutyRow) {
@@ -18,7 +18,7 @@ function DutyColumn({ rows, divider }: { rows: DutyRow[]; divider?: boolean }) {
   return (
     <div className={divider ? "border-l-[1.5px] border-duty-rule pl-7" : "pr-7"}>
       {rows.length === 0 ? (
-        <div className="text-[14px] text-duty-empty">-</div>
+        <div className="text-[14px] text-duty-empty">—</div>
       ) : (
         rows.map((r, i) => <DutyLine key={`${r.time}-${r.name}-${i}`} time={r.time} name={r.name} />)
       )}
@@ -41,10 +41,10 @@ function OnCallStrip({ value }: { value: string }) {
   );
 }
 
-// Centred section header: a hairline rule flanks the label on both sides so every
-// band reads the same way down the sheet. Label colour is uniform (bronze) rather
-// than the band's roster colour - the print document stays monochrome-calm.
-function SectionRule({ label }: { label: string }) {
+// Centred band header: a hairline rule flanks the label on both sides so every
+// band reads the same way down the sheet. Label colour is uniform bronze rather
+// than the band's roster colour — the print document stays monochrome-calm.
+function BandRule({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-4">
       <span className="h-px flex-1 bg-duty-rule" />
@@ -56,14 +56,29 @@ function SectionRule({ label }: { label: string }) {
   );
 }
 
-// A single A4 duty sheet (794×1123px on screen, forced to 210×296mm on print).
-// A clean names + times document grouped by role band and split into two
-// per-building columns (Wesley left, The Lodge right) by the building each shift
-// belongs to - no shift colours here, unlike the grid. Chrome: navy + gold header
-// rule, italic date subtitle, a boxed building header row, centred band headers.
-export function DutyRosterSheet({ sheet }: { sheet: DutySheet }) {
+interface DutySheetDocumentProps {
+  /** Date stamp under the title and in the footer, e.g. "MON 13/07/26". */
+  dateLabel: string;
+  /** On-call staff name (Wesley only); "" renders a dash. */
+  onCall: string;
+  /** Role bands, each split into Wesley (left) and The Lodge (right) columns. */
+  sections: DutySection[];
+  /** Kitchen shifts — one band shared across both buildings (Lodge stays empty). */
+  kitchen: DutyRow[];
+}
+
+// The single A4 duty-roster sheet (794×1123px on screen, forced to 210×296mm on
+// print). A clean names + times document grouped by role band and split into two
+// per-building columns (Wesley left, The Lodge right), with the Kitchen band held
+// separate below (shared across both buildings). Chrome: navy + gold header rule,
+// italic date subtitle, a boxed building header row, centred band headers.
+//
+// Shared verbatim by the public reception board (/today) and the roster export
+// print preview so both render pixel-identical — the only difference is the live
+// status bar the board wraps this in, and the print stack the export wraps it in.
+export function DutySheetDocument({ dateLabel, onCall, sections, kitchen }: DutySheetDocumentProps) {
   return (
-    <div className="duty-sheet relative flex min-h-[1123px] w-[794px] max-w-full flex-col bg-white px-[60px] pb-[44px] pt-[56px] text-duty-ink shadow-[0_24px_60px_-20px_rgba(0,0,0,0.5)]">
+    <div className="duty-sheet relative flex min-h-[1123px] w-[794px] max-w-full flex-col bg-white px-[60px] pb-[44px] pt-[56px] text-duty-ink shadow-[0_24px_60px_-20px_rgba(0,0,0,0.4)]">
       {/* Navy + gold header rule. */}
       <div className="absolute left-0 top-0 h-[6px] w-full bg-navy-deep" />
       <div className="absolute left-0 top-[6px] h-[2px] w-full bg-bronze-text" />
@@ -75,13 +90,12 @@ export function DutyRosterSheet({ sheet }: { sheet: DutySheet }) {
         <div className="mt-2 font-serif text-[66px] font-medium leading-none tracking-[0.5px] text-navy-deep">
           Duty Roster
         </div>
-        {/* Italic date subtitle. */}
         <div className="mt-2 font-serif text-[17px] italic text-duty-time">
-          Daily staff assignments · {sheet.dateLabel}
+          Daily staff assignments · {dateLabel}
         </div>
       </div>
 
-      {/* Building column header - Wesley | The Lodge, ruled top and bottom. */}
+      {/* Building column header — Wesley | The Lodge, ruled top and bottom. */}
       <div className="mt-[30px] grid grid-cols-2 border-y-2 border-navy-deep py-[13px]">
         <div className="text-center text-[19px] font-bold uppercase tracking-[6px] text-navy-deep">
           Wesley
@@ -92,30 +106,32 @@ export function DutyRosterSheet({ sheet }: { sheet: DutySheet }) {
       </div>
 
       <div className="mt-4">
-        <OnCallStrip value={sheet.onCall} />
+        <OnCallStrip value={onCall} />
       </div>
 
-      {sheet.sections.length === 0 ? (
-        <div className="mt-[60px] text-center text-[15px] text-duty-empty">
-          No shifts assigned for this day.
-        </div>
-      ) : (
-        sheet.sections.map((sec) => (
-          <div key={sec.label} className="mt-6">
-            <SectionRule label={sec.label} />
-            <div className="mt-3 grid grid-cols-2">
-              <DutyColumn rows={sec.wesley} />
-              <DutyColumn rows={sec.lodge} divider />
-            </div>
+      {sections.map((sec) => (
+        <div key={sec.label} className="mt-6">
+          <BandRule label={sec.label} />
+          <div className="mt-3 grid grid-cols-2">
+            <DutyColumn rows={sec.wesley} />
+            <DutyColumn rows={sec.lodge} divider />
           </div>
-        ))
-      )}
+        </div>
+      ))}
+
+      {/* Kitchen band — shared across both buildings, so it fills the Wesley
+          column and leaves the Lodge column blank. */}
+      <div className="mt-6">
+        <BandRule label="Kitchen" />
+        <div className="mt-3 grid grid-cols-2">
+          <DutyColumn rows={kitchen} />
+          <div className="border-l-[1.5px] border-duty-rule pl-7" />
+        </div>
+      </div>
 
       <div className="mt-auto pt-7">
         <div className="flex items-center justify-end border-t-2 border-navy-deep pt-[13px]">
-          <span className="text-[16px] font-bold tracking-[2px] text-navy-deep">
-            {sheet.dateLabel}
-          </span>
+          <span className="text-[16px] font-bold tracking-[2px] text-navy-deep">{dateLabel}</span>
         </div>
       </div>
     </div>

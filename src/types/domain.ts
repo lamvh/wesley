@@ -386,12 +386,15 @@ export interface DutyRow { time: string; name: string; }
 /** A role band on the sheet, its assigned lines split into per-building columns
  *  (Wesley left, The Lodge right) by the building each shift belongs to. */
 export interface DutySection { label: string; wesley: DutyRow[]; lodge: DutyRow[]; }
-/** One A4 duty sheet (one per day; a whole-week export yields up to seven). */
+/** One A4 duty sheet (one per day; a whole-week export yields up to seven).
+ *  Same shape the public /today board renders, so both share one document. */
 export interface DutySheet {
   dateLabel: string;
   /** on-call staff name for this day (grid's per-day on-call row); "" if unset. */
   onCall: string;
   sections: DutySection[];
+  /** Kitchen shifts — one band shared across both buildings. */
+  kitchen: DutyRow[];
 }
 /** `<option>` for the duty modal's day / staff selects. */
 export interface DutyOption { value: string; label: string; }
@@ -399,12 +402,11 @@ export interface DutyOption { value: string; label: string; }
 // ---- public today-on-duty board (/today) ----
 /** One raw row from the today_on_duty RPC. */
 export interface TodayDutyRow { buildingId: string; role: string; name: string; time: string; }
-/** A role band on the public board, split into per-building columns. */
-export interface TodayBand { label: string; wesley: { time: string; name: string }[]; lodge: { time: string; name: string }[]; }
-/** The whole public board: role bands + a Kitchen band (Lodge column stays empty). */
+/** The whole public board: role bands + a Kitchen band (Lodge column stays empty).
+ *  Reuses the duty-export shapes so /today and the export render one document. */
 export interface TodayBoardSheet {
-  sections: TodayBand[];
-  kitchen: { time: string; name: string }[];
+  sections: DutySection[];
+  kitchen: DutyRow[];
   /** today's on-call staff name (Wesley only - the only building on-call tracks); "" if unset. */
   onCall: string;
 }

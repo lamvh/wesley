@@ -130,8 +130,8 @@ export function RosterView({
 
   // Duty sheets rebuild whenever the grid, on-call, or export config changes.
   const dutySheets = useMemo(
-    () => buildDutySheets(bands, days, grid, shiftTypes, dutyForm, onCallNameByDay),
-    [bands, days, grid, shiftTypes, dutyForm, onCallNameByDay],
+    () => buildDutySheets(bands, days, grid, shiftTypes, roles, groups, dutyForm, onCallNameByDay),
+    [bands, days, grid, shiftTypes, roles, groups, dutyForm, onCallNameByDay],
   );
   const dutyTitle = dutySheetTitle(days, dutyForm);
   const dayOptions = dutyDayOptions(days);

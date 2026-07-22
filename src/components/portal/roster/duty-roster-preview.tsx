@@ -1,7 +1,7 @@
 "use client";
 
 import type { DutySheet } from "@/types/domain";
-import { DutyRosterSheet } from "@/components/portal/roster/duty-roster-sheet";
+import { DutySheetDocument } from "@/components/portal/roster/duty-sheet-document";
 
 interface DutyRosterPreviewProps {
   open: boolean;
@@ -47,7 +47,13 @@ export function DutyRosterPreview({ open, sheets, title, onPrint, onClose }: Dut
 
       <div className="duty-sheets">
         {sheets.map((sheet, i) => (
-          <DutyRosterSheet key={`${sheet.dateLabel}-${i}`} sheet={sheet} />
+          <DutySheetDocument
+            key={`${sheet.dateLabel}-${i}`}
+            dateLabel={sheet.dateLabel}
+            onCall={sheet.onCall}
+            sections={sheet.sections}
+            kitchen={sheet.kitchen}
+          />
         ))}
       </div>
     </div>
