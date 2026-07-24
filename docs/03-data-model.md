@@ -227,6 +227,27 @@ staff_roles(building_id, name text, color, tint,
 
 Types: `StaffRecord`, `ShiftTemplate`, `StaffLeaveRequest` (`src/types/domain.ts`) - distinct from the pre-existing mock-data `StaffMember`/`LeaveRequest` types still used by Roster's read-only leave list (`components/portal/roster/leave-request-row.tsx`), which is unaffected by this screen.
 
+## Forms library - LIVE (`supabase/migrations/0024_form_templates.sql`)
+
+Admin-only blank form-template library (`/portal/forms`), facility-wide. Files in a **private
+Storage bucket** `form-templates`; this table holds metadata.
+
+```sql
+form_templates(id uuid pk, name text not null,
+               category text not null check (category in (…9 fixed values…)),
+               description text, file_path text not null, file_name text not null,
+               mime_type text, size_bytes bigint,
+               uploaded_by uuid references app_users(id) on delete set null,
+               created_at, updated_at)
+```
+
+- Category enum (9): Admission & discharge, Care plan, Clinical & assessment, Consent, Incident & risk, Medication, HR & staff, Policy & procedure, Other. Source of truth `src/lib/forms-constants.ts` (`FORM_CATEGORIES`) + check constraint.
+- Storage bucket `form-templates` (private) + RLS on `storage.objects` (authenticated read/insert/delete scoped to the bucket); admin gating in server actions.
+- RLS table: `form_templates_read` (select, authenticated) / `form_templates_write` (all, authenticated).
+- Data: `src/lib/data/forms.ts` (`getFormTemplates`, `getFormDownloadUrl` → 60s signed URL). Actions: `src/lib/actions/forms.ts` (`saveFormTemplate`, `deleteFormTemplate`, `formDownloadUrl`), admin-gated.
+- Module `forms` in the permission matrix: admin/super_admin ALL, other roles NONE. After apply, re-run `scripts/db/seed-core-schema.mts` to seed `role_permissions`.
+- Anchor for a future fillable-forms phase (`form_fields`/`form_submissions` reference `form_templates.id`). See [features/portal/forms-library.md](features/portal/forms-library.md).
+
 ## Future Supabase mapping (deferred - not this phase)
 
 > **Status:** the **core subset is LIVE in the DB** - `supabase/migrations/0001_core_schema.sql` (tables `roles`, `role_permissions`, `buildings`, `building_wings`, `app_users`, `staff`, `residents`, all with RLS) applied + seeded from the mocks (`scripts/db/seed-core-schema.mts`, or paste-ready `supabase/seed/0001_core_seed.sql`). Row counts: roles 6, role_permissions 240 (6×10×4), buildings 2, app_users 11, staff 10, residents 9. `app_users` already gates portal access + role (verified end-to-end); `app_users.username` is now required for login, `email` optional - see "Login: username required, email optional" above. **Stock & procurement is also LIVE** - `supabase/migrations/0002_stock_procurement.sql` (tables `providers`, `products`, `stock_levels`, `stock_movements`, `orders`, `order_lines`, all with RLS + two RPCs) applied + seeded; see "Stock, providers & ordering" above. **Staff administration schema is also defined** (`0003_staff_admin.sql`, extended `staff` columns + `shift_templates` + `leave_requests` + `approve_leave` RPC) but DB apply/seed is deferred - see "Staff administration" above. Other screens still read mock data - swapping accessors to Supabase queries is the next step. The remaining tables below are still deferred.

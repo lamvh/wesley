@@ -298,6 +298,7 @@ export type ModuleKey =
   | "activities"
   | "family"
   | "stock"
+  | "forms"
   | "incidents"
   | "users";
 

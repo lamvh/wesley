@@ -29,6 +29,7 @@ const modules: AppModule[] = [
   { key: "activities", label: "Activities" },
   { key: "family", label: "Family portal" },
   { key: "stock", label: "Stock & supplies" },
+  { key: "forms", label: "Forms" },
   { key: "incidents", label: "Incidents & compliance" },
   { key: "users", label: "Users & access" },
 ];
@@ -44,12 +45,12 @@ const NONE = p(0, 0, 0, 0);
 type Preset = Record<Exclude<UserRole, "super_admin">, Record<ModuleKey, Permission>>;
 
 const preset: Preset = {
-  admin: { dashboard: p(1,1,1,0), residents: ALL, rooms: ALL, roster: ALL, meals: ALL, activities: ALL, family: ALL, stock: ALL, incidents: ALL, users: ALL },
-  nurse: { dashboard: p(1,0,0,0), residents: p(1,1,1,0), rooms: p(1,0,0,0), roster: p(1,0,0,0), meals: p(1,0,1,0), activities: p(1,0,0,0), family: p(1,1,0,0), stock: p(1,0,0,0), incidents: p(1,1,1,0), users: NONE },
-  carer: { dashboard: p(1,0,0,0), residents: p(1,0,1,0), rooms: p(1,0,0,0), roster: p(1,0,0,0), meals: p(1,0,0,0), activities: p(1,0,0,0), family: p(1,0,0,0), stock: NONE, incidents: p(1,1,0,0), users: NONE },
-  activities: { dashboard: p(1,0,0,0), residents: p(1,0,0,0), rooms: NONE, roster: p(1,0,0,0), meals: p(1,0,0,0), activities: ALL, family: p(1,1,0,0), stock: p(1,0,0,0), incidents: p(1,0,0,0), users: NONE },
-  family: { dashboard: NONE, residents: p(1,0,0,0), rooms: NONE, roster: NONE, meals: p(1,0,0,0), activities: p(1,0,0,0), family: p(1,1,0,0), stock: NONE, incidents: NONE, users: NONE },
-  stock_manager: { dashboard: p(1,0,0,0), residents: NONE, rooms: NONE, roster: NONE, meals: NONE, activities: NONE, family: NONE, stock: ALL, incidents: NONE, users: NONE },
+  admin: { dashboard: p(1,1,1,0), residents: ALL, rooms: ALL, roster: ALL, meals: ALL, activities: ALL, family: ALL, stock: ALL, forms: ALL, incidents: ALL, users: ALL },
+  nurse: { dashboard: p(1,0,0,0), residents: p(1,1,1,0), rooms: p(1,0,0,0), roster: p(1,0,0,0), meals: p(1,0,1,0), activities: p(1,0,0,0), family: p(1,1,0,0), stock: p(1,0,0,0), forms: NONE, incidents: p(1,1,1,0), users: NONE },
+  carer: { dashboard: p(1,0,0,0), residents: p(1,0,1,0), rooms: p(1,0,0,0), roster: p(1,0,0,0), meals: p(1,0,0,0), activities: p(1,0,0,0), family: p(1,0,0,0), stock: NONE, forms: NONE, incidents: p(1,1,0,0), users: NONE },
+  activities: { dashboard: p(1,0,0,0), residents: p(1,0,0,0), rooms: NONE, roster: p(1,0,0,0), meals: p(1,0,0,0), activities: ALL, family: p(1,1,0,0), stock: p(1,0,0,0), forms: NONE, incidents: p(1,0,0,0), users: NONE },
+  family: { dashboard: NONE, residents: p(1,0,0,0), rooms: NONE, roster: NONE, meals: p(1,0,0,0), activities: p(1,0,0,0), family: p(1,1,0,0), stock: NONE, forms: NONE, incidents: NONE, users: NONE },
+  stock_manager: { dashboard: p(1,0,0,0), residents: NONE, rooms: NONE, roster: NONE, meals: NONE, activities: NONE, family: NONE, stock: ALL, forms: NONE, incidents: NONE, users: NONE },
 };
 
 export const ROLE_KEYS: UserRole[] = ["super_admin", "admin", "nurse", "carer", "activities", "family", "stock_manager"];

@@ -38,6 +38,7 @@ Ported from Claude Design project `Wesley MtEden` (`Victoria at Mt Eden.dc.html`
 | - | Family portal | `/portal/family` | - | [family-portal](./features/portal/family-portal.md) |
 | - | Stock & supplies | `/portal/stock` | - | [stock-supplies](./features/portal/stock-supplies.md) |
 | - | Incidents & compliance | `/portal/incidents` | - | [incidents-compliance](./features/portal/incidents-compliance.md) |
+| - | Forms library (Administration, admin-only) | `/portal/forms` | v1.0 | [forms-library](./features/portal/forms-library.md) |
 | - | Staff (Administration) | `/portal/staff` | - | [staff](./features/portal/staff.md) |
 | - | Users & access | `/portal/users` | - | [users-access](./features/portal/users-access.md) |
 | - | Website content (CMS) | `/portal/website` | v1.0 | — |

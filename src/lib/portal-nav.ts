@@ -24,6 +24,7 @@ export const PORTAL_NAV: PortalNavItem[] = [
 export const PORTAL_ADMIN_NAV: PortalNavItem[] = [
   { href: "/portal/buildings", label: "Buildings", icon: "buildings" },
   { href: "/portal/incidents", label: "Incidents & compliance", icon: "incidents" },
+  { href: "/portal/forms", label: "Forms", icon: "forms" },
   { href: "/portal/users", label: "Users & access", icon: "users" },
   { href: "/portal/staff", label: "Staff", icon: "staff" },
   { href: "/portal/website", label: "Website", icon: "website", adminOnly: true },
