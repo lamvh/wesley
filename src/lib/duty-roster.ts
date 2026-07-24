@@ -14,7 +14,7 @@ import type {
 import { rosterCellKey } from "@/types/domain";
 import type { RosterBand } from "@/lib/roster-grouping";
 import { staffDisplayName } from "@/lib/staff-display";
-import { isKitchen } from "@/lib/today-board";
+import { isChef, isKitchen } from "@/lib/today-board";
 
 // Design default is "day" (.design-src, `dutyForm: { scope: pick('dutyScope', 'day'), ... }`) -
 // opening the export modal and printing without touching the scope toggle
@@ -52,9 +52,10 @@ const UNGROUPED_LABEL = "Unassigned";
 // shift's group. Bands render in group order; each splits into per-building
 // columns (Wesley left / The Lodge right). Kitchen groups collapse into one
 // shared band (no per-building split), matching the public /today board so both
-// render the same document. Shifts whose role maps to no group fall into a
-// trailing "Unassigned" band. Empty bands + the day's on-call name are handled
-// the same. `bands` supplies the staff roster (grid rows) to walk.
+// render the same document; within it the chef lists first, ahead of kitchen
+// hands, then the rest by shift start time. Shifts whose role maps to no group
+// fall into a trailing "Unassigned" band. Empty bands + the day's on-call name
+// are handled the same. `bands` supplies the staff roster (grid rows) to walk.
 export function buildDutySheets(
   bands: RosterBand[],
   days: RosterDay[],
@@ -79,7 +80,9 @@ export function buildDutySheets(
     // catch-all — each shift line drops into the bucket of its own role's group.
     const wesleyByGroup = new Map<string, DutyRow[]>();
     const lodgeByGroup = new Map<string, DutyRow[]>();
-    const kitchen: DutyRow[] = [];
+    // Tagged with `chef` so the kitchen band can list the chef first below,
+    // ahead of kitchen hands, instead of purely by shift start time.
+    const kitchen: { row: DutyRow; chef: boolean }[] = [];
     const ungroupedWesley: DutyRow[] = [];
     const ungroupedLodge: DutyRow[] = [];
 
@@ -98,7 +101,7 @@ export function buildDutySheets(
         for (const tm of String(d.time || d.label).split(" + ")) {
           const row = { time: tm, name: staffDisplayName(st) };
           if (gid && kitchenGroupIds.has(gid)) {
-            kitchen.push(row);
+            kitchen.push({ row, chef: isChef(d.role) });
           } else if (gid) {
             push(d.building === "lodge" ? lodgeByGroup : wesleyByGroup, gid, row);
           } else if (d.building === "lodge") {
@@ -124,8 +127,13 @@ export function buildDutySheets(
         lodge: ungroupedLodge.sort(byStart),
       });
     }
-    kitchen.sort(byStart);
-    return { dateLabel: sheetDateLabel(day), onCall: onCallNameByDay[day.iso] ?? "", sections, kitchen };
+    kitchen.sort((a, b) => Number(b.chef) - Number(a.chef) || byStart(a.row, b.row));
+    return {
+      dateLabel: sheetDateLabel(day),
+      onCall: onCallNameByDay[day.iso] ?? "",
+      sections,
+      kitchen: kitchen.map((k) => k.row),
+    };
   });
 }
 

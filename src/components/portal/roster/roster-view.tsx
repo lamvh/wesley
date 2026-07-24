@@ -113,7 +113,7 @@ export function RosterView({
 
   // Per-staff shift picker: a flat list of shifts filtered to the staffer's own
   // role group, in canonical order (see rosterPickersFor).
-  const pickers = rosterPickersFor(staff, roles, shiftTypes);
+  const pickers = rosterPickersFor(staff, roles, shiftTypes, groups);
 
   const totals = dailyTotals(
     staff.map((s) => s.id),

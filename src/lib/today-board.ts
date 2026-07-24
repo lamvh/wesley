@@ -9,6 +9,7 @@ const BANDS: { label: string; match: string[] }[] = [
   { label: "CARE TAKER", match: ["care taker", "caretaker", "ct"] },
 ];
 const KITCHEN = ["kitchen", "chef", "cook", "kit"];
+const CHEF = ["chef", "cook"];
 
 function bandIndex(role: string): number {
   const r = role.toLowerCase();
@@ -23,6 +24,13 @@ function bandIndex(role: string): number {
 export function isKitchen(role: string): boolean {
   const r = role.toLowerCase();
   return KITCHEN.some((m) => r.includes(m));
+}
+
+// True when a role reads as the chef - the kitchen band lists the chef first,
+// ahead of kitchen hands, regardless of shift start time.
+export function isChef(role: string): boolean {
+  const r = role.toLowerCase();
+  return CHEF.some((m) => r.includes(m));
 }
 
 // A dual-segment shift ("6:45 – 15:15 + 18:00 – 21:00") prints one line per
@@ -42,11 +50,14 @@ export function buildTodayBoard(
 ): TodayBoardSheet {
   const sections: DutySection[] = BANDS.map((b) => ({ label: b.label, wesley: [], lodge: [] }));
   const other: DutySection = { label: "OTHER", wesley: [], lodge: [] };
-  const kitchen: DutyRow[] = [];
+  // Tagged with `chef` so the kitchen band can list the chef first below,
+  // ahead of kitchen hands, without changing the DutyRow shape it renders.
+  const kitchen: { row: DutyRow; chef: boolean }[] = [];
 
   for (const row of rows) {
     if (isKitchen(row.role)) {
-      for (const t of segments(row.time)) kitchen.push({ time: t, name: row.name });
+      const chef = isChef(row.role);
+      for (const t of segments(row.time)) kitchen.push({ row: { time: t, name: row.name }, chef });
       continue;
     }
     const idx = bandIndex(row.role);
@@ -55,7 +66,8 @@ export function buildTodayBoard(
     for (const t of segments(row.time)) col.push({ time: t, name: row.name });
   }
 
+  kitchen.sort((a, b) => Number(b.chef) - Number(a.chef));
   const out = [...sections, other].filter((b) => b.wesley.length > 0 || b.lodge.length > 0);
   const onCall = onCallRows.find((r) => r.buildingId === "wesley")?.name ?? "";
-  return { sections: out, kitchen, onCall };
+  return { sections: out, kitchen: kitchen.map((k) => k.row), onCall };
 }

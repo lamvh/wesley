@@ -22,7 +22,7 @@ Cập nhật lần cuối: **2026-07-22**.
 | A | Design sync + Website CMS | ✅ done (A5 code xong; A6 `0013` đã chạy) | [plan.md](./20260718-2250-design-sync-and-cms/plan.md) |
 | H | Preferred name cho Staff | ✅ done code (verify DB manual) | [spec](../docs/superpowers/specs/2026-07-22-staff-preferred-name-design.md) · [plan](../docs/superpowers/plans/2026-07-22-staff-preferred-name.md) |
 | M | Forms — thư viện biểu mẫu (admin) | ✅ done code (verify manual) | [spec](../docs/superpowers/specs/2026-07-24-form-templates-library-design.md) · [plan](../docs/superpowers/plans/2026-07-24-form-templates-library.md) |
-| I | Roster shift picker — group theo role: Group role → role → shift | ⏳ backlog — chờ quyết định | — |
+| I | Roster shift picker — group theo role: Group role → role → shift | ✅ done code | — |
 | K | Roster — copy lịch tuần trước cho từng staff | ⏳ backlog — chờ quyết định | — |
 | L | Roster — gợi ý ca mà staff đó thường làm | ⏳ backlog — chờ quyết định | — |
 
@@ -73,6 +73,11 @@ Cập nhật lần cuối: **2026-07-22**.
 - [ ] **M-v2.** Re-run `scripts/db/seed-core-schema.mts` để seed `role_permissions` cho module `forms`.
 - [ ] **M-v3.** `/portal/forms` (admin): Add form → upload PDF → hiện trong list; Download mở đúng file; Edit đổi name/category + thay file (file cũ bị gỡ); Delete gỡ cả row + object; filter category + search hoạt động.
 - [ ] **M-v4.** Login role non-admin → **không thấy** menu Forms.
+
+### Luồng I — Roster shift picker group theo role (code xong 2026-07-24)
+- [x] ✅ **I-code (2026-07-24).** Đổi picker chọn ca trong roster grid từ **list phẳng** sang **3 cấp Group → Role → ca** (header tên đầy đủ, không viết tắt). `rosterPickersFor(staff, roles, shiftTypes, groups)` (`lib/roster-grouping.ts`) nay trả `RosterPickerGroup[]` (group label → roles[] → shifts[]), giữ nguyên filter role-group cũ; group order theo `RoleGroup.sortOrder`, role theo `RoleDef.sortOrder`; ca role rỗng → section "Any role", role không group → "Unassigned" (đều xuống cuối). `roster-cell.tsx` render lồng (group header → role sub-header → nút ca), gỡ dòng "Shifts for {role}" + prop `staffRole` không còn dùng, tách `ShiftOption` (DRY). `roster-grid.tsx`/`roster-view.tsx` cập nhật kiểu + truyền `groups`. `tsc`/eslint/`next build` sạch, blast radius gọn 4 file roster. Không đổi DB. Docs: [roster-shifts.md](../docs/features/portal/roster-shifts.md).
+- [x] ✅ **I-code2 (2026-07-24).** Ca đã gán trong ô nhưng **ngoài scope role** (vd đổi role sau khi gán, hoặc role bị gỡ khỏi staff) vẫn hiện trong picker dưới section **"Assigned · other roles"** để bỏ chọn được (không bị kẹt vô hình). Tính per-cell trong `roster-cell` (`ids` vs shift id trong `pickerDefs`).
+- [ ] **I-v1.** Test thủ công `/portal/roster`: mở picker 1 ô → thấy header group (vd Nurses/HCA), sub-header role, ca dưới từng role; staff nhiều role thấy đúng nhiều group; toggle ca + "Day off" vẫn hoạt động. Kiểm case: gán 1 ca rồi đổi role staff → ca cũ vẫn hiện ở "Assigned · other roles", bỏ chọn được.
 
 ### Luồng A6 — follow-up
 - [x] ✅ **A6-migration (2026-07-22).** `0013_site_content.sql` đã chạy trên DB (bạn xác nhận).

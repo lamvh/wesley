@@ -1,7 +1,7 @@
 import { Fragment } from "react";
 import type { PersonColor, RosterDay, RosterGrid, ShiftType } from "@/types/domain";
 import { rosterCellKey } from "@/types/domain";
-import type { RosterBand } from "@/lib/roster-grouping";
+import type { RosterBand, RosterPickerGroup } from "@/lib/roster-grouping";
 import { PersonBadge } from "@/components/shared/person-badge";
 import { RosterCell } from "@/components/portal/roster/roster-cell";
 import { staffDisplayName } from "@/lib/staff-display";
@@ -21,7 +21,7 @@ interface RosterGridProps {
   defs: Record<string, ShiftType>;
   /** staffId -> the flat list of shifts to offer (filtered to the staffer's
    *  role group, canonical order). */
-  pickers: Record<string, ShiftType[]>;
+  pickers: Record<string, RosterPickerGroup[]>;
   totals: number[];
   /** On-call carer per day, keyed by day ISO (value = staff name). */
   onCallByDay: Record<string, string>;
@@ -181,7 +181,6 @@ export function RosterGrid({
                           defs={defs}
                           pickerDefs={pickers[st.id] ?? []}
                           staffName={staffDisplayName(st)}
-                          staffRole={st.roles[0] ?? ""}
                           dayLabel={`${d.dow} ${d.date}`}
                           isOpen={openCell === cellKey}
                           onOpen={onOpen}
