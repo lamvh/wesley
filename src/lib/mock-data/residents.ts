@@ -9,7 +9,7 @@ import { slugify } from "@/lib/utils";
 // them blank rather than inventing plausible-looking clinical identifiers.
 type ResidentSeed = Omit<
   Resident,
-  "slug" | "dob" | "admittedOn" | "nhi" | "gender" | "group" | "phone"
+  "slug" | "buildingId" | "dob" | "admittedOn" | "nhi" | "gender" | "group" | "phone"
 >;
 
 const BLANK_DETAILS = {
@@ -140,6 +140,8 @@ const residents: Resident[] = seed.map((r) => ({
   ...r,
   ...BLANK_DETAILS,
   slug: slugify(r.name),
+  // The design source predates The Lodge; these fixtures are all Wesley.
+  buildingId: "wesley",
 }));
 
 export function getResidents(): Resident[] {

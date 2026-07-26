@@ -30,11 +30,12 @@ Single-column body inside `PortalLayout`, `max-width:1180px`, top-to-bottom:
 | Care flag pill (×N) | `CareFlag` (new, `components/portal/care-flag.tsx`) | Pill `13px`/600, radius `100px`, colored per flag from a semantic scale. Source shows Falls watch (rust `#93502F`/`#F1E0D3`), Diabetic (sage `#3F5137`/`#E5EBDD`), Hearing aid (amber `#6b5a2c`/`#EDE6D3`). |
 
 ## Data consumed
-From `lib/mock-data/residents.ts` via **`getResidentBySlug(slug)`** → `Resident` (mirrors `residentsRaw`, lines 1105–1113; `[id]` param = `slug`, e.g. `margaret-whitcombe`). Fields used:
+**Live from Supabase** via **`getResidentBySlug(slug)`** (`lib/data/residents.ts`; `[id]` param = `slug`, e.g. `margaret-whitcombe`), plus `getBuildingName(resident.buildingId)` for the home shown in the subtitle. Fields used:
 - `slug` - route param / lookup key.
 - `name` - profile heading.
 - `pref` - "Prefers "{pref}"" + "About {pref}" eyebrow.
-- `wing`, `room` - subtitle + care tier.
+- `room` + `buildingId` - subtitle reads "Room {room} · {home}". The home is named because both registers contain a 3A and a 5A, so the room number alone does not place a resident.
+- `pref` - the "Prefers …" clause is **dropped when blank**: most of the real register carries no preferred name, and rendering it anyway produced empty quotes.
 - `colorKey` - gradient banner start + avatar bg.
 - `avatar` - initials.
 - `age`, `mobility`, `diet`, `gp` - the 4 stat tiles.

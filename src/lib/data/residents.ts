@@ -8,11 +8,12 @@ import type { Birthday, Resident } from "@/types/domain";
 // (care-tier colour) stays derived in the component layer.
 
 const COLUMNS =
-  "slug,name,pref,room,age,diet,mobility,gp,avatar,color,note,flags,created_at," +
+  "slug,building_id,name,pref,room,age,diet,mobility,gp,avatar,color,note,flags,created_at," +
   "dob,admitted_on,nhi,gender,resident_group,phone";
 
 interface ResidentRow {
   slug: string;
+  building_id: string;
   name: string;
   pref: string | null;
   room: string | null;
@@ -35,6 +36,7 @@ interface ResidentRow {
 function toResident(r: ResidentRow): Resident {
   return {
     slug: r.slug,
+    buildingId: r.building_id,
     name: r.name,
     pref: r.pref ?? "",
     room: r.room ?? "",
@@ -77,32 +79,37 @@ function ordinal(n: number): string {
 
 /**
  * Residents whose birthday falls in the current calendar month, earliest day
- * first. Month/day are read off the ISO dob string rather than parsed into a
- * Date so the result is not shifted by the server's timezone.
+ * first. Covers both homes - the dashboard is home-wide - so each pill names the
+ * building; room numbers alone would be ambiguous (both have a 3A).
+ *
+ * Month/day are read off the ISO dob string rather than parsed into a Date so
+ * the result is not shifted by the server's timezone.
  */
 export async function getBirthdaysThisMonth(): Promise<Birthday[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("residents")
-    .select("name,room,dob,color")
-    .not("dob", "is", null);
+  const [{ data, error }, buildingsRes] = await Promise.all([
+    supabase.from("residents").select("name,room,dob,color,building_id").not("dob", "is", null),
+    supabase.from("buildings").select("id,name"),
+  ]);
   if (error) throw new Error(`Failed to load birthdays: ${error.message}`);
+  const buildingName = new Map((buildingsRes.data ?? []).map((b) => [b.id, b.name as string]));
 
   const now = new Date();
   const month = now.getMonth() + 1;
   const today = now.getDate();
 
   const rows = (data ?? [])
-    .map((r) => r as unknown as Pick<ResidentRow, "name" | "room" | "dob" | "color">)
+    .map((r) => r as unknown as Pick<ResidentRow, "name" | "room" | "dob" | "color" | "building_id">)
     .filter((r): r is typeof r & { dob: string } => !!r.dob && Number(r.dob.slice(5, 7)) === month)
     .sort((a, b) => Number(a.dob.slice(8, 10)) - Number(b.dob.slice(8, 10)));
 
   return rows.map((r) => {
     const day = Number(r.dob.slice(8, 10));
     const turning = now.getFullYear() - Number(r.dob.slice(0, 4));
+    const home = buildingName.get(r.building_id) ?? r.building_id;
     return {
       name: r.name,
-      room: r.room ? `Room ${r.room}` : "",
+      room: r.room ? `Room ${r.room} · ${home}` : home,
       date: day === today ? "Today" : `${day} ${MONTHS[month - 1]}`,
       initials: initials(r.name),
       color: r.color ?? "#6E875E",

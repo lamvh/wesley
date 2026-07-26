@@ -57,7 +57,7 @@ interface Visit { mon: string; day: string; who: string; detail: string; }
 interface Message { from: string; time: string; text: string; }
 
 interface Kpi { label: string; value: string; delta?: string; deltaTone?: 'accent'|'warn'; sub: string; }
-interface Birthday { name: string; room: string; date: string; initials: string; colorKey: string; badge: string; }
+interface Birthday { name: string; room: string; date: string; initials: string; color: string; badge: string; }  // `room` carries the home too: "Room 3A · The Lodge"
 interface Alert { title: string; detail: string; tag: string; tone: 'warn'|'amber'|'accent'; }
 interface OccupancyWing { name: string; filled: number; total: number; colorKey: string; }
 ```
@@ -266,12 +266,12 @@ gained `forms`). A count below that means the matrix has not caught up with the 
 
 ## Future Supabase mapping (deferred - not this phase)
 
-> **Status:** the **core subset is LIVE in the DB** - `supabase/migrations/0001_core_schema.sql` (tables `roles`, `role_permissions`, `buildings`, `building_wings`, `app_users`, `staff`, `residents`, all with RLS) applied + seeded from the mocks (`scripts/db/seed-core-schema.mts`, or paste-ready `supabase/seed/0001_core_seed.sql`). Row counts: roles 7, role_permissions 308 (7×11×4, re-seeded 2026-07-27), buildings 2, app_users 11, staff 38, residents 9. `app_users` already gates portal access + role (verified end-to-end); `app_users.username` is now required for login, `email` optional - see "Login: username required, email optional" above. **Stock & procurement is also LIVE** - `supabase/migrations/0002_stock_procurement.sql` (tables `providers`, `products`, `stock_levels`, `stock_movements`, `orders`, `order_lines`, all with RLS + two RPCs) applied + seeded; see "Stock, providers & ordering" above. **Staff administration schema is also defined** (`0003_staff_admin.sql`, extended `staff` columns + `shift_templates` + `leave_requests` + `approve_leave` RPC) but DB apply/seed is deferred - see "Staff administration" above. Other screens still read mock data - swapping accessors to Supabase queries is the next step. The remaining tables below are still deferred.
+> **Status:** the **core subset is LIVE in the DB** - `supabase/migrations/0001_core_schema.sql` (tables `roles`, `role_permissions`, `buildings`, `building_wings`, `app_users`, `staff`, `residents`, all with RLS) applied + seeded from the mocks (`scripts/db/seed-core-schema.mts`, or paste-ready `supabase/seed/0001_core_seed.sql`). Row counts: roles 7, role_permissions 308 (7×11×4, re-seeded 2026-07-27), buildings 2, app_users 11, staff 38, **residents 71** (Wesley 52 + The Lodge 19), **rooms 74** (Wesley 52 + The Lodge 22). `app_users` already gates portal access + role (verified end-to-end); `app_users.username` is now required for login, `email` optional - see "Login: username required, email optional" above. **Stock & procurement is also LIVE** - `supabase/migrations/0002_stock_procurement.sql` (tables `providers`, `products`, `stock_levels`, `stock_movements`, `orders`, `order_lines`, all with RLS + two RPCs) applied + seeded; see "Stock, providers & ordering" above. **Staff administration schema is also defined** (`0003_staff_admin.sql`, extended `staff` columns + `shift_templates` + `leave_requests` + `approve_leave` RPC) but DB apply/seed is deferred - see "Staff administration" above. Other screens still read mock data - swapping accessors to Supabase queries is the next step. The remaining tables below are still deferred.
 
 Accessors become async queries; screens unchanged (already `await` accessors where practical). The shapes below keep the mock layer DB-compatible so the swap is mechanical. RLS on every table.
 
 ### Care/ops tables (existing screens)
-`residents`, `rooms`, `shifts` (+ `shift_staff` join), `incidents`, `meal_services`, `activities`, `family_posts`, `visits`, `messages`, `birthdays`. (Stock's tables are LIVE - see "Stock, providers & ordering" above. `staff`'s extended columns, `shift_templates`, and `leave_requests` are schema-defined - see "Staff administration" above; neither is deferred anymore.)
+`shifts` (+ `shift_staff` join), `incidents`, `meal_services`, `activities`, `family_posts`, `visits`, `messages`, `birthdays`. (`residents` and `rooms` are LIVE for both homes - see "Two homes in one register" below. Stock's tables are LIVE - see "Stock, providers & ordering" above. `staff`'s extended columns, `shift_templates`, and `leave_requests` are schema-defined - see "Staff administration" above; neither is deferred anymore.)
 
 ### RBAC tables (Users & access)
 ```sql
@@ -310,7 +310,7 @@ buildings(id text pk,                 -- 'wesley' | 'lodge'
 building_wings(building_id text references buildings(id), name text,
                primary key (building_id, name))
 ```
-**Every care/ops table gains a `building_id` FK** (residents, rooms, staff, roster, stock_levels, incidents…). suites/occupied/staff counts on the Buildings card become aggregate queries per building. The active building (topbar switcher) becomes a query filter and - with auth - an RLS scoping dimension (a user only sees buildings they're assigned to).
+**Every care/ops table gains a `building_id` FK** (residents, rooms, staff, roster, stock_levels, incidents…). For `residents` and `rooms` this is no longer hypothetical - both homes hold real rows, see "Two homes in one register" below. suites/occupied/staff counts on the Buildings card become aggregate queries per building. The active building (topbar switcher) becomes a query filter and - with auth - an RLS scoping dimension (a user only sees buildings they're assigned to).
 
 ### Roster scheduling
 ```sql
@@ -343,3 +343,17 @@ Client `setIntake` → `upsert` on the unique key. Summary tiles → `select cou
 
 ### Auth ↔ role
 Supabase Auth user → `users.auth_id`; `users.role_id` drives both nav visibility (client) and data access (RLS). Role toggle (admin/staff) in the topbar is a **demo device** this phase; with real auth it is replaced by the signed-in user's role.
+
+## Two homes in one register (2026-07-27)
+
+`buildings` holds `wesley` ("Wesley") and `lodge` ("The Lodge"), and both now carry real `rooms` + `residents`: Wesley 52 + 52, The Lodge 22 + 19. Three consequences the data model forces on any code touching these tables:
+
+**Room numbers are not unique - `(building_id, num)` is the identity.** Both registers contain a 3A and a 5A. `rooms` has PK `(building_id, num)`, so the DB is fine; the risk is application code that joins or looks up on the number alone. `getRoomRecords()` keys its occupancy map on `(building, room)`; `getRoomByNumber(num, buildingId)` and `getRoomNumbers(buildingId)` both take the home; the room detail route carries it as `?home=`.
+
+**A room can hold more than one resident.** The Lodge's 10B is a couple. Occupancy is derived from `residents.room` (never stored on the room, so the two can't disagree) and is modelled as `occupants: RoomOccupant[]`, not a single occupant.
+
+**`residents.slug` is unique per home, not globally** (`unique (building_id, slug)` in `0001_core_schema.sql`), yet `getResidentBySlug`, the resident update and the resident delete all key on the slug alone - a slug shared across homes would make one edit hit two records. There are none today (verified: 52 vs 19, zero overlap) and `saveResident` now rejects a new name whose slug exists in **any** home, which keeps that true.
+
+Seed + verify: `supabase/seed/0008_lodge_rooms_and_residents.sql` (from `scripts/db/emit-lodge-rooms-and-residents-seed-sql.mts`), checked by `scripts/db/verify-lodge-rooms-and-residents.mts` (13/13 PASS on the real DB).
+
+`+ Admit` picks the home (`getRoomNumbersByBuilding()` feeds the room list per home); `DEFAULT_BUILDING` in `lib/data/rooms.ts` remains the fallback for a submission that posts no `buildingId`. Editing shows the home read-only - the update path never writes `building_id`.

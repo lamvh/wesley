@@ -6,9 +6,12 @@ import { cn } from "@/lib/utils";
 // Resident-detail card summarising the resident's assigned room, linking to the
 // full room screen. Reads the real register; a resident with no room, or one
 // that isn't in the register, renders nothing rather than a broken link.
-export async function RoomCard({ room: num }: { room: string }) {
+//
+// Looked up by (home, number): both registers have a 3A, so the number alone
+// would point a Lodge resident at Wesley's room.
+export async function RoomCard({ room: num, buildingId }: { room: string; buildingId: string }) {
   if (!num) return null;
-  const room = await getRoomByNumber(num);
+  const room = await getRoomByNumber(num, buildingId);
   if (!room) return null;
 
   const meta = roomStatusMeta[room.status];
@@ -16,7 +19,7 @@ export async function RoomCard({ room: num }: { room: string }) {
 
   return (
     <Link
-      href={`/portal/rooms/${room.num}`}
+      href={`/portal/rooms/${room.num}?home=${room.buildingId}`}
       className="block rounded-xl border border-line-soft border-l-[5px] bg-cream p-[18px] transition-colors hover:border-line-strong hover:shadow-[0_8px_20px_-12px_rgba(0,0,0,0.18)]"
       style={{ borderLeftColor: `var(--color-${meta.dot.replace("bg-", "")})` }}
     >

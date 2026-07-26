@@ -4,7 +4,8 @@ import { CelebrationCard } from "@/components/portal/activities/celebration-card
 import { HighlightCard } from "@/components/portal/activities/highlight-card";
 import { UpcomingBirthdays } from "@/components/portal/activities/upcoming-birthdays";
 import { Button } from "@/components/ui/button";
-import { getActivityWeek, getBirthdays } from "@/lib/mock-data";
+import { getActivityWeek } from "@/lib/mock-data";
+import { getBirthdaysThisMonth } from "@/lib/data/residents";
 
 // Recent-highlight gallery cards - static literal content from the design.
 const highlights = [
@@ -40,9 +41,12 @@ const highlights = [
 
 // Activities hub: featured celebration, upcoming birthdays, recent highlights,
 // and the full seven-day programme colour-coded by category.
-export default function ActivitiesPage() {
+export default async function ActivitiesPage() {
   const week = getActivityWeek();
-  const birthdays = getBirthdays();
+  // Same live source as the dashboard strip: residents whose birthday falls in
+  // the current month, both homes. The mock list named people the register does
+  // not contain.
+  const birthdays = await getBirthdaysThisMonth();
 
   return (
     <div className="mx-auto max-w-[1180px]">

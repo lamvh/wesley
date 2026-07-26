@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 import { saveResident, deleteResident } from "@/lib/actions/residents";
 import type { Resident } from "@/types/domain";
@@ -51,28 +51,66 @@ function Field({
 export function ResidentForm({
   resident,
   rooms,
+  buildings,
 }: {
   resident?: Resident;
-  /** Room numbers from the real register (Supabase `rooms`). */
-  rooms: string[];
+  /** Room numbers from the real register (Supabase `rooms`), keyed by home -
+   *  picking a home swaps the room list. */
+  rooms: Record<string, string[]>;
+  /** The homes a resident can be admitted to. */
+  buildings: { id: string; name: string }[];
 }) {
   const [state, action, pending] = useActionState(saveResident, {});
   const editing = Boolean(resident);
+  // Admitting picks the home; editing shows it read-only. Moving someone
+  // between homes is a transfer, not a detail edit, so the update path never
+  // writes building_id.
+  const [buildingId, setBuildingId] = useState(resident?.buildingId ?? buildings[0]?.id ?? "");
+  const roomOptions = rooms[buildingId] ?? [];
+  const homeName = buildings.find((b) => b.id === buildingId)?.name ?? buildingId;
 
   return (
     <div className="mt-[22px] max-w-[720px]">
       <form action={action} className="flex flex-col gap-4">
         {resident && <input type="hidden" name="slug" value={resident.slug} />}
+        {/* Which home's register the room list came from - the server validates
+            the chosen room against that same home. */}
+        <input type="hidden" name="buildingId" value={buildingId} />
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Full name" name="name" defaultValue={resident?.name} required placeholder="e.g. Margaret Whitcombe" />
           <Field label="Preferred name" name="pref" defaultValue={resident?.pref} placeholder="e.g. Peggy" />
 
           <label className="flex flex-col gap-[6px]">
+            <span className={labelCls}>Home <span className="text-high">*</span></span>
+            {editing ? (
+              <span className={`${fieldCls} flex items-center text-ink-muted`}>{homeName}</span>
+            ) : (
+              <select
+                value={buildingId}
+                onChange={(e) => setBuildingId(e.target.value)}
+                className={fieldCls}
+              >
+                {buildings.map((b) => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
+            )}
+          </label>
+
+          <label className="flex flex-col gap-[6px]">
             <span className={labelCls}>Location in facility <span className="text-high">*</span></span>
-            <select name="room" defaultValue={resident?.room ?? ""} required className={fieldCls}>
+            {/* Remounted per home so a room picked for the other home cannot
+                stay selected once the register underneath it changed. */}
+            <select
+              key={buildingId}
+              name="room"
+              defaultValue={resident?.room ?? ""}
+              required
+              className={fieldCls}
+            >
               <option value="" disabled>Choose a room…</option>
-              {rooms.map((num) => (
+              {roomOptions.map((num) => (
                 <option key={num} value={num}>Room {num}</option>
               ))}
             </select>

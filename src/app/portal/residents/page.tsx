@@ -1,18 +1,22 @@
 import Link from "next/link";
 import { PortalPageHeader } from "@/components/shared/portal-page-header";
-import { ResidentCard } from "@/components/portal/residents/resident-card";
+import { ResidentsDirectory } from "@/components/portal/residents/residents-directory";
 import { TierFilterPills } from "@/components/portal/residents/tier-filter-pills";
 import { getResidents } from "@/lib/data/residents";
+import { listBuildings } from "@/lib/data/buildings";
 
-// Directory of everyone in care, read live from Supabase. Tier pills are a
-// visual-only client island; the grid is not filtered this phase.
+// Directory of everyone in care, read live from Supabase, split into one tab per
+// home. Wesley leads because it is the larger register. Tier pills are a
+// visual-only client island; the grid is not filtered by tier this phase.
 export default async function ResidentsPage() {
-  const residents = await getResidents();
+  const [residents, buildings] = await Promise.all([getResidents(), listBuildings()]);
+  const tabs = [...buildings].sort((a, b) => (a.id === "wesley" ? -1 : b.id === "wesley" ? 1 : 0));
+
   return (
     <div className="mx-auto max-w-[1180px]">
       <PortalPageHeader
         title="Residents"
-        sub={`${residents.length} in care`}
+        sub={`${residents.length} in care across ${tabs.length} homes`}
         actions={
           <>
             <TierFilterPills />
@@ -25,11 +29,7 @@ export default async function ResidentsPage() {
           </>
         }
       />
-      <div className="mt-[22px] grid grid-cols-1 gap-[14px] sm:grid-cols-2 lg:grid-cols-3">
-        {residents.map((resident) => (
-          <ResidentCard key={resident.slug} resident={resident} />
-        ))}
-      </div>
+      <ResidentsDirectory residents={residents} buildings={tabs} />
     </div>
   );
 }

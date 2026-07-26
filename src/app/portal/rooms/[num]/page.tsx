@@ -4,7 +4,8 @@ import { BackLink } from "@/components/portal/back-link";
 import { PersonBadge } from "@/components/shared/person-badge";
 import { RoomStatusCard } from "@/components/portal/rooms/room-status-card";
 import { careTierMeta, roomStatusMeta } from "@/lib/design-meta";
-import { getRoomByNumber } from "@/lib/data/rooms";
+import { getRoomByNumber, DEFAULT_BUILDING } from "@/lib/data/rooms";
+import { getBuildingName } from "@/lib/data/buildings";
 import { cn } from "@/lib/utils";
 
 // Admin deep-view of a single room, from the real register.
@@ -15,12 +16,17 @@ import { cn } from "@/lib/utils";
 // them against real rooms would present invented stock levels as fact.
 export default async function RoomDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ num: string }>;
+  searchParams: Promise<{ home?: string }>;
 }) {
-  const { num } = await params;
-  const room = await getRoomByNumber(num);
+  const [{ num }, { home }] = await Promise.all([params, searchParams]);
+  // Both homes have a 3A, so the number alone does not identify a room. Room
+  // cards link with ?home=; a link without it means the older Wesley-only URL.
+  const room = await getRoomByNumber(num, home || DEFAULT_BUILDING);
   if (!room) notFound();
+  const homeName = await getBuildingName(room.buildingId);
 
   const meta = roomStatusMeta[room.status];
   const tier = room.tier ? careTierMeta[room.tier] : null;
@@ -35,6 +41,7 @@ export default async function RoomDetailPage({
           <div className="font-serif text-[30px] font-semibold text-ink">
             Room {room.num}
           </div>
+          <div className="text-[13.5px] text-ink-faint">{homeName}</div>
           {tier ? (
             <span className={cn("mt-1 inline-block rounded-full px-[10px] py-[3px] text-[12px] font-semibold", tier.badge)}>
               {room.tier}
@@ -52,39 +59,41 @@ export default async function RoomDetailPage({
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         <div className="flex flex-col gap-4">
-          {room.occupant ? (
+          {room.occupants.length > 0 ? (
             <div className="rounded-2xl border border-line bg-cream-2 p-[22px]">
               <div className="text-[12px] font-bold uppercase tracking-[0.4px] text-status-available">
-                Resident
+                {room.occupants.length > 1 ? "Residents" : "Resident"}
               </div>
-              <div className="mt-[14px] flex items-center gap-[14px]">
-                <PersonBadge
-                  initials={room.occupant.initials}
-                  color={room.occupant.color}
-                  className="size-[54px] rounded-[16px] text-[18px]"
-                  serif
-                />
-                <div className="min-w-0">
-                  <Link
-                    href={`/portal/residents/${room.occupant.slug}`}
-                    className="font-serif text-[22px] font-semibold text-ink hover:text-navy"
-                  >
-                    {room.occupant.name}
-                  </Link>
-                  <div className="mt-[3px] flex flex-wrap gap-[6px]">
-                    {[room.occupant.diet, room.occupant.mobility]
-                      .filter(Boolean)
-                      .map((chip) => (
-                        <span
-                          key={chip}
-                          className="rounded-full bg-muted px-[10px] py-[3px] text-[12px] font-medium text-ink-muted"
-                        >
-                          {chip}
-                        </span>
-                      ))}
+              {room.occupants.map((occupant) => (
+                <div key={occupant.slug} className="mt-[14px] flex items-center gap-[14px]">
+                  <PersonBadge
+                    initials={occupant.initials}
+                    color={occupant.color}
+                    className="size-[54px] rounded-[16px] text-[18px]"
+                    serif
+                  />
+                  <div className="min-w-0">
+                    <Link
+                      href={`/portal/residents/${occupant.slug}`}
+                      className="font-serif text-[22px] font-semibold text-ink hover:text-navy"
+                    >
+                      {occupant.name}
+                    </Link>
+                    <div className="mt-[3px] flex flex-wrap gap-[6px]">
+                      {[occupant.diet, occupant.mobility]
+                        .filter(Boolean)
+                        .map((chip) => (
+                          <span
+                            key={chip}
+                            className="rounded-full bg-muted px-[10px] py-[3px] text-[12px] font-medium text-ink-muted"
+                          >
+                            {chip}
+                          </span>
+                        ))}
+                    </div>
                   </div>
                 </div>
-              </div>
+              ))}
               {room.note && (
                 <p className="mt-[14px] text-[14px] leading-[1.6] text-ink-nav">{room.note}</p>
               )}

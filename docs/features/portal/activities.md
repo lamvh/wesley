@@ -20,8 +20,8 @@ Centered column (`max-width:1180px`). Top-to-bottom:
 | Section | Component | Notes |
 |---------|-----------|-------|
 | Header (title, week, add) | `activities-header` | Title `Activities` (Newsreader 32px); subline `This week's programme · 7–13 July`; `+ Add activity` = accent primary button |
-| Featured celebration card | `celebration-card` | Photo mosaic (238px): 1 large + 2 stacked, via **direct `assets/` images** (`act-podiatry-1.jpeg`, `birthday-candles.jpeg`, `birthday-portrait.jpeg`) - not `<Photo slot>`. Body: `Celebration` gold pill + `Yesterday · Kōwhai lounge` meta, Newsreader headline, paragraph. Static content (not from a list accessor). |
-| Upcoming birthdays card | `birthday-list` + `birthday-row` | Cake-icon tile + title. Each row: 36px avatar (initials on `b.color`), `name`, `room` meta, right-aligned gold `badge` (e.g. `90th`) + `date`. |
+| Featured celebration card | `celebration-card` | Photo mosaic (238px): 1 large + 2 stacked, via **direct `assets/` images** (`act-podiatry-1.jpeg`, `birthday-candles.jpeg`, `birthday-portrait.jpeg`) - not `<Photo slot>`. Body: `Celebration` gold pill + meta, Newsreader headline, paragraph. **Still design-source content** - the headline names "Mei Lam", who is not in the register. Left as-is: replacing it needs a real story and photos, and inventing one would be worse than an obvious placeholder. |
+| Upcoming birthdays card | `upcoming-birthdays.tsx` | Cake-icon tile + title + scope line ("This month · N residents"). Each row: 36px avatar (initials on `b.color`), `name`, `room · home` meta, right-aligned gold `badge` (e.g. `90th`) + `date` ("Today" when it falls on the day). |
 | Recent highlights gallery | `highlight-card` (×4) | Card = cream-2 + border, radius `14px`. 150px `assets/act-*.jpeg` / `birthday-*.jpeg` image, then category eyebrow (`Wellbeing · Tue`, colour by category) + title. Direct asset images, static. |
 | Weekly programme grid | `activity-week` → `activity-day` → `activity-chip` | 7 day columns (`min-height:280px`). Day header shows `dow` + `date`; today's header tinted (`d.today`). Each `activity-chip`: category tint bg (`a.tint`), `time` (in `a.color`), `title`, `where`. |
 | Category legend | `category-legend` | Dot + label per category (Garden, Music, Movement, Social, Wellbeing, Faith) using activity-category scale. |
@@ -29,9 +29,11 @@ Centered column (`max-width:1180px`). Top-to-bottom:
 Grids: feature row `1.55fr 1fr`; highlights `repeat(4,1fr)`; week `repeat(7,minmax(0,1fr))`.
 
 ## Data consumed
-From `lib/mock-data/activities.ts` (see 03-data-model.md):
+The programme is still mock (`lib/mock-data/activities.ts`, see 03-data-model.md); the birthdays are live:
 - `getActivityWeek()` → `ActivityDay[]`: `dow`, `date`, `isToday` (drives today header tint), `items[]`. Each `Activity`: `time`, `title`, `where`, `category` (`garden`|`music`|`move`|`social`|`craft`|`care`|`faith`). Chip `tint` + `color` derived from `category` via the activity-category scale helper (`catTint` map), not stored raw.
-- `birthdays` (`getBirthdays()`) → `Birthday[]`: `name`, `room`, `date`, `initials`, `colorKey`, `badge`.
+- **`getBirthdaysThisMonth()`** (`lib/data/residents.ts`) → `Birthday[]`, **live from Supabase** and shared with the dashboard strip: residents of **both homes** whose `dob` falls in the current month, day ascending. `room` carries the home too ("Room 10A · The Lodge") because room numbers repeat across the two registers. The card header states the scope ("This month · N residents", "None this month" when empty).
+
+  The mock `getBirthdays()` it replaced listed four people the register does not contain (Mei Lam, Henry Fitzgerald, …) with invented ages, so the card was presenting design-source names as residents of the home.
 - **Featured celebration + recent highlights are static** (headline, meta, paragraph, and the highlight cards' captions/categories are literal in the design, not list-driven) - colocate as small typed constants in `activities.ts` rather than inline in JSX.
 
 **Image strategy note:** this screen uses **direct `assets/` files** copied to `public/images/` (`act-podiatry-1/2/3`, `act-birthday-cakes`, `act-birthday-group`, `birthday-candles`, `birthday-portrait`) rendered via `next/image` - distinct from the marketing/family `<Photo slot="…">` slot-mapping pattern. No `image-slot` placeholders here.
@@ -40,7 +42,7 @@ From `lib/mock-data/activities.ts` (see 03-data-model.md):
 - **Role:** identical for admin and staff (access `both`); no role-gated content.
 - **Today highlight:** the day whose `isToday` is true gets a tinted header (`#E7E9F5`); others transparent. Friday 11 is "today" in mock data.
 - **Category-driven styling:** every chip's background/text colour comes from its `category` - seven fixed tints; legend pairs each colour with a text label (colour never sole signal).
-- **Empty state:** a day with no `items` renders an empty column body; a card with zero birthdays would show only the header - not exercised (all populated).
+- **Empty state:** a day with no `items` renders an empty column body. A month with no birthdays renders the header reading "None this month" - reachable now that the list is real data rather than a fixed fixture.
 - Chip count per day varies (2–5); columns are equal width, height grows with content over the `280px` min.
 
 ## Interactions

@@ -38,10 +38,14 @@ export async function saveResident(
   const name = str(formData, "name");
   if (!name) return { error: "Name is required." };
 
-  // Validated against the REAL room register, not the mock numbers - a resident
-  // must sit in a room the building actually has.
+  // Validated against the REAL room register of the home this resident belongs
+  // to, not the mock numbers - a resident must sit in a room that home has, and
+  // the two homes' registers do not overlap (Wesley has no 1B).
   const room = str(formData, "room");
-  if (!(await getRoomNumbers()).includes(room)) return { error: "Please choose a room." };
+  const buildingId = str(formData, "buildingId") || BUILDING;
+  if (!(await getRoomNumbers(buildingId)).includes(room)) {
+    return { error: "Please choose a room." };
+  }
 
   // NZ National Health Index: 3 letters then 4 characters (older numbers end in
   // a digit, post-2022 ones in a letter). Stored uppercase so the uniqueness
@@ -100,10 +104,21 @@ export async function saveResident(
     }
   } else {
     slug = slugify(name);
+    // `residents` is only unique on (building_id, slug), but every read and
+    // write here keys on the slug alone - so the same slug existing in the
+    // other home would make one edit hit two records. Reject the name instead.
+    const { data: clash } = await supabase
+      .from("residents")
+      .select("building_id")
+      .eq("slug", slug)
+      .limit(1);
+    if (clash?.length) {
+      return { error: "A resident with this name already exists." };
+    }
     const { error } = await supabase.from("residents").insert({
       ...fields,
       slug,
-      building_id: BUILDING,
+      building_id: buildingId,
       color: pickColor(name),
     });
     if (error) {

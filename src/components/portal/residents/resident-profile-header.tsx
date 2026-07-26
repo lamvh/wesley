@@ -18,7 +18,15 @@ function formatDate(iso: string): string {
   return `${d} ${MONTHS[m - 1]} ${y}`;
 }
 
-export function ResidentProfileHeader({ resident }: { resident: Resident }) {
+export function ResidentProfileHeader({
+  resident,
+  homeName,
+}: {
+  resident: Resident;
+  /** Which home they live in - both registers have a 3A, so the room number
+   *  alone does not place them. */
+  homeName: string;
+}) {
   return (
     <div className="overflow-hidden rounded-[18px] border border-line bg-cream-2">
       <div
@@ -41,7 +49,10 @@ export function ResidentProfileHeader({ resident }: { resident: Resident }) {
               {resident.name}
             </h2>
             <div className="mt-1 text-[14.5px] text-ink-muted">
-              Prefers &ldquo;{resident.pref}&rdquo; · Room {resident.room}
+              {/* Most of the real register carries no preferred name, so the
+                  clause is dropped rather than rendered as empty quotes. */}
+              {resident.pref && <>Prefers &ldquo;{resident.pref}&rdquo; · </>}
+              Room {resident.room} · {homeName}
               {resident.nhi && <> · NHI {resident.nhi}</>}
             </div>
           </div>
@@ -86,7 +97,7 @@ export function ResidentProfileHeader({ resident }: { resident: Resident }) {
               ))}
             </div>
           </div>
-          <RoomCard room={resident.room} />
+          <RoomCard room={resident.room} buildingId={resident.buildingId} />
         </div>
       </div>
     </div>

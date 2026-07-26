@@ -30,19 +30,18 @@ Single-column body inside `PortalLayout`, `max-width:1180px`, top-to-bottom:
 | Housekeeping card | `page.tsx` inline | `cream-2` card, pad `22px`. H3 "Housekeeping" Newsreader `19px`/600 + `house` line (`ink-soft` `13.5px`, line-height `1.55`). |
 
 ## Data consumed
-From `lib/mock-data/rooms.ts` via **`getRoomByNum(num)`** → `Room` (mirrors `roomsRaw`, lines 1230–1246; `[num]` param = room number e.g. `05`). Fields used:
-- `num`, `wing`, `status` - header title + status pill + left-border.
-- `careType` / care line - e.g. "Rest home" shown in header + resident card.
-- `resident?` - `{ name, initials, colorKey, diet, mobility }`; drives occupied resident card. `note` also from room.
-- `note` - resident-card paragraph (occupied) OR room-status paragraph (empty).
-- `activities?` - `string[]` by wing (`actsByWing`, lines 1224–1228), occupied only, e.g. Rātā → Garden group · 9:30am / Gentle exercise · 11:00am / Choir & singalong · 2:00pm.
-- `supplies?` - `SupplyItem[]` from `roomSupplyDefs` (line 1229: briefs 18/24, bed pads 30/30, gloves 3/10, wipes 12/12), occupied only.
-- `house` - housekeeping line.
+`getRoomByNumber(num, buildingId)` (`lib/data/rooms.ts`) → `RoomRecord`, read live from Supabase, plus `getBuildingName()` for the header line. **The route needs both parts of the identity:** `/portal/rooms/3A` is ambiguous because Wesley and The Lodge each have a 3A, so room cards link with `?home={buildingId}`; a link without it resolves to Wesley for back-compatibility. Fields used:
+- `num` + `buildingId` - header title ("Room {num}") and the home name under it.
+- `status` - status pill + left-border via `roomStatusMeta`.
+- `tier` - optional; the tier pill is absent until the home sets one ("Chưa đặt hạng phòng").
+- `occupants` - `RoomOccupant[]`; **one block per person**, so The Lodge's 10B shows the couple and the card heading reads "Residents" rather than "Resident". Empty ⇒ `RoomStatusCard` instead.
+- `note` - resident-card paragraph (occupied) OR room-status paragraph (vacant).
+
+The wing / care-type header line and the supplies + housekeeping panels are gone: wings and care types were dropped project-wide, and the supplies/housekeeping copy was mock text attached to every occupied room - showing it against real rooms would present invented stock levels as fact.
 
 Derived (helpers, not stored):
 - `roomStatusMeta(status)` → `{ colorToken, tintToken }` (room-status scale) for header pill + left-border.
-- `stockStatus(qty, par)` → `In stock | Low | Reorder` + pct/color/tint (ratio ≥1 / ≥0.5 / <0.5) for each `SupplyRow`.
-- `initials(name)`, care-tier label from wing.
+- `initials(name)` for the avatar tiles.
 
 ## Variants & states
 - **Access:** admin-only; staff → "Admin only" empty state (no hard guard this phase).

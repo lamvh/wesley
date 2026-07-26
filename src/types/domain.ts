@@ -12,6 +12,10 @@ export interface Resident {
   slug: string;
   name: string;
   pref: string;
+  /** which home they live in - `buildings.id` ("wesley" | "lodge"). Room
+   *  numbers repeat across buildings (both have a 3A), so anything that
+   *  matches a resident to a room must key on this too. */
+  buildingId: string;
   /** Location in the facility - a room number from the real register
    *  (Supabase `rooms`, see lib/data/rooms.ts). "" when not yet placed. */
   room: string;

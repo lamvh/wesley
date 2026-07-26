@@ -38,7 +38,7 @@ Two sources: `getDashboard(role)` (`lib/mock-data/dashboard.ts`) → `{ greeting
 - **`todaySchedule`**: `{ time, title, where }[]` - shared, 6 items (`1149–1156`).
 - **`wings`**: `OccupancyWing[]` - `{ name, filled, total, colorKey }`; 3 wings, `pct` derived `filled/total` (`1157–1161`).
 - **`familyPosts`**: `FamilyPost[]` subset - `{ from, resident, initials, colorKey, preview, time }`; 3 items (`1162–1166`).
-- **`birthdays`**: `Birthday[]` - `{ name, room, date, initials, color, badge }`; **live from Supabase** `residents` (`name,room,dob,color`). Rows whose `dob` month equals the current month, sorted by day ascending. `date` = `"<day> <Mon>"` (or `"Today"`), `badge` = ordinal of the age they turn this year (e.g. `93rd`), `room` = `"Room <n>"`, `initials` derived via `initials()`. Month/day are read off the ISO `dob` string, not a parsed `Date`, so no timezone shift.
+- **`birthdays`**: `Birthday[]` - `{ name, room, date, initials, color, badge }`; **live from Supabase** `residents` (`name,room,dob,color`). Rows whose `dob` month equals the current month, sorted by day ascending. `date` = `"<day> <Mon>"` (or `"Today"`), `badge` = ordinal of the age they turn this year (e.g. `93rd`), `room` = `"Room <n> · <home>"`, `initials` derived via `initials()`. **Covers both homes** - the dashboard is home-wide, and the home is named because room numbers repeat across the two registers. Month/day are read off the ISO `dob` string, not a parsed `Date`, so no timezone shift.
 
 Colors (`deltaColor`, alert border/tint, wing fill, avatar bg) are derived in the accessor/helper layer from semantic scales / avatar palette - JSX references tokens only.
 

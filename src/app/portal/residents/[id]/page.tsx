@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { BackLink } from "@/components/portal/back-link";
 import { ResidentProfileHeader } from "@/components/portal/residents/resident-profile-header";
 import { getResidentBySlug } from "@/lib/data/residents";
+import { getBuildingName } from "@/lib/data/buildings";
 
 // Full profile of a single resident. Reached from the resident directory.
 export default async function ResidentDetailPage({
@@ -13,6 +14,7 @@ export default async function ResidentDetailPage({
   const { id } = await params;
   const resident = await getResidentBySlug(id);
   if (!resident) notFound();
+  const homeName = await getBuildingName(resident.buildingId);
 
   return (
     <div className="mx-auto max-w-[1180px]">
@@ -25,7 +27,7 @@ export default async function ResidentDetailPage({
           Edit
         </Link>
       </div>
-      <ResidentProfileHeader resident={resident} />
+      <ResidentProfileHeader resident={resident} homeName={homeName} />
     </div>
   );
 }

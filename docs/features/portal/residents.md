@@ -3,15 +3,18 @@
 - **Route:** `/portal/residents` - `app/portal/residents/page.tsx`
 - **Section:** Portal · **Access:** both
 - **Source:** lines `720–747` (resident list screen) + `1103–1121` (`residentsRaw`, `wingTier`, `careMeta`)
-- **Render:** RSC + client island: **tier filter pills** (local UI state, visual only)
+- **Render:** RSC + two client islands: **per-home tabs** (`residents-directory.tsx`, filters the grid) and **tier filter pills** (local UI state, visual only)
 
 ## Purpose
 Directory of everyone in care, shown as a grid of resident cards keyed by room. Both admin and staff use it to find a resident and open their profile.
 
+The register covers **two homes** - Wesley (52) and The Lodge (19) - and their room numbers overlap (both have a 3A and a 5A), so the directory shows one home at a time behind a tab. A single merged list would read as one register when it is two.
+
 ## Layout
 Single-column body inside `PortalLayout`, `max-width:1180px`, top-to-bottom:
 1. **Header row** - flex space-between (`flex-wrap`, gap `16px`, align end): title + subtitle left; tier filter pills + `+ Admit` right.
-2. **Resident grid** - 3-column grid (`repeat(3,1fr)`, gap `14px`, margin-top `22px`) of resident cards.
+2. **Home tabs** - pill row (margin-top `22px`), one pill per building with its resident count; Wesley first.
+3. **Resident grid** - 3-column grid (`repeat(3,1fr)`, gap `14px`) of the active home's resident cards.
 
 ## Sections & components
 
@@ -24,8 +27,9 @@ Single-column body inside `PortalLayout`, `max-width:1180px`, top-to-bottom:
 | Resident card (×N) | `ResidentCard` (new, `components/portal/resident-card.tsx`) | `cream-2`, `border`, radius `16px`, pad `18px`, `cursor:pointer`. Top: 52px square avatar (`colorKey` bg, `20px` initials) + name (`16px`/600) & "Room {room}" (`muted-2` `13px`). Bottom row (margin-top `15px`, space-between): care-tier badge (`careColor` on `careTint`) left + diet (`muted-2` `12.5px`) right. |
 
 ## Data consumed
-**Live from Supabase** via **`getResidents()`** in `lib/data/residents.ts` (async, RSC, runs under the signed-in user's session → RLS `residents_read`). Rows map snake_case DB columns → the `Resident` domain type; ordered by `created_at`. The detail route uses `getResidentBySlug(slug)`. (The mock `lib/mock-data/residents.ts` remains only for screens not yet migrated, e.g. `meal-report`.) Fields used per card:
+**Live from Supabase** via **`getResidents()`** in `lib/data/residents.ts` (async, RSC, runs under the signed-in user's session → RLS `residents_read`), plus `listBuildings()` for the tab labels. `getResidents()` returns **both homes**; the tab filters the set already in hand, so switching homes is not another round trip. Rows map snake_case DB columns → the `Resident` domain type; ordered by `created_at`. The detail route uses `getResidentBySlug(slug)`. (The mock `lib/mock-data/residents.ts` remains only for screens not yet migrated, e.g. `meal-report`.) Fields used per card:
 - `slug` - `slugify(name)`, the `[id]` route param (e.g. `margaret-whitcombe`).
+- `buildingId` - `buildings.id`; which home they live in. Room numbers repeat across homes, so anything matching a resident to a room keys on this too.
 - `name` - card title.
 - `room` - room number, shown as "Room {room}".
 - `avatar` - initials for the avatar tile.
@@ -37,6 +41,8 @@ Single-column body inside `PortalLayout`, `max-width:1180px`, top-to-bottom:
 ## Variants & states
 - **No role variance** - identical for admin and staff (access both).
 - **Care-tier badge** (care-tier scale, from wing): Normal → sage `#3F5137`/`#E5EBDD` · Premium → navy `#2C3563`/`#E4E6F2` · VIP → gold `#8A6516`/`#F3E8CE`. Paired with the tier text so color isn't the sole signal.
+- **Home tabs:** Wesley active by default (larger register). Clicking swaps the grid and is view-only state - not in the URL, so it does not survive a reload.
+- **Empty home:** a building with no residents renders a single explanatory panel instead of the grid.
 - **Tier filter pills:** `All` active by default (navy pill); others inactive. Clicking changes the active pill's styling only - **the grid does not filter** this phase (visual state).
 - **Avatar color** per resident from `colorKey` (avatar palette).
 - **DB-backed list** - read live from Supabase; the route's `loading.tsx` skeleton covers the fetch. No client-side filter/empty state yet.
@@ -130,9 +136,9 @@ Master plan luồng C, items 1/2/5 - all three decided "do it" (not just reporte
 
 Rooms used to be mock-only (`lib/mock-data/rooms.ts`), so the resident form validated a room against invented numbers. Migration `0027_rooms_and_resident_details.sql` creates a real `rooms` table seeded with the **52 rooms Wesley actually has** and adds the admission details the home records.
 
-**Rooms.** PK `(building_id, num)`, RLS matching the other operational tables. A `sort_order` column carries the intended sequence — "3A" after "3", the 125–134 block last — because a text sort gives 1, 10, 11, 125, 12, … `getRoomRecords()` / `getRoomNumbers()` (`lib/data/rooms.ts`) read it; `saveResident` validates against `getRoomNumbers()` so a resident can only sit in a room the building has.
+**Rooms.** PK `(building_id, num)`, RLS matching the other operational tables. A `sort_order` column carries the intended sequence — "3A" after "3", the 125–134 block last — because a text sort gives 1, 10, 11, 125, 12, … `getRoomRecords()` / `getRoomNumbers(buildingId)` (`lib/data/rooms.ts`) read it; `saveResident` validates against `getRoomNumbers()` **for the home that resident belongs to** so a resident can only sit in a room that home has.
 
-`wing` and `care_type` are deliberately **NULL**: the room numbers were supplied, the wing / care-type mapping was not, and inventing it would put wrong clinical categories in front of staff. The columns and the UI are ready for them. Until that data arrives, **`/portal/rooms` still renders the mock** — only the numbers are real.
+`wing` and `care_type` are deliberately **NULL**: the room numbers were supplied, the wing / care-type mapping was not, and inventing it would put wrong clinical categories in front of staff. The columns and the UI are ready for them. The rooms screen reads the real register (see [rooms.md](rooms.md)); the tier pill is simply absent until a tier is set.
 
 **Resident fields.** `dob`, `admitted_on`, `nhi`, `gender`, `resident_group`, `phone`. **"Location in facility" is the existing `room` column**, now backed by the real register rather than a separate field.
 
@@ -141,3 +147,27 @@ Rooms used to be mock-only (`lib/mock-data/rooms.ts`), so the resident form vali
 The mock resident seed leaves all six blank rather than inventing plausible-looking NHI numbers and birth dates.
 
 Verified by `scripts/db/verify-rooms-and-resident-details.mts`: all 52 rooms present with no duplicates or strays, returned in the intended order, the six columns exist, and the NHI index actually rejects a lower-case duplicate while still allowing many residents with none.
+
+## The Lodge's register + per-home tabs (2026-07-27)
+
+The second home's data landed: **22 rooms and 19 residents for The Lodge**, transcribed from the register (`scripts/db/emit-lodge-rooms-and-residents-seed-sql.mts` → `supabase/seed/0008_lodge_rooms_and_residents.sql`). Wesley's 52 + 52 are untouched. The emitter refuses to write SQL if the source fails its checks (NHI format + uniqueness, room in the register, dates parse and are sane) and reports - never silently fixes - anything that looks off.
+
+**Two homes broke three assumptions the code had baked in.** All three are real defects the seed would have exposed at the demo, not hypotheticals:
+
+1. **Room numbers are not unique.** Both registers contain a 3A and a 5A. `getRoomRecords()` filtered *rooms* by building but read *residents* unscoped and keyed the occupancy map on the room number alone, so Wesley's 3A would have shown The Lodge's resident. The join key is now `(building, room)`.
+2. **A room can hold more than one person.** The Lodge's 10B is a couple (Andrea + James Surplis). `RoomRecord.occupant` was singular, so one of them would have vanished from the grid. It is now `occupants: RoomOccupant[]`, and both the room card and the room detail render a chip per person.
+3. **Editing a Lodge resident was impossible.** The form's room picker and `saveResident`'s validation both used Wesley's register, and Wesley has no 1B - so saving any Lodge resident failed with "Please choose a room." The picker now takes the resident's own home (`getRoomNumbers(resident.buildingId)`), and the form posts a hidden `buildingId` the server validates against.
+
+**Slug collisions are now possible and are rejected.** `residents` is unique on `(building_id, slug)`, but every read and write here keys on the slug alone (`getResidentBySlug`, the update, the delete). Two residents sharing a slug across homes would make one edit hit two records. Verified there are none today (52 vs 19, zero overlap); `saveResident` now rejects a new name whose slug already exists **in any** home rather than creating the landmine.
+
+**Where the home is named.** Resident cards sit under a per-home tab; the resident profile header reads "Room 1B · The Lodge"; room cards link to `/portal/rooms/{num}?home={buildingId}` and the room detail names the home under its title. The dashboard birthday strip covers both homes, so each pill names one too.
+
+**Admitting into either home.** The form's first field is now **Home**, a `<select>` over `listBuildings()` (Wesley first). Changing it swaps the "Location in facility" options, which are `getRoomNumbersByBuilding()` keyed by home from a single query; the room `<select>` is remounted per home (`key={buildingId}`) so a room picked for the other home cannot stay selected once the register underneath it changed. The chosen home posts as a hidden `buildingId` and the server validates the room against that home's register.
+
+When **editing**, Home renders read-only and the update path never writes `building_id`: moving someone between homes is a transfer, not a detail edit.
+
+Verified by `scripts/db/verify-lodge-rooms-and-residents.mts` on the real DB, **13/13 PASS**: counts per home; Wesley unchanged; 3A and 5A each resolve to their own home's resident; 10B holds both people; the four rooms the register lists empty (2B, 6B, 8B, 1A) stay Available; no slug shared across homes; The Lodge's `sort_order` runs its B block then its A block.
+
+Four points were reported for confirmation and **not** corrected: Steven Kerr and Huang Ying have no gender recorded, Andrea Surplis's NHI reads "not yet" (stored blank), four residents are recorded with a single-word name, and Zane Mendoza (47) / Diep Tran (56) are much younger than the rest of the register.
+
+Verified by an end-to-end admission against the real DB (**9/9**): Wesley's register has no 2B while The Lodge's does, so 2B validates for `home = lodge` and is rejected for `home = wesley`; a resident inserted at `lodge`/2B reads back with `building_id = lodge`, does not surface under Wesley, and the row was removed afterwards (counts back to 52 / 19).

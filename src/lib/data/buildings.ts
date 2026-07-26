@@ -10,3 +10,10 @@ export async function listBuildings(): Promise<{ id: string; name: string }[]> {
   if (error || !data) return [{ id: "wesley", name: "Wesley" }];
   return data.map((b) => ({ id: b.id, name: b.name }));
 }
+
+/** Display name of one building, for screens that show a single record and must
+ *  say which home it belongs to. Falls back to the id if the row is missing. */
+export async function getBuildingName(id: string): Promise<string> {
+  const buildings = await listBuildings();
+  return buildings.find((b) => b.id === id)?.name ?? id;
+}
