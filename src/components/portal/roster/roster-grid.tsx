@@ -5,6 +5,7 @@ import type {
   RosterGrid,
   ShiftType,
   ShiftUsageByStaff,
+  StaffRecord,
 } from "@/types/domain";
 import { rosterCellKey } from "@/types/domain";
 import type { RosterBand, RosterPickerGroup } from "@/lib/roster-grouping";
@@ -41,6 +42,10 @@ interface RosterGridProps {
   /** Per-staff shift counts from earlier weeks, for the picker's "Thường làm"
    *  shortcut. Missing entry = no history, section is skipped. */
   shiftUsage: ShiftUsageByStaff;
+  /** Render each shift's time line on the chips and in the picker. */
+  showTimes: boolean;
+  /** Open the staff detail form for this row. */
+  onOpenStaff: (staff: StaffRecord) => void;
   /** Pull just this staffer's shifts forward from last week. */
   onCopyStaffWeek: (staffId: string) => void;
   /** True while a copy is in flight, so the row buttons can't stack up. */
@@ -67,6 +72,8 @@ export function RosterGrid({
   onToggle,
   onClear,
   shiftUsage,
+  showTimes,
+  onOpenStaff,
   onCopyStaffWeek,
   copyPending = false,
 }: RosterGridProps) {
@@ -176,17 +183,26 @@ export function RosterGrid({
                     </td>
                     <td className="px-3 py-2">
                       <div className="flex min-w-0 items-center gap-[9px]">
-                        <PersonBadge
-                          initials={st.initials}
-                          color={st.color}
-                          className="size-[30px] rounded-full text-[11px]"
-                        />
-                        {/* Names wrap rather than truncate - several staff share
-                            a first name, so a clipped "Tran Quynh…" is worse
+                        {/* Avatar + name open that person's detail form. Whole
+                            thing is one target so it stays easy to hit; names
+                            wrap rather than truncate, since several staff share
+                            a first name and a clipped "Tran Quynh…" is worse
                             than a two-line row. */}
-                        <span className="min-w-0 flex-1 text-[13.5px] font-semibold leading-[1.25] text-ink">
-                          {staffDisplayName(st)}
-                        </span>
+                        <button
+                          type="button"
+                          onClick={() => onOpenStaff(st)}
+                          title={`Mở thông tin ${staffDisplayName(st)}`}
+                          className="flex min-w-0 flex-1 items-center gap-[9px] rounded-[8px] text-left hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy"
+                        >
+                          <PersonBadge
+                            initials={st.initials}
+                            color={st.color}
+                            className="size-[30px] rounded-full text-[11px]"
+                          />
+                          <span className="min-w-0 flex-1 text-[13.5px] font-semibold leading-[1.25] text-ink underline decoration-transparent underline-offset-2 group-hover:decoration-line-strong">
+                            {staffDisplayName(st)}
+                          </span>
+                        </button>
                         {/* Stays out of the way until the row is hovered or the
                             button itself is focused, so the name column doesn't
                             carry a control on all 26 rows at once. */}
@@ -213,6 +229,7 @@ export function RosterGrid({
                           defs={defs}
                           pickerDefs={pickers[st.id] ?? []}
                           usage={shiftUsage[st.id] ?? []}
+                          showTimes={showTimes}
                           staffName={staffDisplayName(st)}
                           dayLabel={`${d.dow} ${d.date}`}
                           isOpen={openCell === cellKey}

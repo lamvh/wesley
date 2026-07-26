@@ -39,10 +39,23 @@ Header (title + week nav + **Export duty roster** + Publish) → shift-type lege
 - **On-call auto-save:** picking a name in the grid's On-call row updates local state optimistically **and** calls `setOnCallDay` / `clearOnCallDay` (`lib/actions/roster.ts`), which upsert/delete the `roster_on_call` row for that date.
 - **Week nav:** ‹ › push `?week=` ±7 days via the router; the RSC reloads that week's saved assignments (grid + on-call).
 - **Copy last week:** toolbar **"Copy tuần trước"** copies every staffer's shifts; the **⟲** button that appears on a staff row when hovered copies just that person. See "Copy last week" below.
+- **Staff detail:** clicking a row's avatar + name opens that staffer's editable detail form (the shared `StaffForm`). See "Staff detail from the roster" below.
 - **Export duty roster** → config modal → A4 print preview (`window.print()`). Publish flips the button label (no persistence yet).
 
 ## Tokens
 Shift types carry their own `color`/`tint`/`border` (**data** → inline style on chips/legend/picker swatches, sanctioned), set per-template via the swatch picker in Staff → Shift templates (`SHIFT_PALETTE`, `lib/actions/staff.ts`) — each shift template keeps its own distinct color, not derived from role. Table header `bg-navy-deep` + `text-cream`; totals `font-serif`.
+
+## Staff detail from the roster (2026-07-27)
+
+The avatar + name in a roster row is a button: clicking it opens that staffer's detail form, editable in place, without leaving the roster.
+
+It mounts the **same `StaffForm`** the Staff screen uses (`components/portal/staff/staff-form.tsx`) rather than a roster-local copy, so editing a staff member is defined in exactly one place. `StaffForm` is a self-contained modal that submits through `saveStaff` and closes itself on success, so the roster only supplies the target record and an `onClose`. It is mounted only while a target is set — the form derives all its state at mount, so switching rows has to remount it.
+
+No extra server-side loading was needed: `/portal/roster` already loads `getStaff()`, `getRoles()` and `getRoleGroups()`, which is exactly what the form's `staff` / `roleOptions` / `roleDefs` / `groups` props require.
+
+One change outside the roster was required: `saveStaff` and `deleteStaff` (`lib/actions/staff.ts`) previously revalidated only `/portal/staff`. They now revalidate `/portal/roster` as well — the roster renders the same records, and the **roles** it saves decide which band a staffer sits in, so an edit made from the roster has to land back on the grid. Only `grid` and `onCallByDay` are seeded client state in `RosterView`; `staff`, `roles` and `groups` are props, so they pick the revalidated data up without a remount.
+
+Opening the form also dismisses any open cell picker, so the popover isn't left hanging behind the modal.
 
 ## "Thường làm" shift suggestions (2026-07-27)
 

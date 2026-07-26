@@ -2,17 +2,20 @@ import { createClient } from "@/lib/supabase/server";
 import type { StaffRecord, ShiftTemplate, StaffLeaveRequest } from "@/types/domain";
 const BUILDING = "wesley";
 
-// Staff status is stored on `staff.status` but nothing writes "On leave" to
-// it directly - approving a leave request only debits the balance. So the
-// real "on leave" state is derived here: any staff with an approved
-// Annual/Sick leave request spanning today counts as on leave regardless of
-// the stored column, which otherwise never moves off its "Active" default.
+// "On leave" is DERIVED, never stored: a staffer counts as away when they have
+// an approved Annual/Sick leave request spanning today. Nothing writes the
+// string to `staff.status` - approving a request only debits the balance.
+//
+// A stored "On leave" is therefore stale data (a seeded row that never had a
+// request behind it) and is ignored rather than trusted, so the badge can only
+// ever come from real leave records. `staff.status` still supplies the other
+// values, e.g. Suspended.
 export async function getStaff(): Promise<StaffRecord[]> {
   const supabase = await createClient();
   const today = new Date().toISOString().slice(0, 10);
   const [staffRes, leaveRes] = await Promise.all([
     supabase.from("staff")
-      .select("id,name,preferred_name,role,roles,contract,hours,phone,start_label,status,initials,color,annual,taken,visa_type,visa_expiry,roster_group_id")
+      .select("id,name,preferred_name,role,roles,contract,hours,phone,start_label,status,initials,color,annual,taken,sick,sick_taken,visa_type,visa_expiry,roster_group_id")
       .eq("building_id", BUILDING).order("name"),
     supabase.from("leave_requests")
       .select("staff_id")
@@ -28,9 +31,15 @@ export async function getStaff(): Promise<StaffRecord[]> {
     id: r.id, name: r.name, preferredName: r.preferred_name ?? "",
     roles: (r.roles ?? (r.role ? [r.role] : [])).filter(Boolean),
     contract: r.contract ?? "", hours: r.hours ?? 0, phone: r.phone ?? "",
-    start: r.start_label ?? "", status: onLeaveIds.has(r.id) ? "On leave" : (r.status ?? "Active"),
+    start: r.start_label ?? "",
+    status: onLeaveIds.has(r.id)
+      ? "On leave"
+      : r.status === "On leave"
+        ? "Active"
+        : (r.status ?? "Active"),
     initials: r.initials ?? "", color: r.color ?? "#6E875E",
     annual: r.annual ?? 0, taken: r.taken ?? 0,
+    sick: r.sick ?? 0, sickTaken: r.sick_taken ?? 0,
     visaType: r.visa_type ?? "", visaExpiry: r.visa_expiry ?? "",
     rosterGroupId: r.roster_group_id ?? null,
   }));

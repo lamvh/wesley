@@ -95,7 +95,7 @@ export function TeamTab({
           <div>Role</div>
           <div>Contract</div>
           <div>Visa</div>
-          <div>Leave left</div>
+          <div>Leave left (A / S)</div>
           <div>Contact</div>
           <div>Status</div>
           <div />
@@ -156,24 +156,36 @@ export function TeamTab({
                 )}
               </div>
 
-              <div>
-                {(() => {
-                  const remaining = Math.max(0, s.annual - s.taken);
-                  const pct = s.annual > 0 ? Math.min(100, Math.round((s.taken / s.annual) * 100)) : 0;
+              {/* Annual over sick, each as remaining/entitled + a mini bar. Two
+                  rows rather than one total: they are separate allowances and
+                  approving a request only debits the one matching its type. */}
+              <div className="flex flex-col gap-[6px]">
+                {(
+                  [
+                    { key: "A", entitled: s.annual, used: s.taken },
+                    { key: "S", entitled: s.sick, used: s.sickTaken },
+                  ] as const
+                ).map(({ key, entitled, used }) => {
+                  const remaining = Math.max(0, entitled - used);
+                  const pct = entitled > 0 ? Math.min(100, Math.round((used / entitled) * 100)) : 0;
                   return (
-                    <>
-                      <div className="text-[13.5px] text-ink-soft">
-                        <span className="font-semibold text-ink">{remaining}</span> / {s.annual}
+                    <div key={key}>
+                      <div className="text-[12.5px] text-ink-soft">
+                        <span className="mr-1 font-semibold text-ink-faint">{key}</span>
+                        <span className="font-semibold text-ink">{remaining}</span> / {entitled}
                       </div>
-                      <div className="mt-[5px] h-[5px] w-[54px] overflow-hidden rounded-full bg-line">
+                      <div className="mt-[3px] h-[4px] w-[54px] overflow-hidden rounded-full bg-line">
                         <div
-                          className={cn("h-full rounded-full", remaining <= 2 ? "bg-terracotta" : "bg-sage")}
+                          className={cn(
+                            "h-full rounded-full",
+                            entitled > 0 && remaining <= 2 ? "bg-terracotta" : "bg-sage",
+                          )}
                           style={{ width: `${pct}%` }}
                         />
                       </div>
-                    </>
+                    </div>
                   );
-                })()}
+                })}
               </div>
 
               <div className="text-[13px] text-ink-soft">{s.phone}</div>

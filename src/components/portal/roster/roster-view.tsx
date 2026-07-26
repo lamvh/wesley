@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { RosterGrid } from "@/components/portal/roster/roster-grid";
 import { DutyRosterModal } from "@/components/portal/roster/duty-roster-modal";
 import { DutyRosterPreview } from "@/components/portal/roster/duty-roster-preview";
+import { StaffForm } from "@/components/portal/staff/staff-form";
 import {
   dailyTotals,
   rosterWeekTitle,
@@ -21,6 +22,7 @@ import {
 } from "@/lib/actions/roster";
 import { groupStaffForRoster, rosterPickersFor } from "@/lib/roster-grouping";
 import { staffDisplayName } from "@/lib/staff-display";
+import { usePersistedToggle } from "@/lib/use-persisted-toggle";
 import {
   DUTY_DEFAULTS,
   buildDutySheets,
@@ -38,6 +40,10 @@ import type {
   StaffRecord,
 } from "@/types/domain";
 import { rosterCellKey } from "@/types/domain";
+
+/** Where the show-times preference is kept, so it survives the remount that
+ *  every week change triggers. */
+const SHOW_TIMES_KEY = "wesley.roster.showTimes";
 
 interface RosterViewProps {
   staff: StaffRecord[];
@@ -77,6 +83,17 @@ export function RosterView({
   const [openCell, setOpenCell] = useState<string | null>(null);
   const [published, setPublished] = useState(false);
   const [copyNote, setCopyNote] = useState<string | null>(null);
+  // Staff record whose detail form is open, or null when closed. Mounted only
+  // while set - StaffForm derives all its state at mount, so switching target
+  // means remounting (same idiom the Staff screen uses).
+  const [editStaff, setEditStaff] = useState<StaffRecord | null>(null);
+
+  // Most shift templates are named after their own hours ("6:45 - 15:15",
+  // "TL: 16:15 - 22:45"), so the chip's time line just repeats the name. Off by
+  // default for that reason; a handful do carry a real name ("Chef", "Night",
+  // "Morning + Stock") and this brings their hours back. Persisted because
+  // RosterView is keyed on the week and remounts every time it changes.
+  const [showTimes, toggleTimes] = usePersistedToggle(SHOW_TIMES_KEY, false);
   const [isPending, startTransition] = useTransition();
 
   // On-call carer per day (keyed by day ISO, value = staff id). The picker
@@ -255,6 +272,19 @@ export function RosterView({
           </div>
           <Button
             variant="outline"
+            onClick={toggleTimes}
+            aria-pressed={showTimes}
+            title={
+              showTimes
+                ? "Ẩn dòng giờ trên chip ca (đa số tên ca đã có sẵn giờ)"
+                : "Hiện dòng giờ trên chip ca"
+            }
+            className="h-auto rounded-[11px] border-line-soft bg-cream-2 px-[15px] py-[9px] text-[14px] font-semibold text-ink-nav hover:bg-cream"
+          >
+            {showTimes ? "Ẩn giờ" : "Hiện giờ"}
+          </Button>
+          <Button
+            variant="outline"
             onClick={() => copyWeek()}
             disabled={isPending}
             title="Thêm ca của tuần trước vào tuần này (không ghi đè ca đã có)"
@@ -299,6 +329,13 @@ export function RosterView({
           onToggle={toggleShift}
           onClear={clearCell}
           shiftUsage={shiftUsage}
+          showTimes={showTimes}
+          onOpenStaff={(s) => {
+            // Dismiss any open cell picker first, so it isn't left hanging
+            // behind the modal.
+            setOpenCell(null);
+            setEditStaff(s);
+          }}
           onCopyStaffWeek={(staffId) => copyWeek(staffId)}
           copyPending={isPending}
         />
@@ -323,6 +360,19 @@ export function RosterView({
         onPrint={() => window.print()}
         onClose={() => setDutyPreview(false)}
       />
+      {/* Staff detail, opened from a roster row. Same modal the Staff screen
+          uses, so there is one place editing a staffer is defined. It closes
+          itself on a successful save; saveStaff revalidates /portal/roster, so
+          a changed name, colour or role band lands back on the grid. */}
+      {editStaff && (
+        <StaffForm
+          staff={editStaff}
+          roleOptions={roles.map((r) => r.name)}
+          roleDefs={roles}
+          groups={groups}
+          onClose={() => setEditStaff(null)}
+        />
+      )}
     </div>
   );
 }

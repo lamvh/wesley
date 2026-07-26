@@ -130,36 +130,59 @@ export function LeaveTab({
         )}
       </div>
 
-      {/* Right: annual leave balances */}
+      {/* Right: leave balances - annual and sick tracked separately, since
+          approving a request only debits the bucket matching its type. */}
       <div className="rounded-2xl border border-line bg-cream-2 px-[22px] py-5">
-        <h3 className="font-serif text-[19px] font-semibold text-ink">Annual leave balance</h3>
-        <p className="mt-[3px] text-[12.5px] text-ink-faint">Days taken this year, per staff member.</p>
+        <h3 className="font-serif text-[19px] font-semibold text-ink">Leave balance</h3>
+        <p className="mt-[3px] text-[12.5px] text-ink-faint">
+          Annual and sick days taken this year, per staff member.
+        </p>
         <div className="mt-3">
-          {staff.map((s) => {
-            const remaining = Math.max(0, s.annual - s.taken);
-            const pct = s.annual > 0 ? Math.min(100, Math.round((s.taken / s.annual) * 100)) : 0;
-            return (
-              <div key={s.id} className="border-b border-line-divider py-[13px] last:border-b-0">
-                <div className="flex items-center gap-[11px]">
-                  <PersonBadge
-                    initials={s.initials}
-                    color={s.color}
-                    className="size-[34px] shrink-0 rounded-full text-[12px]"
-                  />
-                  <span className="flex-1 text-[13.5px] font-semibold leading-[1.25] text-ink">{s.name}</span>
-                  <span className="shrink-0 text-[12.5px] text-ink-soft">
-                    <span className="font-bold text-ink">{remaining}</span> of {s.annual} left
-                  </span>
-                </div>
-                <div className="mt-[9px] h-[7px] overflow-hidden rounded-full bg-line">
-                  <div
-                    className={cn("h-full rounded-full", balanceColor(remaining))}
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
+          {staff.map((s) => (
+            <div key={s.id} className="border-b border-line-divider py-[13px] last:border-b-0">
+              <div className="flex items-center gap-[11px]">
+                <PersonBadge
+                  initials={s.initials}
+                  color={s.color}
+                  className="size-[34px] shrink-0 rounded-full text-[12px]"
+                />
+                <span className="flex-1 text-[13.5px] font-semibold leading-[1.25] text-ink">{s.name}</span>
               </div>
-            );
-          })}
+              <div className="mt-[9px] flex flex-col gap-[7px]">
+                {(
+                  [
+                    { label: "Annual", entitled: s.annual, used: s.taken },
+                    { label: "Sick", entitled: s.sick, used: s.sickTaken },
+                  ] as const
+                ).map(({ label, entitled, used }) => {
+                  const remaining = Math.max(0, entitled - used);
+                  const pct = entitled > 0 ? Math.min(100, Math.round((used / entitled) * 100)) : 0;
+                  return (
+                    <div key={label}>
+                      <div className="flex items-baseline justify-between gap-2 text-[12px]">
+                        <span className="font-semibold text-ink-faint">{label}</span>
+                        <span className="text-ink-soft">
+                          {entitled > 0 ? (
+                            <>
+                              <span className="font-bold text-ink">{remaining}</span> of {entitled} left
+                            </>
+                          ) : (
+                            <span className="text-ink-faint">Chưa đặt hạn mức</span>
+                          )}
+                        </span>
+                      </div>
+                      <div className="mt-[4px] h-[7px] overflow-hidden rounded-full bg-line">
+                        <div
+                          className={cn("h-full rounded-full", balanceColor(remaining))}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

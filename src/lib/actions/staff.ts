@@ -35,19 +35,27 @@ export async function saveStaff(_prev: StaffFormState, fd: FormData): Promise<St
     // Roster band override - only meaningful when roles span >1 group; the form
     // submits "" (→ null, auto-band) otherwise.
     roster_group_id: str(fd, "rosterGroupId") || null,
+    // Leave ENTITLEMENTS are editable on the profile; a blank field means this
+    // person has no allowance rather than a default one. The matching consumed
+    // counters (taken / sick_taken) are deliberately absent - only approve_leave
+    // moves those, so re-saving a profile can never clobber a balance.
+    annual: num(fd, "annual") || 0,
+    sick: num(fd, "sick") || 0,
   };
   const supabase = await createClient();
   if (id) {
-    // Edit: never touch annual/taken here - those are only adjusted via
-    // approve_leave, so a re-save of the profile fields can't clobber balances.
     const { error } = await supabase.from("staff").update(fields).eq("id", id);
     if (error) return { error: error.message };
   } else {
     const { error } = await supabase.from("staff")
-      .insert({ ...fields, building_id: BUILDING, annual: 20, taken: 0 });
+      .insert({ ...fields, building_id: BUILDING, taken: 0, sick_taken: 0 });
     if (error) return { error: error.message };
   }
   revalidatePath("/portal/staff");
+  // The roster renders the same records - name, preferred name, initials, colour
+  // and the roles that decide which band a person sits in - and the staff form
+  // can now be opened from there, so it has to see its own edit land.
+  revalidatePath("/portal/roster");
   return {};
 }
 
@@ -57,6 +65,8 @@ export async function deleteStaff(fd: FormData): Promise<void> {
   const { error } = await supabase.from("staff").delete().eq("id", id);
   if (error) throw new Error(`Failed to remove staff member: ${error.message}`);
   revalidatePath("/portal/staff");
+  // A removed staffer must stop appearing as a roster row too.
+  revalidatePath("/portal/roster");
 }
 
 // The curated shift-template palette (main / tint-bg / border). A chosen base

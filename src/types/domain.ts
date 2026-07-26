@@ -355,6 +355,9 @@ export interface ShiftType {
   /** registry role this shift is for; "" if unrestricted. The roster cell
    *  picker only offers a shift to staff sharing this role's group. */
   role: string;
+  /** how many people this shift needs per day (shift_templates.req). Summed
+   *  per role group to give the roster's per-band daily requirement. */
+  req: number;
   /** building id the shift belongs to ("wesley" | "lodge"); splits the duty
    *  sheet into per-building columns. */
   building: string;
@@ -505,7 +508,12 @@ export interface StaffRecord {
   /** preferred display name (the name they like to be called); "" if unset.
    *  Shown in place of `name` on the roster grid, duty export and /today. */
   preferredName: string;
+  /** annual-leave entitlement in days, and how many of them are used. 0 when
+   *  no entitlement has been entered for this person. */
   annual: number; taken: number;
+  /** sick-leave entitlement in days, and how many are used. Tracked separately
+   *  from annual so sick days don't eat the annual allowance. */
+  sick: number; sickTaken: number;
   /** work-visa type (e.g. "Work Visa"); "" if unset. */
   visaType: string;
   /** ISO date (YYYY-MM-DD) the visa expires; "" for citizens/PR or unset. */

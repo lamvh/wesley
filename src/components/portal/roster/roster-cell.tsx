@@ -16,6 +16,9 @@ interface RosterCellProps {
   pickerDefs: RosterPickerGroup[];
   /** This staffer's shifts from earlier weeks, most-assigned first. */
   usage: ShiftUsage[];
+  /** Render each shift's time line. Off when the times are already part of the
+   *  shift names, which would otherwise print them twice. */
+  showTimes: boolean;
   staffName: string;
   dayLabel: string;
   isOpen: boolean;
@@ -37,11 +40,13 @@ function ShiftOption({
   d,
   on,
   count,
+  showTime,
   onClick,
 }: {
   d: ShiftType;
   on: boolean;
   count?: number;
+  showTime: boolean;
   onClick: () => void;
 }) {
   return (
@@ -57,7 +62,8 @@ function ShiftOption({
       <span style={{ background: d.color }} className="size-[10px] shrink-0 rounded-[3px]" />
       <span className="min-w-0 flex-1">
         <span className="block text-[12.5px] font-bold text-ink">
-          {d.code} <span className="font-medium text-ink-faint">· {d.time}</span>
+          {d.code}
+          {showTime && <span className="font-medium text-ink-faint"> · {d.time}</span>}
         </span>
       </span>
       {count !== undefined && (
@@ -84,6 +90,7 @@ export function RosterCell({
   defs,
   pickerDefs,
   usage,
+  showTimes,
   staffName,
   dayLabel,
   isOpen,
@@ -185,7 +192,9 @@ export function RosterCell({
             className="mb-[3px] block w-full rounded-[7px] border px-[7px] py-1 text-left text-[11.5px] font-bold leading-[1.25]"
           >
             {d.code}
-            <div className="text-[10px] font-medium opacity-85">{d.time}</div>
+            {showTimes && (
+              <div className="text-[10px] font-medium opacity-85">{d.time}</div>
+            )}
           </div>
         );
       })}
@@ -252,6 +261,7 @@ export function RosterCell({
                         d={d}
                         on={false}
                         count={count}
+                        showTime={showTimes}
                         onClick={() => onToggle(cellKey, d.id)}
                       />
                     ))}
@@ -274,6 +284,7 @@ export function RosterCell({
                             key={d.id}
                             d={d}
                             on={ids.includes(d.id)}
+                            showTime={showTimes}
                             onClick={() => onToggle(cellKey, d.id)}
                           />
                         ))}
@@ -293,6 +304,7 @@ export function RosterCell({
                         key={d.id}
                         d={d}
                         on
+                        showTime={showTimes}
                         onClick={() => onToggle(cellKey, d.id)}
                       />
                     ))}

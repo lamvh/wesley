@@ -239,6 +239,48 @@ export function StaffForm({
             )}
           </div>
 
+          {/* Leave entitlements. Only the allowances are editable here - the
+              days already used move solely through approving a leave request,
+              so they are shown as read-only context rather than as inputs. */}
+          <div className="grid grid-cols-2 gap-[14px]">
+            <label className="flex flex-col gap-[6px]">
+              <span className={labelCls}>Annual leave (days/year)</span>
+              <input
+                type="number"
+                name="annual"
+                min={0}
+                max={365}
+                step={1}
+                defaultValue={staff?.annual ?? 0}
+                placeholder="0"
+                className={fieldCls}
+              />
+              {editing && (
+                <span className="text-[11.5px] text-ink-faint">
+                  Đã dùng {staff?.taken ?? 0} ngày
+                </span>
+              )}
+            </label>
+            <label className="flex flex-col gap-[6px]">
+              <span className={labelCls}>Sick leave (days/year)</span>
+              <input
+                type="number"
+                name="sick"
+                min={0}
+                max={365}
+                step={1}
+                defaultValue={staff?.sick ?? 0}
+                placeholder="0"
+                className={fieldCls}
+              />
+              {editing && (
+                <span className="text-[11.5px] text-ink-faint">
+                  Đã dùng {staff?.sickTaken ?? 0} ngày
+                </span>
+              )}
+            </label>
+          </div>
+
           {state.error && (
             <p role="alert" className="rounded-[10px] border border-high/30 bg-high-tint px-[13px] py-[10px] text-[13px] font-medium text-high">
               {state.error}
