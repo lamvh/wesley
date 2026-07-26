@@ -37,6 +37,7 @@ export function RolesPermissions({
   selectedRole,
   onSelectRole,
   togglePerm,
+  permError,
 }: {
   users: User[];
   roles: { id: UserRole; label: string; isSystem: boolean }[];
@@ -44,6 +45,8 @@ export function RolesPermissions({
   selectedRole: UserRole;
   onSelectRole: (r: UserRole) => void;
   togglePerm: (role: UserRole, module: ModuleKey, action: PermissionAction) => void;
+  /** Save failure from the parent's matrix write, shown in the same alert slot. */
+  permError?: string | null;
 }) {
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
@@ -78,9 +81,9 @@ export function RolesPermissions({
     <div className="mt-5 grid grid-cols-[300px_1fr] items-start gap-4 max-lg:grid-cols-1">
       {/* role cards */}
       <div className="flex flex-col gap-[10px]">
-        {error && (
+        {(error ?? permError) && (
           <p role="alert" className="rounded-[10px] border border-high/30 bg-high-tint px-[13px] py-[10px] text-[13px] font-medium text-high">
-            {error}
+            {error ?? permError}
           </p>
         )}
         {roles.map(({ id: r, label, isSystem }) => {

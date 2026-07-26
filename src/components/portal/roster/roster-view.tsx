@@ -15,6 +15,7 @@ import {
 import {
   clearOnCallDay,
   clearRosterCell,
+  copyPreviousWeek,
   setOnCallDay,
   toggleRosterShift,
 } from "@/lib/actions/roster";
@@ -35,6 +36,7 @@ import type {
   ShiftType,
   StaffRecord,
 } from "@/types/domain";
+import { rosterCellKey } from "@/types/domain";
 
 interface RosterViewProps {
   staff: StaffRecord[];
@@ -69,7 +71,8 @@ export function RosterView({
   const [grid, setGrid] = useState<RosterGridState>(initialGrid);
   const [openCell, setOpenCell] = useState<string | null>(null);
   const [published, setPublished] = useState(false);
-  const [, startTransition] = useTransition();
+  const [copyNote, setCopyNote] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   // On-call carer per day (keyed by day ISO, value = staff id). The picker
   // offers nurses first, then HCAs. Auto-saves to Supabase on every change,
@@ -166,6 +169,33 @@ export function RosterView({
     });
   };
 
+  // Pull last week's assignments forward - the whole grid, or one staffer's row
+  // when `staffId` is given. The action returns only what it actually added
+  // (existing shifts are never touched), so merging its result is enough and no
+  // refetch is needed. router.refresh() wouldn't help here anyway: `grid` is
+  // seeded state and the view only remounts when the week changes.
+  const copyWeek = (staffId?: string) => {
+    setCopyNote(null);
+    startTransition(async () => {
+      const res = await copyPreviousWeek(weekStartISO, staffId);
+      if (res.added.length) {
+        setGrid((prev) => {
+          const next = { ...prev };
+          for (const a of res.added) {
+            const key = rosterCellKey(a.staffId, a.dateISO);
+            const ids = next[key] ?? [];
+            if (!ids.includes(a.shiftId)) next[key] = [...ids, a.shiftId];
+          }
+          return next;
+        });
+      }
+      setCopyNote(
+        res.message ??
+          `Đã chép ${res.added.length} ca từ tuần trước${staffId ? " cho nhân viên này" : ""}.`,
+      );
+    });
+  };
+
   const clearCell = (key: string) => {
     setGrid((prev) => {
       const next = { ...prev };
@@ -189,6 +219,11 @@ export function RosterView({
           <p className="mt-[5px] text-[15px] text-ink-muted">
             {weekTitle} · {staff.length} staff · {total} shifts assigned
           </p>
+          {copyNote && (
+            <p role="status" className="mt-[6px] text-[13px] font-medium text-ink-nav">
+              {copyNote}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-[10px]">
           <div className="flex overflow-hidden rounded-[11px] border border-line-soft">
@@ -209,6 +244,15 @@ export function RosterView({
               ›
             </button>
           </div>
+          <Button
+            variant="outline"
+            onClick={() => copyWeek()}
+            disabled={isPending}
+            title="Thêm ca của tuần trước vào tuần này (không ghi đè ca đã có)"
+            className="h-auto rounded-[11px] border-line-soft bg-cream-2 px-[15px] py-[9px] text-[14px] font-semibold text-ink-nav hover:bg-cream"
+          >
+            Copy tuần trước
+          </Button>
           <Button
             variant="outline"
             onClick={() => setDutyOpen(true)}
@@ -245,6 +289,8 @@ export function RosterView({
           onClose={() => setOpenCell(null)}
           onToggle={toggleShift}
           onClear={clearCell}
+          onCopyStaffWeek={(staffId) => copyWeek(staffId)}
+          copyPending={isPending}
         />
       )}
 

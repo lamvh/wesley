@@ -32,6 +32,10 @@ interface RosterGridProps {
   onClose: () => void;
   onToggle: (key: string, id: string) => void;
   onClear: (key: string) => void;
+  /** Pull just this staffer's shifts forward from last week. */
+  onCopyStaffWeek: (staffId: string) => void;
+  /** True while a copy is in flight, so the row buttons can't stack up. */
+  copyPending?: boolean;
 }
 
 // The weekly scheduler table: navy header, staff rows banded by role group
@@ -53,6 +57,8 @@ export function RosterGrid({
   onClose,
   onToggle,
   onClear,
+  onCopyStaffWeek,
+  copyPending = false,
 }: RosterGridProps) {
   const colSpan = days.length + 2;
   const onCallMeta = Object.fromEntries(onCallOptions.map((o) => [o.value, o]));
@@ -154,7 +160,7 @@ export function RosterGrid({
                 </td>
               </tr>
               {band.staff.map((st, si) => (
-                  <tr key={st.id} className="border-b border-line-divider">
+                  <tr key={st.id} className="group border-b border-line-divider">
                     <td className="text-center text-[12.5px] font-semibold text-ink-faint">
                       {bandOffsets[bi] + si + 1}
                     </td>
@@ -165,9 +171,22 @@ export function RosterGrid({
                           color={st.color}
                           className="size-[30px] rounded-full text-[11px]"
                         />
-                        <span className="text-[13.5px] font-semibold leading-[1.15] text-ink">
+                        <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold leading-[1.15] text-ink">
                           {staffDisplayName(st)}
                         </span>
+                        {/* Stays out of the way until the row is hovered or the
+                            button itself is focused, so the name column doesn't
+                            carry a control on all 26 rows at once. */}
+                        <button
+                          type="button"
+                          onClick={() => onCopyStaffWeek(st.id)}
+                          disabled={copyPending}
+                          title={`Chép ca tuần trước cho ${staffDisplayName(st)}`}
+                          aria-label={`Chép ca tuần trước cho ${staffDisplayName(st)}`}
+                          className="shrink-0 rounded-[7px] border border-line-soft bg-cream-2 px-[7px] py-[3px] text-[12px] font-semibold text-ink-nav opacity-0 transition-opacity hover:bg-cream focus-visible:opacity-100 disabled:cursor-not-allowed group-hover:opacity-100"
+                        >
+                          ⟲
+                        </button>
                       </div>
                     </td>
                     {days.map((d, ci) => {

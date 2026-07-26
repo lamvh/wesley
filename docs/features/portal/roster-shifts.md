@@ -38,10 +38,23 @@ Header (title + week nav + **Export duty roster** + Publish) → shift-type lege
 - **Auto-save:** every toggle updates local state optimistically **and** calls a server action (`toggleRosterShift` / `clearRosterCell` in `lib/actions/roster.ts`) that upserts/deletes the `roster_shifts` row and `revalidatePath("/portal/roster")`.
 - **On-call auto-save:** picking a name in the grid's On-call row updates local state optimistically **and** calls `setOnCallDay` / `clearOnCallDay` (`lib/actions/roster.ts`), which upsert/delete the `roster_on_call` row for that date.
 - **Week nav:** ‹ › push `?week=` ±7 days via the router; the RSC reloads that week's saved assignments (grid + on-call).
+- **Copy last week:** toolbar **"Copy tuần trước"** copies every staffer's shifts; the **⟲** button that appears on a staff row when hovered copies just that person. See "Copy last week" below.
 - **Export duty roster** → config modal → A4 print preview (`window.print()`). Publish flips the button label (no persistence yet).
 
 ## Tokens
 Shift types carry their own `color`/`tint`/`border` (**data** → inline style on chips/legend/picker swatches, sanctioned), set per-template via the swatch picker in Staff → Shift templates (`SHIFT_PALETTE`, `lib/actions/staff.ts`) — each shift template keeps its own distinct color, not derived from role. Table header `bg-navy-deep` + `text-cream`; totals `font-serif`.
+
+## Copy last week (2026-07-27)
+
+Pulls the previous week's assignments onto the week on screen — the whole grid from the toolbar button, or one person from the **⟲** button in their row (hidden until the row is hovered or the button is focused, so the name column doesn't carry 38 controls at once).
+
+**Merge, never overwrite.** Shifts the target week already has are left exactly as they are; only the missing ones are added. `copyPreviousWeek(weekStartISO, staffId?)` (`lib/actions/roster.ts`) reads the previous week's rows, shifts each `shift_date` forward seven days (same weekday), and writes them with `upsert(..., { onConflict: "staff_id,shift_date,shift_id", ignoreDuplicates: true })`. That leans on the `unique (staff_id, shift_date, shift_id)` constraint `roster_shifts` has carried since `0006_roster_shifts.sql`, so the operation is idempotent — pressing the button twice adds nothing the second time.
+
+`.select()` under `DO NOTHING` returns **only the rows actually inserted**, and that list is the action's return value (`RosterCopyResult.added`). The client merges it straight into `grid`. This matters: `grid` is `useState(initialGrid)` and `RosterView` only remounts when `weekStartISO` changes, so `router.refresh()` would re-run the RSC without the grid ever picking up the new props.
+
+Verified against the live DB by `scripts/db/verify-roster-copy-week.mts` (uses throwaway dates in 2099 and cleans up): first copy lands on the same weekday +7d, second copy adds zero rows, copying over a hand-edited week adds zero rows, and the target cell ends up holding both the copied and the hand-added shift.
+
+No schema change.
 
 ## Shift chip color history (2026-07-20)
 
@@ -52,6 +65,16 @@ A same-day round trip on how shift chip colors are sourced:
 3. **Reverted:** deriving from role turned out to be the wrong axis — shift templates were already seeded with distinct colors per shift (`scripts/db/seed-staff.mts`, sh1–sh6, six different hex triples), so role-derivation actually **collapsed** that distinction (e.g. a Carer's Morning/Afternoon/Night shifts, previously three different colors, all became the one Carer-role color). `getRosterShiftTypes()` now reads `t.color`/`t.tint`/`t.border` straight off the template again, matching what the "Shift templates" admin tab's swatch picker sets.
 
 Because the roster grid, the cell picker popover, and the duty export sheet all read the same `ShiftType[]` from `getRosterShiftTypes()`, this is consistent across all three without touching those components.
+
+### Widening the palette (2026-07-27)
+
+Keeping colour per template (step 3 above) was right, but the seeded data did not actually supply enough distinct colours: 26 templates shared only 11 colour triples, and a single mustard `#87651A` sat on **eight** of them — so the grid still read as one colour.
+
+`scripts/db/emit-shift-template-colors-sql.mts` regenerates the whole set from a palette of 14 hue families, each with a pale and a deep fill (a family only spends its deep variant once it has to cover a second shift). The families are hand-tuned rather than swept through HSL — an even HSL sweep gives wildly uneven *perceived* lightness, which is what makes chips hard to tell apart in the first place. The script **refuses to emit** if any ink/fill pair drops below WCAG AA 4.5:1, and warns if two shifts would land on the same colour. Result: 26 templates, 26 distinct colour pairs.
+
+A second strategy that assigns hue by time of day (`--strategy=timeofday`, warm morning → cool night) is implemented but **not used**: with 26 shifts it collides in 8 places (only 18 distinct pairs), because there are far more morning shifts than a band has families to spend.
+
+Data-only change — output is `supabase/seed/0005_shift_template_colors.sql`, one `update` per template id touching just the three colour columns, safe to re-run. Regenerate after adding or removing a template.
 
 ## Nurse/HCA group split (2026-07-20)
 

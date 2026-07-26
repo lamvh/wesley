@@ -245,12 +245,28 @@ form_templates(id uuid pk, name text not null,
 - Storage bucket `form-templates` (private) + RLS on `storage.objects` (authenticated read/insert/delete scoped to the bucket); admin gating in server actions.
 - RLS table: `form_templates_read` (select, authenticated) / `form_templates_write` (all, authenticated).
 - Data: `src/lib/data/forms.ts` (`getFormTemplates`, `getFormDownloadUrl` → 60s signed URL). Actions: `src/lib/actions/forms.ts` (`saveFormTemplate`, `deleteFormTemplate`, `formDownloadUrl`), admin-gated.
-- Module `forms` in the permission matrix: admin/super_admin ALL, other roles NONE. After apply, re-run `scripts/db/seed-core-schema.mts` to seed `role_permissions`.
+- Module `forms` in the permission matrix: admin/super_admin ALL, other roles NONE. After apply, re-seed `role_permissions` — see "Re-seeding the grant matrix" below.
 - Anchor for a future fillable-forms phase (`form_fields`/`form_submissions` reference `form_templates.id`). See [features/portal/forms-library.md](features/portal/forms-library.md).
+
+### Re-seeding the grant matrix (`role_permissions`)
+
+`role_permissions` is never seeded by a migration — it is generated from `getDefaultPermissions()`
+in the mock layer, so every new account role or new module leaves the live table stale until it is
+re-seeded. Two ways:
+
+- `npx tsx scripts/db/seed-core-schema.mts` — writes directly over `pg` (`DIRECT_URL`); needs a
+  current DB password in `.env.local`, and also re-seeds every other core table.
+- `npx tsx scripts/db/emit-role-permissions-seed-sql.mts` → `supabase/seed/0004_role_permissions_seed.sql`
+  — emits **only** the matrix as upserts (`on conflict … do update set granted`), paste-ready for the
+  Supabase SQL editor, no DB password, no other table touched. Prefer this when the password is stale
+  or when only the matrix changed.
+
+Current size: **7 roles × 11 modules × 4 actions = 308 rows** (roles gained `stock_manager`, modules
+gained `forms`). A count below that means the matrix has not caught up with the code.
 
 ## Future Supabase mapping (deferred - not this phase)
 
-> **Status:** the **core subset is LIVE in the DB** - `supabase/migrations/0001_core_schema.sql` (tables `roles`, `role_permissions`, `buildings`, `building_wings`, `app_users`, `staff`, `residents`, all with RLS) applied + seeded from the mocks (`scripts/db/seed-core-schema.mts`, or paste-ready `supabase/seed/0001_core_seed.sql`). Row counts: roles 6, role_permissions 240 (6×10×4), buildings 2, app_users 11, staff 10, residents 9. `app_users` already gates portal access + role (verified end-to-end); `app_users.username` is now required for login, `email` optional - see "Login: username required, email optional" above. **Stock & procurement is also LIVE** - `supabase/migrations/0002_stock_procurement.sql` (tables `providers`, `products`, `stock_levels`, `stock_movements`, `orders`, `order_lines`, all with RLS + two RPCs) applied + seeded; see "Stock, providers & ordering" above. **Staff administration schema is also defined** (`0003_staff_admin.sql`, extended `staff` columns + `shift_templates` + `leave_requests` + `approve_leave` RPC) but DB apply/seed is deferred - see "Staff administration" above. Other screens still read mock data - swapping accessors to Supabase queries is the next step. The remaining tables below are still deferred.
+> **Status:** the **core subset is LIVE in the DB** - `supabase/migrations/0001_core_schema.sql` (tables `roles`, `role_permissions`, `buildings`, `building_wings`, `app_users`, `staff`, `residents`, all with RLS) applied + seeded from the mocks (`scripts/db/seed-core-schema.mts`, or paste-ready `supabase/seed/0001_core_seed.sql`). Row counts: roles 7, role_permissions 308 (7×11×4, re-seeded 2026-07-27), buildings 2, app_users 11, staff 38, residents 9. `app_users` already gates portal access + role (verified end-to-end); `app_users.username` is now required for login, `email` optional - see "Login: username required, email optional" above. **Stock & procurement is also LIVE** - `supabase/migrations/0002_stock_procurement.sql` (tables `providers`, `products`, `stock_levels`, `stock_movements`, `orders`, `order_lines`, all with RLS + two RPCs) applied + seeded; see "Stock, providers & ordering" above. **Staff administration schema is also defined** (`0003_staff_admin.sql`, extended `staff` columns + `shift_templates` + `leave_requests` + `approve_leave` RPC) but DB apply/seed is deferred - see "Staff administration" above. Other screens still read mock data - swapping accessors to Supabase queries is the next step. The remaining tables below are still deferred.
 
 Accessors become async queries; screens unchanged (already `await` accessors where practical). The shapes below keep the mock layer DB-compatible so the swap is mechanical. RLS on every table.
 

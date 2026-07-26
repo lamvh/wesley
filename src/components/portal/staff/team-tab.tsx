@@ -8,7 +8,7 @@ import type { StaffRecord } from "@/types/domain";
 import { cn } from "@/lib/utils";
 
 const COLS = "grid-cols-[2fr_1fr_1fr_1.1fr_0.7fr_1fr_1fr_88px]";
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 10;
 
 // Fallback swatches for any contract/status value outside the known sets -
 // keeps the table rendering instead of erroring on unexpected data.

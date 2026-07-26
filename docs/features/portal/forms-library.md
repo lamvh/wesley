@@ -40,8 +40,10 @@ cơ sở. **Giai đoạn 1** (hiện tại): thư viện file — admin upload/s
 ## Migration
 
 `supabase/migrations/0024_form_templates.sql` — bucket + RLS `storage.objects` + bảng
-`form_templates` + RLS bảng. Sau apply: re-run `scripts/db/seed-core-schema.mts` để seed
-`role_permissions` cho module `forms` (giống pattern thêm module mới).
+`form_templates` + RLS bảng. **Đã apply 2026-07-26**; `role_permissions` đã re-seed cho module
+`forms` ngày **2026-07-27** (admin + super_admin = ALL, còn lại NONE). Khi thêm module mới sau này
+thì lặp lại bước re-seed — xem
+[03-data-model.md](../../03-data-model.md#re-seeding-the-grant-matrix-role_permissions).
 
 ## Spec / plan
 

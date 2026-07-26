@@ -2,11 +2,12 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { getDefaultPermissions } from "@/lib/mock-data";
 import { createUser, updateUser, deleteUser, recoverUser } from "@/lib/actions/users";
+import { setRolePermission } from "@/lib/actions/role-permissions";
 import type {
   ModuleKey,
   PermissionAction,
+  PermissionMatrix,
   User,
   UserRole,
 } from "@/types/domain";
@@ -27,11 +28,14 @@ export function UsersView({
   removedUsers,
   roles,
   buildings,
+  initialPerms,
 }: {
   initialUsers: User[];
   removedUsers: User[];
   roles: { id: UserRole; label: string; isSystem: boolean }[];
   buildings: { id: string; name: string }[];
+  /** Live grant matrix from public.role_permissions (see lib/data/role-permissions.ts). */
+  initialPerms: PermissionMatrix;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -40,7 +44,8 @@ export function UsersView({
   const [tab, setTab] = useState<Tab>("users");
   const [roleFilter, setRoleFilter] = useState<Filter>("all");
   const [selectedRole, setSelectedRole] = useState<UserRole>("admin");
-  const [perms, setPerms] = useState(getDefaultPermissions);
+  const [perms, setPerms] = useState(initialPerms);
+  const [permError, setPermError] = useState<string | null>(null);
   const [addUserOpen, setAddUserOpen] = useState(false);
   const [form, setForm] = useState<AddUserForm>(EMPTY_FORM);
   // Identity of the user being edited (null = adding). Username is required
@@ -57,12 +62,29 @@ export function UsersView({
     });
   }
 
+  // Optimistic flip, then persist. super_admin stays allow-all so one account can
+  // always repair a bad edit; the server enforces the same rule. On failure the
+  // cell is put back rather than left showing a value the DB never took.
   function togglePerm(role: UserRole, module: ModuleKey, action: PermissionAction) {
     if (role === "super_admin") return;
+    const granted = !perms[role][module][action];
+
+    setPermError(null);
     setPerms((prev) => {
       const next = structuredClone(prev);
-      next[role][module][action] = !next[role][module][action];
+      next[role][module][action] = granted;
       return next;
+    });
+
+    startTransition(async () => {
+      const res = await setRolePermission(role, module, action, granted);
+      if (!res.error) return;
+      setPermError(res.error);
+      setPerms((prev) => {
+        const next = structuredClone(prev);
+        next[role][module][action] = !granted;
+        return next;
+      });
     });
   }
 
@@ -244,6 +266,7 @@ export function UsersView({
           selectedRole={selectedRole}
           onSelectRole={setSelectedRole}
           togglePerm={togglePerm}
+          permError={permError}
         />
       )}
 

@@ -375,6 +375,22 @@ export type RosterGrid = Record<string, string[]>;
 export const rosterCellKey = (staffId: string, dateISO: string) =>
   `${staffId}::${dateISO}`;
 
+/** One assignment created by copying the previous week forward. */
+export interface RosterCopiedShift {
+  staffId: string;
+  dateISO: string;
+  shiftId: string;
+}
+
+/** Outcome of "copy last week": only the assignments that were actually added,
+ *  so the caller can merge them into the grid without a refetch. Shifts the week
+ *  already had are left untouched and never appear here. */
+export interface RosterCopyResult {
+  added: RosterCopiedShift[];
+  /** Set when nothing was written because of an error or an empty source week. */
+  message?: string;
+}
+
 // ---- duty roster export (print document) ----
 /** Config for the "Export duty roster" flow (modal → print preview). */
 export interface DutyForm {
