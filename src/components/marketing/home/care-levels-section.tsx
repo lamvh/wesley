@@ -40,7 +40,7 @@ export function CareLevelsSection({
               </div>
               <div className="flex flex-1 flex-col p-5 pb-[22px]">
                 <div className="text-[11.5px] font-bold uppercase tracking-[1.4px] text-bronze">
-                  {room.wing}
+                  {room.eyebrow}
                 </div>
                 <h3 className="mt-[6px] font-serif text-[23px] font-semibold">
                   {room.name}

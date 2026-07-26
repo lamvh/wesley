@@ -44,17 +44,12 @@ for (const role of ROLE_KEYS) {
   }
 }
 
-// buildings + wings
-out.push("\n-- buildings + wings");
+// buildings
+out.push("\n-- buildings");
 for (const bl of getBuildings()) {
   out.push(
     `insert into public.buildings (id, name, full_name, suburb, manager_name, color, tint) values (${s(bl.id)},${s(bl.name)},${s(bl.full)},${s(bl.suburb)},${s(bl.mgr)},${s(bl.color)},${s(bl.tint)}) on conflict (id) do update set name=excluded.name, full_name=excluded.full_name, suburb=excluded.suburb, manager_name=excluded.manager_name, color=excluded.color, tint=excluded.tint;`,
   );
-  for (const w of bl.wings) {
-    out.push(
-      `insert into public.building_wings (building_id, name) values (${s(bl.id)},${s(w)}) on conflict (building_id, name) do nothing;`,
-    );
-  }
 }
 
 // app_users
@@ -79,7 +74,7 @@ for (const shift of getShifts())
   for (const st of shift.staff) if (!seen.has(st.name)) (seen.add(st.name), staff.push(st));
 for (const st of staff) {
   out.push(
-    `insert into public.staff (building_id, name, role, wing, initials, color) select ${s(B)},${s(st.name)},${s(st.role)},${s(st.wing)},${s(st.initials)},${s(st.color)} where not exists (select 1 from public.staff where name=${s(st.name)} and building_id=${s(B)});`,
+    `insert into public.staff (building_id, name, role, initials, color) select ${s(B)},${s(st.name)},${s(st.role)},${s(st.initials)},${s(st.color)} where not exists (select 1 from public.staff where name=${s(st.name)} and building_id=${s(B)});`,
   );
 }
 

@@ -4,7 +4,17 @@ import { slugify } from "@/lib/utils";
 // Raw resident facts transcribed from the design source. Only the per-person
 // avatar `color` is stored as data. `flags` drive the care-flags pills on the
 // resident detail screen.
-type ResidentSeed = Omit<Resident, "slug">;
+// The detail fields the home records (DOB, admission, NHI, gender, group,
+// phone) are real per-person data, not design-source material - the mock leaves
+// them blank rather than inventing plausible-looking clinical identifiers.
+type ResidentSeed = Omit<
+  Resident,
+  "slug" | "dob" | "admittedOn" | "nhi" | "gender" | "group" | "phone"
+>;
+
+const BLANK_DETAILS = {
+  dob: "", admittedOn: "", nhi: "", gender: "", group: "", phone: "",
+} as const;
 
 const seed: ResidentSeed[] = [
   {
@@ -126,7 +136,11 @@ const seed: ResidentSeed[] = [
   },
 ];
 
-const residents: Resident[] = seed.map((r) => ({ ...r, slug: slugify(r.name) }));
+const residents: Resident[] = seed.map((r) => ({
+  ...r,
+  ...BLANK_DETAILS,
+  slug: slugify(r.name),
+}));
 
 export function getResidents(): Resident[] {
   return residents;

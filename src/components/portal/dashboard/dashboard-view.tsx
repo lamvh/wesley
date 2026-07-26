@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { PortalRole } from "@/types/domain";
+import type { Birthday, PortalRole } from "@/types/domain";
 import { usePortalRole } from "@/lib/role-context";
 import { getDashboard } from "@/lib/mock-data";
 import { KpiCard } from "@/components/shared/kpi-card";
@@ -10,21 +10,20 @@ import { Button } from "@/components/ui/button";
 import { BirthdayStrip } from "./birthday-strip";
 import { NeedsAttention } from "./needs-attention";
 import { TodayProgramme } from "./today-programme";
-import { OccupancyByWing } from "./occupancy-by-wing";
 import { RecentFamilyMessages } from "./recent-family-messages";
 import { DashboardSkeleton } from "./dashboard-skeleton";
 
 // Portal landing screen. Same skeleton for both roles; greeting, sub, the 4
-// KPIs and the alert set swap with the active role. Schedule, occupancy, family
+// KPIs and the alert set swap with the active role. Schedule, family
 // messages and birthdays are shared. Header buttons are inert this phase.
-export function DashboardView() {
+export function DashboardView({ birthdays }: { birthdays: Birthday[] }) {
   const { role } = usePortalRole();
   // Remount the body on role change (key) so the loading→render cycle re-runs
   // cleanly without a setState inside the effect.
-  return <DashboardBody key={role} role={role} />;
+  return <DashboardBody key={role} role={role} birthdays={birthdays} />;
 }
 
-function DashboardBody({ role }: { role: PortalRole }) {
+function DashboardBody({ role, birthdays }: { role: PortalRole; birthdays: Birthday[] }) {
   const [loading, setLoading] = useState(true);
 
   // Explicit loading → render transition. Today getDashboard() is synchronous
@@ -69,15 +68,14 @@ function DashboardBody({ role }: { role: PortalRole }) {
         ))}
       </div>
 
-      <BirthdayStrip birthdays={data.birthdays} />
+      <BirthdayStrip birthdays={birthdays} />
 
       <div className="mt-4 grid gap-4 md:grid-cols-[1.5fr_1fr]">
         <NeedsAttention alerts={data.alerts} />
         <TodayProgramme schedule={data.todaySchedule} />
       </div>
 
-      <div className="mt-4 grid gap-4 md:grid-cols-[1fr_1.5fr]">
-        <OccupancyByWing wings={data.wings} />
+      <div className="mt-4">
         <RecentFamilyMessages posts={data.familyPosts} />
       </div>
     </div>

@@ -196,7 +196,7 @@ export const CMS_SECTIONS: CmsSection[] = [
         ],
       },
       {
-        path: "careWings",
+        path: "roomStyleCards",
         title: "Room styles",
         fields: [
           { key: "name", label: "Name" },

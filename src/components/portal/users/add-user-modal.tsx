@@ -156,7 +156,7 @@ export function AddUserModal({
             <input
               value={form.scope}
               onChange={(e) => onChange({ scope: e.target.value })}
-              placeholder="e.g. Rātā wing, or a resident for family"
+              placeholder="e.g. a resident, for family access"
               className={FIELD}
             />
           </div>

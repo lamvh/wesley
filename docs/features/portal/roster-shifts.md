@@ -42,10 +42,27 @@ Header (title + week nav + **Export duty roster** + Publish) → shift-type lege
 - **Staff detail:** clicking a row's avatar + name opens that staffer's editable detail form (the shared `StaffForm`). See "Staff detail from the roster" below.
 - **Show / hide times:** toolbar **"Hiện giờ / Ẩn giờ"** toggles the time line on chips and in the picker. Off by default, and persisted — see "Shift times are opt-in" below.
 - **Per-band coverage:** each band closes with a **"Ca đã xếp / cần"** row — see "Per-band daily coverage" below.
+- **Approved leave** shows in the day cell as a dashed marker — see "Approved leave on the grid" below.
 - **Export duty roster** → config modal → A4 print preview (`window.print()`). Publish flips the button label (no persistence yet).
 
 ## Tokens
 Shift types carry their own `color`/`tint`/`border` (**data** → inline style on chips/legend/picker swatches, sanctioned), set per-template via the swatch picker in Staff → Shift templates (`SHIFT_PALETTE`, `lib/actions/staff.ts`) — each shift template keeps its own distinct color, not derived from role. Table header `bg-navy-deep` + `text-cream`; totals `font-serif`.
+
+## Approved leave on the grid (2026-07-27)
+
+A day cell shows a dashed **leave marker** (the request's type) when an approved leave request covers that staffer on that date, so the scheduler can see who is away while assigning.
+
+**Only approved requests appear.** A pending one hasn't been agreed yet and must not read as settled leave.
+
+**The marker sits above any shifts rather than replacing them.** A shift assigned on an approved day off is a real clash the scheduler needs to see, so it is called out rather than hidden: the marker turns from amber to rust and gains a ⚠ when the cell also holds shifts, with the count in its tooltip.
+
+`getApprovedLeaveByDay(weekStartISO, weekEndISO)` (`lib/data/roster.ts`) returns `"{staffId}::{dateISO}" → leave type`. Requests are clamped to the visible week and walked a day at a time, so a request that starts before or ends after the week marks only the days inside it. An **open-ended** request (`to_date` null) runs from its start to the end of the week, matching how `getStaff()` decides who is on leave today. A read failure returns `{}` — the marks are decoration and must never fail the page.
+
+`approveLeave`, `declineLeave` and `deleteLeave` (`lib/actions/staff.ts`) all revalidate `/portal/roster` as well as `/portal/staff`, since each of them changes what the grid should show. `saveLeave` does not: it creates a **Pending** request, which the roster deliberately ignores.
+
+Verified by `scripts/db/verify-roster-approved-leave.mts` (throwaway staff row on 2099 dates, cleaned up): pending is invisible, a multi-day request expands inclusively, over-long requests clamp to the week, open-ended runs to the week's end, and leave in another week doesn't leak in.
+
+No schema change — `leave_requests` already carried everything needed.
 
 ## Per-band daily coverage (2026-07-27)
 

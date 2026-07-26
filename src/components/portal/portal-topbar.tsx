@@ -33,8 +33,7 @@ export function PortalTopbar() {
         <div className="text-[13.5px] font-semibold text-ink-soft">
           Saturday, 11 July
         </div>
-        <div className="text-[12px] text-ink-faint">Kōwhai · Rātā · Tōtara</div>
-      </div>
+              </div>
       <Link
         href="/"
         className="rounded-[10px] border border-line-strong px-[14px] py-[9px] text-[13.5px] font-semibold text-navy max-[860px]:hidden"

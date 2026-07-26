@@ -125,3 +125,19 @@ Master plan luồng C, items 1/2/5 - all three decided "do it" (not just reporte
 - **C5 - Tier filter pills label "Normal" → "Standard"** (`tier-filter-pills.tsx`), display-only. The underlying `CareTier` type (`types/domain.ts`) still has the value `"Normal"` - only the pill's rendered text changed, not the domain model.
 
 `tsc --noEmit`, eslint, and `next build` all clean after these changes.
+
+## Room register + resident detail fields (2026-07-27)
+
+Rooms used to be mock-only (`lib/mock-data/rooms.ts`), so the resident form validated a room against invented numbers. Migration `0027_rooms_and_resident_details.sql` creates a real `rooms` table seeded with the **52 rooms Wesley actually has** and adds the admission details the home records.
+
+**Rooms.** PK `(building_id, num)`, RLS matching the other operational tables. A `sort_order` column carries the intended sequence — "3A" after "3", the 125–134 block last — because a text sort gives 1, 10, 11, 125, 12, … `getRoomRecords()` / `getRoomNumbers()` (`lib/data/rooms.ts`) read it; `saveResident` validates against `getRoomNumbers()` so a resident can only sit in a room the building has.
+
+`wing` and `care_type` are deliberately **NULL**: the room numbers were supplied, the wing / care-type mapping was not, and inventing it would put wrong clinical categories in front of staff. The columns and the UI are ready for them. Until that data arrives, **`/portal/rooms` still renders the mock** — only the numbers are real.
+
+**Resident fields.** `dob`, `admitted_on`, `nhi`, `gender`, `resident_group`, `phone`. **"Location in facility" is the existing `room` column**, now backed by the real register rather than a separate field.
+
+`nhi` is the NZ National Health Index number. It is validated as `^[A-Z]{3}[0-9]{3}[0-9A-Z]$` (older numbers end in a digit, post-2022 ones in a letter), stored uppercase, and carries a **case-insensitive unique index** per building (`upper(nhi)`, partial so any number of residents may have none) — so the same person can't be admitted twice under different capitalisation. Both the insert and the update path map `23505` on that index to a specific message rather than the generic duplicate-name one.
+
+The mock resident seed leaves all six blank rather than inventing plausible-looking NHI numbers and birth dates.
+
+Verified by `scripts/db/verify-rooms-and-resident-details.mts`: all 52 rooms present with no duplicates or strays, returned in the intended order, the six columns exist, and the NHI index actually rejects a lower-case duplicate while still allowing many residents with none.

@@ -53,16 +53,16 @@ values ('wesley','p1','out',4,4,'box of 100','[{"room":"07","person":"Henry Fitz
 
 // ---------- Staff (0003) ----------
 const team = [
-  { name: "Aroha Ngata",  role: "Registered Nurse", wing: "Rātā",      contract: "Full-time", hours: 40, phone: "021 555 012", start: "Mar 2021", status: "Active",   annual: 20, taken: 6,  initials: "AN", color: "#6E875E" },
-  { name: "David Cho",    role: "Registered Nurse", wing: "Kōwhai",    contract: "Full-time", hours: 40, phone: "021 555 034", start: "Aug 2020", status: "Active",   annual: 20, taken: 4,  initials: "DC", color: "#8a6ba3" },
-  { name: "Mere Solomon", role: "Team Leader",      wing: "Rātā",      contract: "Full-time", hours: 38, phone: "021 555 056", start: "Jan 2019", status: "Active",   annual: 20, taken: 12, initials: "MS", color: "#b06a5a" },
-  { name: "Tomasi Fifita",role: "Carer",            wing: "Kōwhai",    contract: "Full-time", hours: 40, phone: "021 555 078", start: "Feb 2022", status: "Active",   annual: 20, taken: 8,  initials: "TF", color: "#5b8f9a" },
-  { name: "Hong Le",      role: "Carer",            wing: "Tōtara",    contract: "Part-time", hours: 24, phone: "021 555 090", start: "Jun 2022", status: "Active",   annual: 16, taken: 5,  initials: "HL", color: "#BE7350" },
-  { name: "Candy Tian",   role: "Carer",            wing: "Rātā",      contract: "Part-time", hours: 20, phone: "021 555 102", start: "Sep 2023", status: "On leave", annual: 16, taken: 14, initials: "CT", color: "#c08a3e" },
-  { name: "Priya Nair",   role: "Carer",            wing: "Kōwhai",    contract: "Casual",    hours: 12, phone: "021 555 124", start: "Nov 2023", status: "Active",   annual: 8,  taken: 2,  initials: "PN", color: "#7e9b6a" },
-  { name: "Grace Lin",    role: "Activities",       wing: "All wings", contract: "Part-time", hours: 24, phone: "021 555 146", start: "Apr 2021", status: "Active",   annual: 16, taken: 7,  initials: "GL", color: "#9a7b4f" },
-  { name: "Vo Hoang Lam", role: "Carer",            wing: "Tōtara",    contract: "Full-time", hours: 40, phone: "021 555 168", start: "Jul 2022", status: "Active",   annual: 20, taken: 9,  initials: "VL", color: "#6e879e" },
-  { name: "LE Anh Thang", role: "Carer",            wing: "Tōtara",    contract: "Casual",    hours: 10, phone: "021 555 180", start: "Feb 2024", status: "Active",   annual: 8,  taken: 1,  initials: "AT", color: "#3d6b74" },
+  { name: "Aroha Ngata",  role: "Registered Nurse",      contract: "Full-time", hours: 40, phone: "021 555 012", start: "Mar 2021", status: "Active",   annual: 20, taken: 6,  initials: "AN", color: "#6E875E" },
+  { name: "David Cho",    role: "Registered Nurse",    contract: "Full-time", hours: 40, phone: "021 555 034", start: "Aug 2020", status: "Active",   annual: 20, taken: 4,  initials: "DC", color: "#8a6ba3" },
+  { name: "Mere Solomon", role: "Team Leader",      contract: "Full-time", hours: 38, phone: "021 555 056", start: "Jan 2019", status: "Active",   annual: 20, taken: 12, initials: "MS", color: "#b06a5a" },
+  { name: "Tomasi Fifita",role: "Carer",    contract: "Full-time", hours: 40, phone: "021 555 078", start: "Feb 2022", status: "Active",   annual: 20, taken: 8,  initials: "TF", color: "#5b8f9a" },
+  { name: "Hong Le",      role: "Carer",    contract: "Part-time", hours: 24, phone: "021 555 090", start: "Jun 2022", status: "Active",   annual: 16, taken: 5,  initials: "HL", color: "#BE7350" },
+  { name: "Candy Tian",   role: "Carer",      contract: "Part-time", hours: 20, phone: "021 555 102", start: "Sep 2023", status: "On leave", annual: 16, taken: 14, initials: "CT", color: "#c08a3e" },
+  { name: "Priya Nair",   role: "Carer",    contract: "Casual",    hours: 12, phone: "021 555 124", start: "Nov 2023", status: "Active",   annual: 8,  taken: 2,  initials: "PN", color: "#7e9b6a" },
+  { name: "Grace Lin",    role: "Activities", contract: "Part-time", hours: 24, phone: "021 555 146", start: "Apr 2021", status: "Active",   annual: 16, taken: 7,  initials: "GL", color: "#9a7b4f" },
+  { name: "Vo Hoang Lam", role: "Carer",    contract: "Full-time", hours: 40, phone: "021 555 168", start: "Jul 2022", status: "Active",   annual: 20, taken: 9,  initials: "VL", color: "#6e879e" },
+  { name: "LE Anh Thang", role: "Carer",    contract: "Casual",    hours: 10, phone: "021 555 180", start: "Feb 2024", status: "Active",   annual: 8,  taken: 1,  initials: "AT", color: "#3d6b74" },
 ];
 const shifts = [
   ["sh1","Morning","6:45 – 15:15",4,4,"#87651A","#FCF4DC","#EAD9A4"],
@@ -82,8 +82,8 @@ const leaves = [
 // Upsert = insert-if-missing (by name) + update, so all 10 design staff exist with full data.
 const staffUpsert = team
   .map((s) => {
-    const ins = `insert into public.staff (building_id, name, role, wing, initials, color, status, contract, hours, phone, start_label, annual, taken)\n  select ${q(B)},${q(s.name)},${q(s.role)},${q(s.wing)},${q(s.initials)},${q(s.color)},${q(s.status)},${q(s.contract)},${n(s.hours)},${q(s.phone)},${q(s.start)},${n(s.annual)},${n(s.taken)}\n  where not exists (select 1 from public.staff where name=${q(s.name)} and building_id=${q(B)});`;
-    const upd = `update public.staff set role=${q(s.role)}, wing=${q(s.wing)}, contract=${q(s.contract)}, hours=${n(s.hours)}, phone=${q(s.phone)}, start_label=${q(s.start)}, status=${q(s.status)}, annual=${n(s.annual)}, taken=${n(s.taken)}, initials=${q(s.initials)}, color=${q(s.color)} where name=${q(s.name)} and building_id=${q(B)};`;
+    const ins = `insert into public.staff (building_id, name, role, initials, color, status, contract, hours, phone, start_label, annual, taken)\n  select ${q(B)},${q(s.name)},${q(s.role)},${q(s.initials)},${q(s.color)},${q(s.status)},${q(s.contract)},${n(s.hours)},${q(s.phone)},${q(s.start)},${n(s.annual)},${n(s.taken)}\n  where not exists (select 1 from public.staff where name=${q(s.name)} and building_id=${q(B)});`;
+    const upd = `update public.staff set role=${q(s.role)}, contract=${q(s.contract)}, hours=${n(s.hours)}, phone=${q(s.phone)}, start_label=${q(s.start)}, status=${q(s.status)}, annual=${n(s.annual)}, taken=${n(s.taken)}, initials=${q(s.initials)}, color=${q(s.color)} where name=${q(s.name)} and building_id=${q(B)};`;
     return `${ins}\n${upd}`;
   })
   .join("\n");

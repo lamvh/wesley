@@ -36,7 +36,7 @@ const visits: Visit[] = [
   { mon: "Sun", day: "12", who: "The Whitcombe family", detail: "Visiting Peggy · 2:00pm" },
   { mon: "Mon", day: "13", who: "Katherine R.", detail: "Visiting Joan · 10:30am" },
   { mon: "Wed", day: "15", who: "Aleki whānau", detail: "Taking George out · 11:00am" },
-  { mon: "Thu", day: "16", who: "Dr Anaru", detail: "GP round · Rātā wing" },
+  { mon: "Thu", day: "16", who: "Dr Anaru", detail: "GP round" },
 ];
 
 const messages: Message[] = [

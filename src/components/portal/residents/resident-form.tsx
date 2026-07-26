@@ -3,10 +3,10 @@
 import { useActionState } from "react";
 import Link from "next/link";
 import { saveResident, deleteResident } from "@/lib/actions/residents";
-import { getRooms } from "@/lib/mock-data/rooms";
 import type { Resident } from "@/types/domain";
 
-const ROOMS = getRooms();
+/** Recorded for reporting; deliberately includes a non-disclosure option. */
+const GENDERS = ["Female", "Male", "Another gender", "Prefer not to say"];
 
 const fieldCls =
   "rounded-[11px] border border-input bg-cream-2 px-[14px] py-[10px] text-[15px] text-ink outline-none focus:border-navy";
@@ -48,7 +48,14 @@ function Field({
   );
 }
 
-export function ResidentForm({ resident }: { resident?: Resident }) {
+export function ResidentForm({
+  resident,
+  rooms,
+}: {
+  resident?: Resident;
+  /** Room numbers from the real register (Supabase `rooms`). */
+  rooms: string[];
+}) {
   const [state, action, pending] = useActionState(saveResident, {});
   const editing = Boolean(resident);
 
@@ -62,15 +69,33 @@ export function ResidentForm({ resident }: { resident?: Resident }) {
           <Field label="Preferred name" name="pref" defaultValue={resident?.pref} placeholder="e.g. Peggy" />
 
           <label className="flex flex-col gap-[6px]">
-            <span className={labelCls}>Room <span className="text-high">*</span></span>
+            <span className={labelCls}>Location in facility <span className="text-high">*</span></span>
             <select name="room" defaultValue={resident?.room ?? ""} required className={fieldCls}>
               <option value="" disabled>Choose a room…</option>
-              {ROOMS.map((r) => (
-                <option key={r.num} value={r.num}>Room {r.num} — {r.wing}</option>
+              {rooms.map((num) => (
+                <option key={num} value={num}>Room {num}</option>
               ))}
             </select>
           </label>
+          <Field label="NHI number" name="nhi" defaultValue={resident?.nhi} placeholder="e.g. ABC1234" />
+
+          <Field label="Date of birth" name="dob" type="date" defaultValue={resident?.dob} />
+          <Field label="Date of admission" name="admittedOn" type="date" defaultValue={resident?.admittedOn} />
+
+          <label className="flex flex-col gap-[6px]">
+            <span className={labelCls}>Gender</span>
+            <select name="gender" defaultValue={resident?.gender ?? ""} className={fieldCls}>
+              <option value="">Not recorded</option>
+              {GENDERS.map((g) => (
+                <option key={g} value={g}>{g}</option>
+              ))}
+            </select>
+          </label>
+          <Field label="Group" name="group" defaultValue={resident?.group} placeholder="e.g. Rest Home" />
+
+          <Field label="Phone" name="phone" defaultValue={resident?.phone} placeholder="e.g. 09 123 4567" />
           <Field label="Age" name="age" type="number" inputMode="numeric" defaultValue={resident?.age || undefined} placeholder="e.g. 84" />
+
           <Field label="Diet" name="diet" defaultValue={resident?.diet} placeholder="e.g. Soft, no nuts" />
           <Field label="Mobility" name="mobility" defaultValue={resident?.mobility} placeholder="e.g. Walking frame" />
           <Field label="GP" name="gp" defaultValue={resident?.gp} placeholder="e.g. Dr Anaru" />

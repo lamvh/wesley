@@ -62,3 +62,16 @@ Read from `getSiteContent()` instead of static copy:
 
 ## Security
 - Write actions admin-only (RLS + server-side role check). Public read is fine (marketing copy is public).
+
+---
+
+## Đóng A6 — admin-only write (2026-07-27)
+
+Phase này đặt yêu cầu ngay từ đầu: *"RLS: `insert/update` for admin role only"* và *"RLS blocks non-admin writes"*. **Bản ship đã lệch khỏi spec đó:** migration `0013_site_content.sql` tạo policy `site_content_write` là `for all to authenticated using (true) with check (true)`, kèm comment "admin gating enforced in the app layer" — nhưng `lib/actions/site-content.ts` **không hề kiểm quyền**. Kết quả: mọi tài khoản đã đăng nhập (carer, family…) đều ghi được nội dung website công khai. Mục nav `adminOnly` chỉ **che**, không **chặn** — gọi trực tiếp server action là qua.
+
+Đã siết ở cả 2 tầng (2026-07-27):
+
+- **App:** `saveSiteContent` / `resetSiteContent` gọi `requireAdmin()` trước tiên và chuyển sang `createAdminClient()` — cùng khuôn với `renameUserRole`, `setRolePermission`, `saveFormTemplate`.
+- **DB:** migration `0026_site_content_admin_write.sql` **xoá** policy write. RLS vẫn bật nên không còn policy nào khớp ⇒ mọi insert/update/delete từ anon lẫn authenticated bị từ chối; chỉ service-role đi được. Public read giữ nguyên (site marketing là công khai).
+
+Verify: `scripts/db/verify-site-content-admin-write.mts`. Lưu ý mục quan trọng nhất — **tài khoản non-admin đã đăng nhập không ghi được** — chỉ chứng minh được khi (a) đã apply `0026` và (b) chạy script kèm 1 login non-admin: `npx tsx scripts/db/verify-site-content-admin-write.mts <username> <password>`. Không có tham số thì mục đó báo BỎ QUA chứ không báo pass.

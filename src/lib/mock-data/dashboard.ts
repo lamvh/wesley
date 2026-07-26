@@ -2,26 +2,18 @@ import type {
   Alert,
   Dashboard,
   Kpi,
-  OccupancyWing,
   PortalRole,
   ScheduleItem,
 } from "@/types/domain";
-import { getBirthdays } from "./activities";
 
 // ---- shared across roles ----
 const todaySchedule: ScheduleItem[] = [
   { time: "9:30", title: "Garden group", where: "Courtyard · with Pip" },
   { time: "10:30", title: "Morning tea & scones", where: "Main lounge" },
-  { time: "11:00", title: "Gentle exercise", where: "Rātā lounge · with physio" },
+  { time: "11:00", title: "Gentle exercise", where: "Lounge · with physio" },
   { time: "2:00", title: "Choir & singalong", where: "Chapel · with Grace" },
-  { time: "2:30", title: "Birthday afternoon tea", where: "Kōwhai lounge · Mei’s 90th" },
-  { time: "3:30", title: "Afternoon quiz", where: "Kōwhai lounge" },
-];
-
-const wings: OccupancyWing[] = [
-  { name: "Rātā · Normal", filled: 22, total: 24, tone: "sage" },
-  { name: "Kōwhai · Premium", filled: 17, total: 18, tone: "navy" },
-  { name: "Tōtara · VIP", filled: 12, total: 12, tone: "gold" },
+  { time: "2:30", title: "Birthday afternoon tea", where: "Lounge · Mei’s 90th" },
+  { time: "3:30", title: "Afternoon quiz", where: "Lounge" },
 ];
 
 const familyPosts: Dashboard["familyPosts"] = [
@@ -40,23 +32,23 @@ const adminKpis: Kpi[] = [
 
 const adminAlerts: Alert[] = [
   { title: "Nitrile gloves (M) below par", detail: "Clinical · 4 boxes left of 20 par level", tag: "Reorder", tone: "warn" },
-  { title: "Open shift - Sunday night", detail: "Kōwhai wing needs 1 carer, 11:00pm–7:00am", tag: "Roster gap", tone: "warn" },
+  { title: "Open shift - Sunday night", detail: "1 carer needed, 11:00pm–7:00am", tag: "Roster gap", tone: "warn" },
   { title: "Fall reported - Harry Fitzgerald", detail: "INC-0432 · logged 8:20am, under review", tag: "Incident", tone: "amber" },
-  { title: "Peggy Whitcombe - GP review due", detail: "Rātā 12 · medication review with Dr Anaru", tag: "Clinical", tone: "accent" },
+  { title: "Peggy Whitcombe - GP review due", detail: "Room 12 · medication review with Dr Anaru", tag: "Clinical", tone: "accent" },
 ];
 
 // ---- staff-specific ----
 const staffKpis: Kpi[] = [
-  { label: "My residents", value: "14", delta: "Rātā", deltaTone: "accent", sub: "Rooms 05–18" },
+  { label: "My residents", value: "14", sub: "Across the home" },
   { label: "Tasks due", value: "6", delta: "2 now", deltaTone: "warn", sub: "Meds, obs, care notes" },
   { label: "Shift ends", value: "3:00", delta: "4h left", deltaTone: "accent", sub: "Afternoon handover" },
   { label: "Activities", value: "3", delta: "Today", deltaTone: "accent", sub: "Garden, choir, quiz" },
 ];
 
 const staffAlerts: Alert[] = [
-  { title: "Peggy Whitcombe - 9am medication", detail: "Rātā 12 · due now, with breakfast", tag: "Now", tone: "warn" },
-  { title: "Harry Fitzgerald - post-fall obs", detail: "Rātā 07 · hourly observations, next at 10am", tag: "Obs", tone: "amber" },
-  { title: "Joan Ferris - care note pending", detail: "Rātā 15 · morning wellbeing note not logged", tag: "Note", tone: "accent" },
+  { title: "Peggy Whitcombe - 9am medication", detail: "Room 12 · due now, with breakfast", tag: "Now", tone: "warn" },
+  { title: "Harry Fitzgerald - post-fall obs", detail: "Room 07 · hourly observations, next at 10am", tag: "Obs", tone: "amber" },
+  { title: "Joan Ferris - care note pending", detail: "Room 15 · morning wellbeing note not logged", tag: "Note", tone: "accent" },
 ];
 
 export function getDashboard(role: PortalRole): Dashboard {
@@ -64,13 +56,11 @@ export function getDashboard(role: PortalRole): Dashboard {
   return {
     greeting: isAdmin ? "Good morning, Sarah" : "Kia ora, Aroha",
     sub: isAdmin
-      ? "Here’s how the home is running today across all three wings."
-      : "You’re on the Rātā (Normal) morning shift - here’s what needs you.",
+      ? "Here’s how the home is running today."
+      : "Here’s what needs you on shift today.",
     kpis: isAdmin ? adminKpis : staffKpis,
     alerts: isAdmin ? adminAlerts : staffAlerts,
     todaySchedule,
-    wings,
     familyPosts,
-    birthdays: getBirthdays(),
   };
 }

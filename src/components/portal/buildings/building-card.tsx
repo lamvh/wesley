@@ -73,12 +73,8 @@ export function BuildingCard({ building: b, active, onSelect }: BuildingCardProp
         </div>
       </div>
 
-      {/* Wings + site manager + action */}
+      {/* Site manager + action */}
       <div className="px-[22px] pb-[18px]">
-        <div className="mb-[7px] text-[11px] font-bold uppercase tracking-[0.4px] text-ink-faint">
-          Wings
-        </div>
-        <div className="mb-[14px] text-[13.5px] text-ink-soft">{b.wings.join(", ")}</div>
         <div className="flex items-center justify-between gap-3">
           <div className="text-[13px] text-ink-muted">
             Site manager · <b className="text-ink">{b.mgr}</b>

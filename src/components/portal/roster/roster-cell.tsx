@@ -19,6 +19,9 @@ interface RosterCellProps {
   /** Render each shift's time line. Off when the times are already part of the
    *  shift names, which would otherwise print them twice. */
   showTimes: boolean;
+  /** Type of an APPROVED leave request covering this day, if any. Undefined
+   *  means the staffer is available. */
+  leaveType?: string;
   staffName: string;
   dayLabel: string;
   isOpen: boolean;
@@ -91,6 +94,7 @@ export function RosterCell({
   pickerDefs,
   usage,
   showTimes,
+  leaveType,
   staffName,
   dayLabel,
   isOpen,
@@ -199,7 +203,29 @@ export function RosterCell({
         );
       })}
 
-      {ids.length === 0 && (
+      {/* Approved leave. Sits above any shifts rather than replacing them: a
+          shift assigned on a day off is a real clash the scheduler needs to see,
+          so it is called out instead of hidden. */}
+      {leaveType && (
+        <div
+          title={
+            ids.length
+              ? `${leaveType} đã duyệt — nhưng vẫn còn ${ids.length} ca được xếp cho ngày này`
+              : `${leaveType} đã duyệt`
+          }
+          className={cn(
+            "mb-[3px] flex w-full items-center gap-[5px] rounded-[7px] border border-dashed px-[6px] py-[3px] text-[10.5px] font-bold uppercase tracking-[0.3px]",
+            ids.length
+              ? "border-rust bg-rust-tint text-rust"
+              : "border-amber bg-amber-tint text-amber",
+          )}
+        >
+          <span className="truncate">{leaveType}</span>
+          {ids.length > 0 && <span className="ml-auto shrink-0">⚠</span>}
+        </div>
+      )}
+
+      {ids.length === 0 && !leaveType && (
         <div className="text-center text-[16px] font-normal leading-[44px] text-line-strong">
           +
         </div>

@@ -9,7 +9,6 @@ import type {
   Severity,
   UserRole,
   UserStatus,
-  Wing,
 } from "@/types/domain";
 
 export interface Swatch {
@@ -55,17 +54,6 @@ export const activityCatMeta: Record<ActivityCategory, Swatch> = {
   care: swatch("text-navy", "bg-navy-tint", "bg-navy"),
   faith: swatch("text-gold-text", "bg-gold-tint", "bg-gold-text"),
 };
-
-/** Wing -> care tier (Rātā=Normal, Kōwhai=Premium, Tōtara=VIP). */
-export const wingTier: Record<Wing, CareTier> = {
-  Rātā: "Normal",
-  Kōwhai: "Premium",
-  Tōtara: "VIP",
-};
-
-export function careTier(wing: Wing): CareTier {
-  return wingTier[wing];
-}
 
 export type StockLevel = "In stock" | "Low" | "Reorder";
 

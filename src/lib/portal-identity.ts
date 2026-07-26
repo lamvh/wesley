@@ -20,7 +20,7 @@ export function portalIdentity(role: PortalRole): PortalIdentity {
       }
     : {
         name: "Aroha Ngata",
-        roleLabel: "Registered Nurse · Rātā",
+        roleLabel: "Registered Nurse",
         initials: "AN",
         color: "#6E875E",
         console: "Care Station",

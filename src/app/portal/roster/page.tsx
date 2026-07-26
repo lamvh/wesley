@@ -1,6 +1,7 @@
 import { RosterView } from "@/components/portal/roster/roster-view";
 import { activeStaff, getStaff } from "@/lib/data/staff";
 import {
+  getApprovedLeaveByDay,
   getOnCallByDay,
   getRosterAssignments,
   getRosterShiftTypes,
@@ -22,7 +23,8 @@ export default async function RosterPage({
   const weekStartISO = toISODate(weekStart);
   const days = getRosterDays(weekStart);
 
-  const [staff, grid, shiftTypes, roles, groups, onCallByDay, shiftUsage] = await Promise.all([
+  const [staff, grid, shiftTypes, roles, groups, onCallByDay, shiftUsage, leaveByDay] =
+    await Promise.all([
     getStaff(),
     getRosterAssignments(weekStartISO, days[6].iso),
     getRosterShiftTypes(),
@@ -30,6 +32,7 @@ export default async function RosterPage({
     getRoleGroups(),
     getOnCallByDay(weekStartISO, days[6].iso),
     getShiftUsageByStaff(weekStartISO),
+    getApprovedLeaveByDay(weekStartISO, days[6].iso),
   ]);
 
   return (
@@ -47,6 +50,7 @@ export default async function RosterPage({
       weekStartISO={weekStartISO}
       initialOnCallByDay={onCallByDay}
       shiftUsage={shiftUsage}
+      leaveByDay={leaveByDay}
       initialDutyPreview={duty === "1"}
     />
   );

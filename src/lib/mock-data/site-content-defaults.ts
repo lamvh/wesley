@@ -32,7 +32,7 @@ export interface SiteCopyItem {
 
 export interface SiteCareLevel {
   name: string;
-  wing: string;
+  eyebrow: string;
   desc: string;
   points: string[];
 }
@@ -43,7 +43,7 @@ export interface SiteTimelineStep {
   desc: string;
 }
 
-export interface SiteCareWing {
+export interface SiteRoomStyleCard {
   name: string;
   care: string;
   desc: string;
@@ -97,7 +97,7 @@ export interface SiteContent {
   features: SiteCopyItem[];
   dayTimeline: SiteTimelineStep[];
   facilities: SiteCopyItem[];
-  careWings: SiteCareWing[];
+  roomStyleCards: SiteRoomStyleCard[];
   benefits: SiteCopyItem[];
 }
 
@@ -195,7 +195,7 @@ export const SITE_CONTENT_DEFAULTS: SiteContent = {
   careLevels: [
     {
       name: "VIP suite",
-      wing: "Rest home care",
+      eyebrow: "Rest home care",
       desc: "Our finest rooms - spacious suites with a private ensuite, garden outlook and a few extra touches that make all the difference.",
       points: [
         "Largest rooms with private ensuite",
@@ -205,7 +205,7 @@ export const SITE_CONTENT_DEFAULTS: SiteContent = {
     },
     {
       name: "Premium suite",
-      wing: "Rest home care",
+      eyebrow: "Rest home care",
       desc: "Generous private rooms with an ensuite and a sunny outlook - extra space and comfort with room to breathe.",
       points: [
         "Spacious room with private ensuite",
@@ -215,7 +215,7 @@ export const SITE_CONTENT_DEFAULTS: SiteContent = {
     },
     {
       name: "Standard room",
-      wing: "Rest home care",
+      eyebrow: "Rest home care",
       desc: "Warm, comfortable rooms with everything you need close at hand - the same caring team and full programme as every suite.",
       points: [
         "Comfortable, homely private room",
@@ -298,7 +298,7 @@ export const SITE_CONTENT_DEFAULTS: SiteContent = {
       desc: "A welcoming spot for a cuppa when family stay a while.",
     },
   ],
-  careWings: [
+  roomStyleCards: [
     {
       name: "Standard",
       care: "Rest home",

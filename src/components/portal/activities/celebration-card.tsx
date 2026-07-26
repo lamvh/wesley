@@ -30,14 +30,14 @@ export function CelebrationCard() {
             Celebration
           </span>
           <span className="text-[12.5px] text-ink-faint">
-            Yesterday · Kōwhai lounge
+            Yesterday · Lounge
           </span>
         </div>
         <h3 className="mt-3 font-serif text-[22px] font-semibold text-ink">
           Mei Lam turned 90 - and the whole wing came
         </h3>
         <p className="mt-2 text-[14.5px] leading-[1.62] text-ink-soft">
-          The Kōwhai wing gathered for afternoon tea and tiramisu cake from The
+          Residents gathered for afternoon tea and tiramisu cake from The
           Gateau House. Mei blew out her candle to a rousing waiata, surrounded
           by her table friends and plenty of photos for the whānau.
         </p>

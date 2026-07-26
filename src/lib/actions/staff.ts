@@ -147,6 +147,8 @@ export async function deleteLeave(fd: FormData): Promise<void> {
   const { error } = await supabase.from("leave_requests").delete().eq("id", id);
   if (error) throw new Error(`Failed to remove leave request: ${error.message}`);
   revalidatePath("/portal/staff");
+  // The roster marks approved leave, so removing a request has to clear its mark.
+  revalidatePath("/portal/roster");
 }
 
 export async function approveLeave(fd: FormData): Promise<void> {
@@ -155,6 +157,8 @@ export async function approveLeave(fd: FormData): Promise<void> {
   const { error } = await supabase.rpc("approve_leave", { p_id: id });
   if (error) throw new Error(`Failed to approve leave: ${error.message}`);
   revalidatePath("/portal/staff");
+  // Approving is what puts the leave onto the roster grid.
+  revalidatePath("/portal/roster");
 }
 
 export async function declineLeave(fd: FormData): Promise<void> {
@@ -163,4 +167,6 @@ export async function declineLeave(fd: FormData): Promise<void> {
   const { error } = await supabase.from("leave_requests").update({ status: "Declined" }).eq("id", id);
   if (error) throw new Error(`Failed to decline leave: ${error.message}`);
   revalidatePath("/portal/staff");
+  // Declining an already-approved request has to take its mark off the roster.
+  revalidatePath("/portal/roster");
 }

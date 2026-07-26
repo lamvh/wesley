@@ -2,8 +2,10 @@ import { PersonBadge } from "@/components/shared/person-badge";
 import { Icon } from "@/components/shared/icons";
 import type { Birthday } from "@/types/domain";
 
-// Single cream bar: leading cake-icon header cell + a pill per upcoming birthday.
+// Single cream bar: leading cake-icon header cell + a pill per resident whose
+// birthday falls in the current month.
 export function BirthdayStrip({ birthdays }: { birthdays: Birthday[] }) {
+  const count = birthdays.length;
   return (
     <div className="mt-4 flex flex-wrap items-center gap-4 rounded-2xl border border-line bg-cream-2 px-5 py-4">
       <div className="flex items-center gap-3 border-line-divider pr-[18px] sm:border-r">
@@ -13,13 +15,15 @@ export function BirthdayStrip({ birthdays }: { birthdays: Birthday[] }) {
         <div className="leading-[1.15]">
           <div className="font-serif text-[18px] text-ink">Upcoming birthdays</div>
           <div className="text-[12.5px] text-ink-faint">
-            Next three weeks · {birthdays.length} residents
+            {count === 0
+              ? "None this month"
+              : `This month · ${count} resident${count === 1 ? "" : "s"}`}
           </div>
         </div>
       </div>
       {birthdays.map((b) => (
         <div
-          key={b.name}
+          key={`${b.name}-${b.date}`}
           className="flex items-center gap-[10px] rounded-full border border-line-soft bg-cream p-[5px]"
         >
           <PersonBadge

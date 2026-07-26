@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { PersonBadge } from "@/components/shared/person-badge";
-import { careTier, roomStatusMeta } from "@/lib/design-meta";
+import { careTierMeta, roomStatusMeta } from "@/lib/design-meta";
+import type { RoomRecord } from "@/lib/data/rooms";
 import { cn } from "@/lib/utils";
-import type { Room } from "@/types/domain";
 
-// One room tile in a wing group. Left status strip + status pill both come
-// from the room-status scale so colour is never the sole signal. Occupied →
-// resident chip; otherwise a note line. Navigates to the room detail route.
-export function RoomCard({ room }: { room: Room }) {
+// One room tile. Left status strip + status pill both come from the room-status
+// scale so colour is never the sole signal. Occupied → resident chip; otherwise
+// the room note. Navigates to the room detail route.
+export function RoomCard({ room }: { room: RoomRecord }) {
   const meta = roomStatusMeta[room.status];
+  const tier = room.tier ? careTierMeta[room.tier] : null;
   return (
     <Link
       href={`/portal/rooms/${room.num}`}
@@ -17,11 +18,16 @@ export function RoomCard({ room }: { room: Room }) {
       {/* status left strip - dot bg class from the room-status scale */}
       <span className={cn("absolute inset-y-0 left-0 w-1", meta.dot)} aria-hidden />
       <div className="flex items-start justify-between gap-2">
-        <div>
+        <div className="min-w-0">
           <div className="font-serif text-[20px] font-semibold text-ink">
             Room {room.num}
           </div>
-          <div className="text-[11.5px] text-ink-faint">{careTier(room.wing)}</div>
+          {/* Tier is optional data now, so the line is simply absent until set. */}
+          {tier && (
+            <span className={cn("mt-1 inline-block rounded-full px-[8px] py-[2px] text-[11px] font-semibold", tier.badge)}>
+              {room.tier}
+            </span>
+          )}
         </div>
         <span
           className={cn(
@@ -32,23 +38,25 @@ export function RoomCard({ room }: { room: Room }) {
           {room.status}
         </span>
       </div>
-      {room.resident ? (
+      {room.occupant ? (
         <div className="mt-[13px] flex items-center gap-[10px]">
           <PersonBadge
-            initials={room.resident.initials}
-            color={room.resident.color}
+            initials={room.occupant.initials}
+            color={room.occupant.color}
             className="size-[34px] rounded-full text-[12px]"
           />
           <div className="min-w-0">
             <div className="truncate text-[13.5px] font-semibold text-ink">
-              {room.resident.name}
+              {room.occupant.name}
             </div>
-            <div className="text-[11.5px] text-ink-faint">{room.resident.diet}</div>
+            <div className="text-[11.5px] text-ink-faint">
+              {room.occupant.diet || "No dietary note"}
+            </div>
           </div>
         </div>
       ) : (
         <div className="mt-[13px] text-[12.5px] leading-[1.4] text-ink-muted">
-          {room.note}
+          {room.note || "Vacant"}
         </div>
       )}
     </Link>

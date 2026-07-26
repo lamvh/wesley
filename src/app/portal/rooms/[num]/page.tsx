@@ -1,27 +1,29 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BackLink } from "@/components/portal/back-link";
-import { ActivityList } from "@/components/portal/rooms/activity-list";
-import { RoomResidentCard } from "@/components/portal/rooms/room-resident-card";
+import { PersonBadge } from "@/components/shared/person-badge";
 import { RoomStatusCard } from "@/components/portal/rooms/room-status-card";
-import { SupplyRow } from "@/components/portal/rooms/supply-row";
-import { roomStatusMeta } from "@/lib/design-meta";
-import { getRoomByNum } from "@/lib/mock-data";
+import { careTierMeta, roomStatusMeta } from "@/lib/design-meta";
+import { getRoomByNumber } from "@/lib/data/rooms";
 import { cn } from "@/lib/utils";
 
-// Admin deep-view of a single room. Occupied → resident card + activities;
-// vacant/maintenance → status card. Right column: supplies + housekeeping.
+// Admin deep-view of a single room, from the real register.
+//
+// The wing / care-type header line and the supplies + housekeeping panels are
+// gone: wings and care types were dropped project-wide, and the supplies and
+// housekeeping copy were mock strings attached to every occupied room. Showing
+// them against real rooms would present invented stock levels as fact.
 export default async function RoomDetailPage({
   params,
 }: {
   params: Promise<{ num: string }>;
 }) {
   const { num } = await params;
-  const room = getRoomByNum(num);
+  const room = await getRoomByNumber(num);
   if (!room) notFound();
 
   const meta = roomStatusMeta[room.status];
-  const occupied = !!room.resident;
+  const tier = room.tier ? careTierMeta[room.tier] : null;
 
   return (
     <div className="mx-auto max-w-[1180px]">
@@ -31,15 +33,18 @@ export default async function RoomDetailPage({
         <span className={cn("absolute inset-y-0 left-0 w-[5px]", meta.dot)} aria-hidden />
         <div>
           <div className="font-serif text-[30px] font-semibold text-ink">
-            {room.wing} · Room {room.num}
+            Room {room.num}
           </div>
-          <div className="text-[14px] text-ink-muted">{room.careType}</div>
+          {tier ? (
+            <span className={cn("mt-1 inline-block rounded-full px-[10px] py-[3px] text-[12px] font-semibold", tier.badge)}>
+              {room.tier}
+            </span>
+          ) : (
+            <div className="text-[14px] text-ink-muted">Chưa đặt hạng phòng</div>
+          )}
         </div>
         <span
-          className={cn(
-            "rounded-full px-[15px] py-[7px] text-[13px] font-semibold",
-            meta.badge,
-          )}
+          className={cn("rounded-full px-[15px] py-[7px] text-[13px] font-semibold", meta.badge)}
         >
           {room.status}
         </span>
@@ -47,54 +52,46 @@ export default async function RoomDetailPage({
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         <div className="flex flex-col gap-4">
-          {occupied ? (
-            <>
-              <RoomResidentCard
-                resident={room.resident!}
-                careLine={room.careType}
-                note={room.note}
-              />
-              <ActivityList activities={room.activities} />
-            </>
-          ) : (
-            <RoomStatusCard note={room.note} />
-          )}
-        </div>
-
-        <div className="flex flex-col gap-4">
-          <div className="rounded-2xl border border-line bg-cream-2 p-[22px]">
-            <div className="flex items-center justify-between">
-              <h3 className="font-serif text-[19px] font-semibold text-ink">
-                Room supplies
-              </h3>
-              <Link
-                href="/portal/stock"
-                className="text-[13px] font-semibold text-bronze-text"
-              >
-                Stock
-              </Link>
-            </div>
-            {occupied ? (
-              <div className="mt-2 flex flex-col">
-                {room.supplies.map((item) => (
-                  <SupplyRow key={item.name} item={item} />
-                ))}
+          {room.occupant ? (
+            <div className="rounded-2xl border border-line bg-cream-2 p-[22px]">
+              <div className="text-[12px] font-bold uppercase tracking-[0.4px] text-status-available">
+                Resident
               </div>
-            ) : (
-              <p className="mt-3 text-[13.5px] text-ink-meta">
-                No supplies allocated while the room is {room.status}.
-              </p>
-            )}
-          </div>
-
-          <div className="rounded-2xl border border-line bg-cream-2 p-[22px]">
-            <h3 className="font-serif text-[19px] font-semibold text-ink">
-              Housekeeping
-            </h3>
-            <p className="mt-[10px] text-[13.5px] leading-[1.55] text-ink-nav">
-              {room.house}
-            </p>
-          </div>
+              <div className="mt-[14px] flex items-center gap-[14px]">
+                <PersonBadge
+                  initials={room.occupant.initials}
+                  color={room.occupant.color}
+                  className="size-[54px] rounded-[16px] text-[18px]"
+                  serif
+                />
+                <div className="min-w-0">
+                  <Link
+                    href={`/portal/residents/${room.occupant.slug}`}
+                    className="font-serif text-[22px] font-semibold text-ink hover:text-navy"
+                  >
+                    {room.occupant.name}
+                  </Link>
+                  <div className="mt-[3px] flex flex-wrap gap-[6px]">
+                    {[room.occupant.diet, room.occupant.mobility]
+                      .filter(Boolean)
+                      .map((chip) => (
+                        <span
+                          key={chip}
+                          className="rounded-full bg-muted px-[10px] py-[3px] text-[12px] font-medium text-ink-muted"
+                        >
+                          {chip}
+                        </span>
+                      ))}
+                  </div>
+                </div>
+              </div>
+              {room.note && (
+                <p className="mt-[14px] text-[14px] leading-[1.6] text-ink-nav">{room.note}</p>
+              )}
+            </div>
+          ) : (
+            <RoomStatusCard note={room.note || `Phòng đang ${room.status}.`} />
+          )}
         </div>
       </div>
     </div>

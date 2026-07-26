@@ -23,14 +23,14 @@ Centered `max-width:1180px` column inside `PortalLayout`'s `<main>`. Top→botto
 |---------|-----------|-------|
 | Header | (inline in `page.tsx`) | `greeting` H1 (Newsreader `34px`, weight 500) + `sub` (`#6b6255`). Right: "Handover notes" (cream-2 outline) + "+ New entry" (accent-fill) buttons - both inert. `flex`, wraps, `align-items:flex-end`. Source `486–495`. |
 | KPI grid | `kpi-card` × 4 | `grid-cols-4`, `gap:16px`, `margin-top:26px`. Each card: `label` + big `value` (Newsreader `33px`) + colored `delta` + `sub` meta. Source `497–509`. |
-| Birthdays strip | `birthday-pill` × 4 (+ inline header cell) | Single `cream-2` bar: leading cake-icon header cell ("Upcoming birthdays · Next three weeks · 4 residents") then pills. `flex`, wraps, `gap:16px`. Source `511–524`. |
+| Birthdays strip | `birthday-strip` (inline header cell + one pill per resident) | Single `cream-2` bar: leading cake-icon header cell ("Upcoming birthdays · This month · N residents"; "None this month" when empty) then one pill per resident whose birthday falls in the current calendar month. `flex`, wraps, `gap:16px`. Source `511–524`. |
 | Needs attention | `alert-row` × N | Card titled "Needs attention" + "View all" (inert). Rows stacked `gap:10px`. Source `526–539`. |
 | Today's programme | (inline schedule rows in `page.tsx`) | Card titled "Today's programme"; each row = `time` (58px, navy, weight 700) + `title` + `where`, divided by `border-2`. Source `540–551`. |
 | Occupancy by wing | `occupancy-bar` × 3 | Card; per wing: label + `filled/total` + progress track (`#EAE0CE`) with colored fill to `pct`. Source `555–566`. |
 | Recent family messages | `family-message-row` × 3 | Card titled "Recent family messages" + "Open portal" → `/portal/family`; rows = avatar + `from · resident` + `preview` + `time`. Source `567–579`. |
 
 ## Data consumed
-Single accessor `getDashboard(role)` (`lib/mock-data/dashboard.ts`) → `{ greeting, sub, kpis, alerts, todaySchedule, wings, familyPosts, birthdays }`. Static - no "today" computation.
+Two sources: `getDashboard(role)` (`lib/mock-data/dashboard.ts`) → `{ greeting, sub, kpis, alerts, todaySchedule, wings, familyPosts }` (static mock, no "today" computation), plus **live** `getBirthdaysThisMonth()` (`lib/data/residents.ts`) awaited in the `/portal` RSC page and passed into `DashboardView` as a prop.
 
 - **`greeting`** / **`sub`** - role-branched strings (`1124–1127`).
 - **`kpis`**: `Kpi[]` - `{ label, value, delta, deltaTone, sub }`; role-branched set of 4 (`1128–1138`). `deltaTone` → color token (`accent` = navy, `warn` = terracotta `#BE7350`), derived not stored as hex.
@@ -38,13 +38,13 @@ Single accessor `getDashboard(role)` (`lib/mock-data/dashboard.ts`) → `{ greet
 - **`todaySchedule`**: `{ time, title, where }[]` - shared, 6 items (`1149–1156`).
 - **`wings`**: `OccupancyWing[]` - `{ name, filled, total, colorKey }`; 3 wings, `pct` derived `filled/total` (`1157–1161`).
 - **`familyPosts`**: `FamilyPost[]` subset - `{ from, resident, initials, colorKey, preview, time }`; 3 items (`1162–1166`).
-- **`birthdays`**: `Birthday[]` - `{ name, room, date, initials, colorKey, badge }`; 4 items (`1347–1352`).
+- **`birthdays`**: `Birthday[]` - `{ name, room, date, initials, color, badge }`; **live from Supabase** `residents` (`name,room,dob,color`). Rows whose `dob` month equals the current month, sorted by day ascending. `date` = `"<day> <Mon>"` (or `"Today"`), `badge` = ordinal of the age they turn this year (e.g. `93rd`), `room` = `"Room <n>"`, `initials` derived via `initials()`. Month/day are read off the ISO `dob` string, not a parsed `Date`, so no timezone shift.
 
 Colors (`deltaColor`, alert border/tint, wing fill, avatar bg) are derived in the accessor/helper layer from semantic scales / avatar palette - JSX references tokens only.
 
 ## Variants & states
 
-**Admin vs staff differ in header + KPIs + alerts** (source `1124–1148`). `todaySchedule`, `wings`, `familyPosts`, `birthdays` are identical for both.
+**Admin vs staff differ in header + KPIs + alerts** (source `1124–1148`). `todaySchedule`, `wings`, `familyPosts`, `birthdays` are identical for both (birthdays come from one server-side fetch, above the role branch).
 
 | | Admin (Sarah) | Staff (Aroha) |
 |---|---|---|
@@ -63,7 +63,7 @@ Other states:
 - No empty states - dashboard always has data both roles.
 - Hover: cards/rows are static (no per-row hover nav this phase).
 
-**Loading state** (`dashboard-skeleton.tsx`): `DashboardView` is a client island with an explicit `loading` → render transition. On mount **and on every role switch** it shows `DashboardSkeleton` - a pulsing mirror of the real layout (header, 4 KPIs, birthday strip, both split rows) - then swaps to content. Today `getDashboard(role)` is synchronous mock data; the settle window (`~450ms`) stands in for the async Supabase query that will replace it, so the skeleton path is real and forward-compatible. Skeleton carries `aria-busy` / `aria-live`.
+**Loading state** (`dashboard-skeleton.tsx`): `DashboardView` is a client island with an explicit `loading` → render transition. On mount **and on every role switch** it shows `DashboardSkeleton` - a pulsing mirror of the real layout (header, 4 KPIs, birthday strip, both split rows) - then swaps to content. `getDashboard(role)` is still synchronous mock data; the settle window (`~450ms`) stands in for the async Supabase queries that will replace it, so the skeleton path is real and forward-compatible. Birthdays already come from Supabase, awaited in the RSC page before `DashboardView` mounts, so they render with the first content frame. Skeleton carries `aria-busy` / `aria-live`.
 
 ## Interactions
 - **"Open portal"** (family card header) → `/portal/family`. Real nav.
@@ -80,8 +80,8 @@ Other states:
 
 ## Definition of Done
 - `/portal` renders the correct variant for the active role; toggling role in the topbar swaps greeting + sub + all 4 KPIs + the alert set, leaving schedule/occupancy/family/birthdays unchanged.
-- Layout matches source `484–581`: 4-col KPIs, single birthdays strip, `1.5fr/1fr` then `1fr/1.5fr` two-col rows, `16px` gaps.
-- All content via `getDashboard(role)`; colors derived from semantic scales/avatar palette - no inline fixtures, no raw hex in JSX.
+- Layout matches source `484–581`: 4-col KPIs, single birthdays strip (wraps to more rows when the month has many birthdays), `1.5fr/1fr` then `1fr/1.5fr` two-col rows, `16px` gaps.
+- All content via `getDashboard(role)` except the birthday strip, which is fed by `getBirthdaysThisMonth()`; colors derived from semantic scales/avatar palette - no inline fixtures, no raw hex in JSX.
 - "Open portal" navigates to `/portal/family`; inert buttons noted above do nothing.
 - Named sub-components exist: `kpi-card`, `birthday-pill`, `alert-row`, `occupancy-bar`, `family-message-row`, `dashboard-skeleton`.
 - Loading state: first paint (and each role switch) shows `DashboardSkeleton`, then real content; skeleton grid matches the loaded layout.

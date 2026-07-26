@@ -64,7 +64,7 @@ interface OccupancyWing { name: string; filled: number; total: number; colorKey:
 
 ## Dashboard (role-dependent)
 
-`getDashboard(role)` returns `{ greeting, sub, kpis, alerts, todaySchedule, wings, familyPosts, birthdays }`. Admin vs staff differ in greeting/sub/kpis/alerts (lines 1124–1148). Static values - no computation of "today".
+`getDashboard(role)` returns `{ greeting, sub, kpis, alerts, todaySchedule, wings, familyPosts }`. Admin vs staff differ in greeting/sub/kpis/alerts (lines 1124–1148). Static values - no computation of "today". Birthdays are no longer part of this accessor: the dashboard strip reads live `residents.dob` via `getBirthdaysThisMonth()` (`lib/data/residents.ts`).
 
 ## Marketing content
 

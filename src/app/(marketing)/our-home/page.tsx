@@ -1,7 +1,7 @@
 import { MarketingPageHeader } from "@/components/shared/marketing-page-header";
 import { PhotoCopySplit } from "@/components/marketing/our-home/photo-copy-split";
 import { FacilityCard } from "@/components/marketing/our-home/facility-card";
-import { WingCard } from "@/components/marketing/our-home/wing-card";
+import { RoomStyleCard } from "@/components/marketing/our-home/room-style-card";
 import { FindUsPanel } from "@/components/marketing/our-home/find-us-panel";
 import { getSiteContent } from "@/lib/data/site-content";
 
@@ -37,8 +37,8 @@ export default async function OurHomePage() {
           {ourhome.roomStylesHeading}
         </h2>
         <div className="grid grid-cols-3 gap-[18px] max-md:grid-cols-1">
-          {c.careWings.map((w) => (
-            <WingCard key={w.name} wing={w} />
+          {c.roomStyleCards.map((style) => (
+            <RoomStyleCard key={style.name} style={style} />
           ))}
         </div>
       </section>

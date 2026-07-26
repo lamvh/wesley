@@ -1,12 +1,20 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/actions/users";
 
 // Website CMS write side. Edits persist to the single `site_content` override
 // row; the read layer (lib/data/site-content.ts) deep-merges it over the code
-// defaults. Runs under the signed-in user's session, so the authenticated-write
-// RLS policy applies. Marketing routes are revalidated so edits show live.
+// defaults. Marketing routes are revalidated so edits show live.
+//
+// ADMIN ONLY. These actions change the PUBLIC marketing site, so they are gated
+// the same way as the other privileged actions: requireAdmin() first, then the
+// service-role client. `site_content` no longer carries a write policy for
+// regular sessions (migration 0026), so that check is the only door - hiding the
+// nav item behind `adminOnly` was concealment, not enforcement, and calling the
+// server action directly went straight through it.
+const DENIED = "Chỉ quản trị viên mới sửa được nội dung website.";
 
 const MARKETING_PATHS = [
   "/",
@@ -53,8 +61,9 @@ export async function saveSiteContent(
   path: string,
   value: unknown,
 ): Promise<{ error?: string }> {
+  if (await requireAdmin()) return { error: DENIED };
   if (!path) return { error: "Missing field path." };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data, error: readErr } = await supabase
     .from("site_content")
@@ -77,7 +86,8 @@ export async function saveSiteContent(
 
 // Clear all overrides — the site falls back to the code defaults.
 export async function resetSiteContent(): Promise<{ error?: string }> {
-  const supabase = await createClient();
+  if (await requireAdmin()) return { error: DENIED };
+  const supabase = createAdminClient();
   const { error } = await supabase
     .from("site_content")
     .upsert({ id: "site", content: {}, updated_at: new Date().toISOString() });

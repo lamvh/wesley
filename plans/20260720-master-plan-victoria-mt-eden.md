@@ -17,20 +17,11 @@ Cập nhật lần cuối: **2026-07-27**.
 
 ## Tổng quan các luồng
 
-| # | Luồng | Trạng thái | Plan / spec |
-|---|-------|------------|-------------|
-| A | Design sync + Website CMS | ✅ done (A5 code xong; A6 `0013` đã chạy) | [plan.md](./20260718-2250-design-sync-and-cms/plan.md) |
-| H | Preferred name cho Staff | ✅ done code (verify DB manual) | [spec](../docs/superpowers/specs/2026-07-22-staff-preferred-name-design.md) · [plan](../docs/superpowers/plans/2026-07-22-staff-preferred-name.md) |
-| M | Forms — thư viện biểu mẫu (admin) | ✅ done code (verify manual) | [spec](../docs/superpowers/specs/2026-07-24-form-templates-library-design.md) · [plan](../docs/superpowers/plans/2026-07-24-form-templates-library.md) |
-| I | Roster shift picker — group theo role: Group role → role → shift | ✅ done code | — |
-| K | Roster — copy lịch tuần trước | ✅ done code (test tay K-v1) | — |
-| F-perm | Permission matrix đọc/ghi thật vào `role_permissions` | ✅ done code (test tay F-perm-v1) | — |
-| N | Staff leave — sick/annual balance, fix "On leave", list 10 dòng | ✅ done code (test tay N-v1) | — |
-| L | Roster — gợi ý ca staff thường làm ("Thường làm" đầu picker) | ✅ done code (test tay L-v1) | — |
+**Toàn bộ luồng A–N đã xong phần code.** Không còn luồng nào đang dở hay chờ code.
 
-> Các luồng đã done cả code (B, C, D, E, F, G, J) đã gỡ khỏi bảng này — xem **Track log** bên dưới để biết chi tiết.
+Đã hoàn thành: **A** (design sync + CMS) · **B** · **C** · **D** (`/today`) · **E** (duty export) · **F** (users CRUD) · **F-perm** (permission matrix thật) · **G** (`stock_manager`) · **H** (preferred name) · **I** (picker group theo role) · **J** (màu ca) · **K** (copy tuần trước) · **L** (gợi ý ca thường làm) · **M** (Forms) · **N** (leave balances + fix "On leave").
 
-> Chi tiết từng luồng đã hoàn thành → xem **Track log** + file plan/spec/journal tương ứng. Phần dưới chỉ liệt kê **việc còn mở**.
+Chi tiết từng luồng → xem **Track log** bên dưới. Việc chưa xong → xem **Việc còn mở**.
 
 ---
 
@@ -39,9 +30,24 @@ Cập nhật lần cuối: **2026-07-27**.
 > Chỉ liệt kê việc **chưa xong**. Mọi mục đã hoàn thành đã chuyển xuống **Track log**.
 > Migration + verify DB do **bạn tự chạy manual**.
 
-### ① SQL — ✅ đã chạy xong (2026-07-27)
+### ① SQL — ⚠️ cần bạn chạy (theo thứ tự)
 
-Không còn file SQL nào chờ. Bạn đã chạy cả `0004` lẫn `0005`; verify qua REST **8/8 pass**:
+| File | Việc | ⚠️ Nếu không chạy |
+|---|---|---|
+| `supabase/migrations/0028_drop_wing_and_care_type.sql` | Bỏ `wing`/`care_type` khỏi `rooms`, `residents`, `staff`; xoá bảng `building_wings`; thêm cột `rooms.tier`. | **`/portal/rooms` và `/portal/residents` sẽ lỗi** — code đã bỏ wing/careType và đọc `rooms.tier`. Break cứng. |
+| `supabase/seed/0007_wesley_residents.sql` | Nạp **52 resident thật của Wesley** (không phải The Lodge) + set 52 phòng đó thành `Occupied`. | Danh sách resident vẫn trống. |
+
+Sau khi apply: `npx tsx scripts/db/verify-rooms-and-resident-details.mts`
+
+Sinh lại seed resident: `npx tsx scripts/db/emit-wesley-residents-seed-sql.mts` (tự validate NHI, phòng, ngày — **từ chối xuất SQL** nếu dữ liệu nguồn sai).
+
+### ①b SQL — ✅ đã chạy xong (2026-07-27)
+
+Bạn đã chạy `0004`, `0005`, `0006`, `0025`, `0026`, `0027`. Verify:
+- `0026` → `verify-site-content-admin-write.mts` **PASS**, gồm cả mục quyết định: script tự tạo tài khoản `carer` tạm, đăng nhập, và xác nhận **vẫn không ghi được `site_content`** (`42501`), rồi xoá tài khoản đó. Lỗ hổng A6 đóng thật.
+- `0027` → `verify-rooms-and-resident-details.mts` **PASS**: đủ 52 phòng, không trùng/thiếu/lạ, đúng thứ tự (3A sau 3, khối 125–134 cuối), 6 cột resident có, NHI index chặn được bản viết thường.
+
+Các seed cũ (`0004`, `0005`) verify qua REST **8/8 pass**:
 
 | File | Kết quả verify | Đóng |
 |---|---|---|
@@ -50,9 +56,15 @@ Không còn file SQL nào chờ. Bạn đã chạy cả `0004` lẫn `0005`; ver
 
 Sinh lại bất cứ lúc nào (sau khi thêm role/module hoặc thêm/bớt shift template): `npx tsx scripts/db/emit-role-permissions-seed-sql.mts` · `npx tsx scripts/db/emit-shift-template-colors-sql.mts`
 
-### ② Blocker — password DB stale
+### ② Blocker — không nối được DB trực tiếp qua `pg`
 
-- [ ] **DB-1.** `.env.local` (`DIRECT_URL` / `SUPABASE_DB_PASSWORD`) đã hết hạn → mọi script nối `pg` trực tiếp fail `password authentication failed for user "postgres"`: `verify-app-users-soft-delete.mts` (kéo theo **F-v1** `verify-user-crud-e2e.mts`), `verify-roster-on-call-table.mts`, `check-staff-preferred-name-column.mts`, `seed-core-schema.mts`. **Không phải lỗi migration** — các đường REST/service-role đều pass. Cần bạn cập nhật password rồi chạy lại.
+- [ ] **DB-1. ⚠️ VẪN CHƯA XONG** sau khi bạn đổi mật khẩu 2 lần. Chẩn đoán 2026-07-27 cho thấy **không phải lỗi mật khẩu**:
+  - `db.czgplsnylveskaxsiuvr.supabase.co` **chỉ resolve ra IPv6** (`2406:da14:…`, AWS Sydney) và cổng 5432 bị **`ECONNREFUSED`**.
+  - Máy này **có IPv6 chạy tốt** (curl `-6` tới Google → HTTP 200) ⇒ không phải máy thiếu IPv6, mà **endpoint direct không nhận kết nối nữa**.
+  - Thử pooler `postgres.<ref>@aws-0-*` và `aws-1-*` trên 5 region → đều `tenant/user not found` ⇒ không đoán được region/host.
+  - Project ref khớp với `NEXT_PUBLIC_SUPABASE_URL`, REST/service-role vẫn chạy tốt ⇒ đúng project, đúng key.
+  - **Cần bạn làm:** Supabase Dashboard → Project Settings → Database → **Connection string → Session pooler** → copy **nguyên chuỗi** (host + region + user `postgres.<ref>` đều khác bản direct) vào `DIRECT_URL`. Đồng thời **xoá `SUPABASE_DB_PASSWORD`** hoặc set khớp — các script ưu tiên biến này **đè lên** mật khẩu trong URL (`scripts/db/*.mts::pgConfig`), nên sửa 1 chỗ là chưa đủ.
+  - **Ảnh hưởng: thấp.** Chỉ chặn `verify-app-users-soft-delete` (kéo theo `verify-user-crud-e2e`), `verify-roster-on-call-table`, `check-staff-preferred-name-column`, `seed-core-schema`. Mọi verify của phiên này đi qua REST và đã pass; `roster_on_call` đã được `verify-roster-on-call-crud` (REST) kiểm.
 
 ### ③ Test tay (không tự động verify được)
 
@@ -75,6 +87,12 @@ Sinh lại bất cứ lúc nào (sau khi thêm role/module hoặc thêm/bớt sh
 - [ ] **UI-1.** Tên staff hiển thị **đầy đủ, không còn cắt bằng "…"** ở: Roster grid (cột Staff nay rộng 212px, tên dài xuống 2 dòng), Staff → Team, Staff → Leave, Staff → Payroll.
 - [ ] **N-v1.** Staff form: nhập **Annual leave** + **Sick leave** cho 1 người → Save → Team tab cột "Leave left (A / S)" hiện 2 dòng đúng, Leave tab hiện 2 thanh riêng. Tạo đơn **Sick leave** → Approve → chỉ **sick** bị trừ, annual **không đổi**. Người chưa nhập hạn mức → hiện 0 / "Chưa đặt hạn mức".
 - [ ] **N-v2.** Staff → Team: Candy Tian **không còn** badge "On leave" (đã hết dữ liệu cứng, giờ chỉ hiện khi có đơn nghỉ đã duyệt trùng ngày hôm nay).
+- [ ] **R-v3.** Sau khi apply `0028` + `0007`: `/portal/rooms` hiện **52 phòng thật** dạng lưới phẳng (không còn nhóm theo wing), KPI đếm đúng (52 tổng, 52 occupied sau khi seed resident). Bấm 1 phòng → trang chi tiết hiện đúng resident đang ở, link sang hồ sơ resident chạy.
+- [ ] **R-v4.** `/portal/residents` hiện 52 resident; mở 1 người thấy đủ Location in facility · DOB · Date of admission · Gender · Group · Phone · NHI.
+- [ ] **W-v1.** Không còn chữ **wing / Rātā / Kōwhai / Tōtara / care type** ở bất kỳ đâu: portal (rooms, dashboard, buildings, users, activities) lẫn web công khai (`/our-home`, `/our-rooms`, trang chủ, `/careers`).
+- [ ] **R-v1.** Sau khi apply `0027`: `/portal/residents` → Admit a resident → ô **"Location in facility"** liệt kê đúng 52 phòng thật (1, 2, 3, 3A, … 134), không còn phòng bịa. Nhập **NHI** sai định dạng bị chặn; nhập NHI trùng người khác (kể cả viết thường) báo lỗi rõ.
+- [ ] **R-v2.** Trang chi tiết resident hiện đủ **Location in facility · DOB · Date of admission · Gender · Group · Phone · NHI**; field chưa nhập hiện "—", ngày hiện dạng "12 Mar 1941".
+- [ ] **UI-7.** Staff → Leave requests: tạo 1 đơn (Annual hoặc Sick) cho 1 staff trong tuần đang xem → **Approve** → mở `/portal/roster`, ô ngày đó hiện **dấu nghỉ nét đứt màu hổ phách**. Nếu ngày đó staff **đang có ca**, dấu chuyển **đỏ + ⚠** (báo trùng). Decline hoặc xoá đơn → dấu biến mất. Đơn còn **Pending** thì **không** hiện.
 - [ ] **UI-4.** Roster: dưới mỗi group có dòng **"Ca đã xếp / cần"** theo từng ngày; ngày nào thiếu so với mức cần thì số hiện **màu đỏ đậm**. Hover ô để xem chú thích đầy đủ.
 - [ ] **UI-5.** Staff form (khi sửa): bỏ tick **"Đang làm việc"** → Save → người đó **biến mất khỏi roster** (và khỏi duty export), nhưng **vẫn còn** ở Staff → Team với trạng thái "Inactive". Tick lại → quay lại roster.
 - [ ] **UI-6.** Roster: nút **"Hiện giờ / Ẩn giờ"** trên toolbar bật tắt dòng giờ trên chip ca và trong picker; đổi tuần hoặc F5 vẫn nhớ lựa chọn.
@@ -84,7 +102,7 @@ Sinh lại bất cứ lúc nào (sau khi thêm role/module hoặc thêm/bớt sh
 
 ### ④ Còn phải code
 
-- [ ] **A6.** Admin-gate server-side cho write action CMS (`lib/actions/site-content.ts` chạy dưới session user, RLS hiện authenticated-write theo MVP) — chờ quyết định có siết không.
+- [ ] **A6-v1. ⚠️ CẦN BẠN CHẠY** — apply `supabase/migrations/0026_site_content_admin_write.sql`, rồi chạy `npx tsx scripts/db/verify-site-content-admin-write.mts <username-non-admin> <mật-khẩu>`. **Phải truyền login non-admin** mới kiểm được mục quan trọng nhất (tài khoản thường không ghi được `site_content`); chạy không tham số thì mục đó báo BỎ QUA. Test tay thêm: login admin → `/portal/website` sửa 1 field vẫn lưu bình thường.
 - [ ] **L.** Roster — gợi ý ca mà staff đó thường làm. ⏳ backlog, chưa chốt.
 
 ### Ghi chú còn hiệu lực
@@ -99,6 +117,17 @@ Sinh lại bất cứ lúc nào (sau khi thêm role/module hoặc thêm/bớt sh
 Ghi theo ngày, mới nhất trên cùng.
 
 - **2026-07-27** — ✅ **Luồng L: gợi ý ca staff thường làm.** Scope bạn chốt: mục **"Thường làm"** ghim đầu picker (không dùng chip mờ trong ô trống — 38 dòng × 7 ngày quá rối và có rủi ro nhìn nhầm ca ảo thành ca thật khi in), cửa sổ **8 tuần**. Trước khi code có đo dữ liệu thật: 186 ca / 4 tuần / 37 staff, median 4 ca/staff, và tín hiệu "cùng thứ trong tuần" **rất yếu** (chỉ 25/154 cặp (staff, thứ, ca) lặp ≥2 lần) ⇒ **bỏ phương án gợi ý theo thứ**, tính **tần suất tổng theo staff**. `getShiftUsageByStaff(weekStartISO)` (`lib/data/roster.ts`) đếm `roster_shifts` trong 8 tuần **trước** tuần đang xem — cố tình loại tuần đang xem để ca vừa gán tay không tự đẩy mình lên thành "thường làm"; trả **full list** đã sắp xếp (không cắt top-N ở reader) để picker lọc theo role rồi mới cắt, tránh mục gợi ý teo lại sau khi staff đổi role. Cell lọc thêm: chỉ hiện ca picker đang offer + chưa có trong ô, tối đa 4, kèm `×N`. Type `ShiftUsage`/`ShiftUsageByStaff`. Verify `verify-shift-usage-suggestions.mts` **4/4 PASS trên DB thật** (cửa sổ đóng trước tuần đang xem · 0 dòng lọt từ tuần đang xem · sắp xếp giảm dần · **31/36 staff** có ca lặp ≥2 lần nên gợi ý xếp hạng được, ví dụ Candy Tian ×11 ca chiều, Rosu ×10 ca sáng). Không đổi DB.
+- **2026-07-27** — 🧹 **Bỏ wing + care type toàn dự án; `/portal/rooms` chạy dữ liệu thật; nạp 52 resident.**
+  - **Bỏ wing/care type.** Bạn chốt bỏ ở **cả web công khai**. Migration `0028_drop_wing_and_care_type.sql`: bỏ `wing`/`care_type` khỏi `rooms` + `residents`, bỏ `staff.wing`, **xoá bảng `building_wings`**, thêm `rooms.tier`. Code: gỡ type `Wing`/`CareType`/`CareWing`/`OccupancyWing`, xoá 6 component chỉ tồn tại vì wing (`wing-group`, `occupancy-by-wing`, `wing-card`, `room-resident-card`, `activity-list`, `supply-row`) và cả mock `rooms.ts`/`rooms-data.ts`; dọn sạch mọi chuỗi Rātā/Kōwhai/Tōtara trong portal chrome, mock, tin tuyển dụng.
+  - ⚠️ **Phát hiện khiến tôi KHÔNG xoá phần marketing như preview đã mô tả.** Lúc hỏi, preview của tôi ghi `/our-home` sẽ "mất 3 thẻ Rātā/Kōwhai/Tōtara". Kiểm tra dữ liệu thật thì **sai**: 3 thẻ đó là **Standard / Premium / VIP** (room styles), và eyebrow của chúng là *"Rest home care"* — trang marketing **chưa bao giờ** hiển thị tên khu. Trường bị đặt tên nhầm là `RoomStyle.wing` nhưng giá trị là "Rest home care". Nên thay vì xoá nội dung marketing có giá trị, tôi **đổi tên** cho đúng bản chất: `RoomStyle.wing` → `.eyebrow`, `SiteCareWing` → `SiteRoomStyleCard`, khoá CMS `careWings` → `roomStyleCards`, `WingCard` → `RoomStyleCard`. Đã kiểm `site_content` **chưa có override nào** nên đổi khoá không mất nội dung đã sửa. Wing thật duy nhất trên web là chữ "Kōwhai wing" trong 1 tin tuyển dụng — đã bỏ.
+  - **Hạng phòng.** Bạn chốt giữ Normal/Premium/VIP nhưng **lưu thẳng trên phòng** (trước đây suy từ tên wing, nên bỏ wing là mất luôn). Cột `rooms.tier`, hiện **cả 52 phòng đều trống** — dữ liệu này chỉ bạn mới có.
+  - **`/portal/rooms` dùng dữ liệu thật.** Trước đó màn này render mock nên bạn "chưa thấy room trên list". Nay đọc sổ đăng ký thật: lưới phẳng theo `sort_order`, KPI **đếm từ chính dữ liệu** (không hardcode như bản cũ "50 of 54"), người ở phòng suy từ `residents.room` nên 2 nguồn không thể lệch. Trang chi tiết phòng cũng chuyển sang dữ liệu thật; **bỏ panel supplies + housekeeping** vì đó là chuỗi mock gắn cứng cho mọi phòng — hiện chúng cạnh phòng thật là trình bày tồn kho bịa như thật.
+  - **52 resident Wesley.** `emit-wesley-residents-seed-sql.mts` transcribe nguyên văn sổ của bạn và **tự từ chối xuất SQL nếu nguồn sai** (validate định dạng + trùng NHI, phòng có trong sổ đăng ký và không ở 2 người, ngày parse được và hợp lý). Kết quả **52/52 hợp lệ**, 52 phòng khác nhau, 52 NHI khác nhau → `supabase/seed/0007_wesley_residents.sql`. Tên có ngoặc ("Ik Lie Chang (Minah)") tách thành `pref`. **4 điểm cảnh báo đã nêu, KHÔNG tự sửa** — xem mục cần xác nhận.
+  - `tsc`/eslint/`next build` sạch.
+- **2026-07-27** — ✨ **Strip "Upcoming birthdays" ở dashboard dùng dữ liệu thật.** Theo yêu cầu của bạn: hiện danh sách resident có sinh nhật **trong tháng hiện tại**. Trước đó strip là 4 dòng mock cứng (`mock-data/activities.ts::getBirthdays()` — Mei Lam/Henry Fitzgerald… không tồn tại trong DB) và phụ đề ghi "Next three weeks". Thêm `getBirthdaysThisMonth()` (`lib/data/residents.ts`) đọc `residents(name,room,dob,color)`, lọc theo **tháng của `dob`**, sắp theo ngày tăng dần; `date` = "20 Jul" (hoặc **"Today"** nếu trúng hôm nay), `badge` = tuổi tròn năm nay dạng thứ tự ("93rd"), `room` = "Room 5". Tháng/ngày đọc **trực tiếp từ chuỗi ISO `dob`**, không parse `Date`, nên không bị lệch múi giờ server. `/portal/page.tsx` thành **async RSC** await sẵn dữ liệu rồi truyền prop xuống `DashboardView` (strip nằm ngoài nhánh role nên chỉ cần 1 lần fetch). Đã **bỏ `birthdays` khỏi `getDashboard()` + type `Dashboard`** để không còn 2 nguồn sự thật; `getBirthdays()` mock chỉ còn trang Activities dùng (**chưa chuyển sang data thật** — ngoài scope yêu cầu). Phụ đề đổi thành "This month · N residents", rỗng thì "None this month"; strip `flex-wrap` nên tháng nhiều sinh nhật tự xuống dòng. Verify trên **DB thật**: 52 resident có `dob` → **8 người sinh nhật tháng 7** (3, 7, 12, 19, 20, 22, 28, 29 Jul), thứ tự + ordinal đúng. `tsc`/eslint sạch. Docs: [dashboard.md](../docs/features/portal/dashboard.md), [03-data-model.md](../docs/03-data-model.md).
+- **2026-07-27** — ✅ **Bảng `rooms` thật (52 phòng Wesley) + 6 field hồ sơ resident.** Trước đó phòng **hoàn toàn là mock** (`lib/mock-data/rooms.ts`) — form resident validate số phòng bịa, không có bảng `rooms` trong DB. Migration `0027_rooms_and_resident_details.sql`: tạo `rooms` (PK `(building_id, num)`, RLS như các bảng vận hành khác) + seed **52 phòng theo đúng danh sách bạn gửi**, kèm `sort_order` để "3A" đứng sau "3" và khối 125–134 nằm cuối (sort theo text sẽ ra 1, 10, 11, 125, 12…). Thêm 6 cột resident: `dob`, `admitted_on`, `nhi`, `gender`, `resident_group`, `phone`. **"Location in facility" map vào cột `room` sẵn có** — giờ được bảo chứng bởi register thật thay vì số bịa. NHI có **unique index không phân biệt hoa thường** (`upper(nhi)`, partial nên nhiều người bỏ trống vẫn được) + validate định dạng NZ NHI `^[A-Z]{3}[0-9]{3}[0-9A-Z]$` ở action, lưu uppercase để không lách được index. Code: `lib/data/rooms.ts` (reader thật), form resident đổi ô Room → **"Location in facility"** đọc phòng thật qua prop (bỏ import mock), thêm 6 field; trang chi tiết thêm hàng tile hành chính + NHI ở dòng tiêu đề; mock resident seed để trống 6 field mới thay vì **bịa số NHI/ngày sinh trông như thật**. `tsc`/eslint/`next build` sạch. **Chưa apply `0027`** ⇒ verify `verify-rooms-and-resident-details.mts` đang báo "bảng rooms chưa có" — đúng như mong đợi. ⚠️ **`wing` và `care_type` của 52 phòng cố ý để NULL** — bạn mới cho số phòng, chưa cho mapping wing/loại chăm sóc; bịa ra sẽ đặt phân loại lâm sàng sai trước mặt nhân viên. Màn `/portal/rooms` vì thế **vẫn đang chạy mock** cho tới khi có dữ liệu đó.
+- **2026-07-27** — 🔒 **Đóng A6: CMS website chỉ admin mới sửa được** (bạn chốt "CMS chỉ có admin mới được thay đổi nội dung website"). Đây là **lỗ hổng quyền thật, và lệch khỏi chính spec của luồng A** — `phase-04-website-cms.md` từ đầu đã yêu cầu "RLS: insert/update for admin role only", nhưng `0013_site_content.sql` lại tạo policy `for all to authenticated using (true) with check (true)` kèm comment "admin gating enforced in the app layer" mà tầng app **không hề kiểm**. Mục nav `adminOnly` chỉ che, không chặn. Siết **cả 2 tầng**: (app) `saveSiteContent`/`resetSiteContent` gọi `requireAdmin()` trước rồi dùng `createAdminClient()`, đúng khuôn `renameUserRole`/`setRolePermission`/`saveFormTemplate`; (DB) migration `0026_site_content_admin_write.sql` **xoá** policy write — RLS vẫn bật nên không policy nào khớp ⇒ anon + authenticated đều bị từ chối, chỉ service-role đi được, public read giữ nguyên. Verify `verify-site-content-admin-write.mts`: anon **không ghi được** (`42501`), service-role vẫn ghi được, nội dung website được restore nguyên trạng. **Chưa chứng minh được** mục quan trọng nhất (non-admin đã đăng nhập không ghi được) vì cần apply `0026` + 1 login non-admin — script báo BỎ QUA chứ không báo pass. `tsc`/eslint/`next build` sạch.
+- **2026-07-27** — ✨ **Hiện leave đã duyệt lên roster.** Theo yêu cầu của bạn. `getApprovedLeaveByDay(weekStart, weekEnd)` (`lib/data/roster.ts`) trả `"{staffId}::{dateISO}" → loại nghỉ`; **chỉ đơn Approved** (đơn Pending chưa chốt, không được nhìn như đã nghỉ). Đơn được **kẹp vào tuần đang xem** rồi bung từng ngày, nên đơn dài vắt qua tuần chỉ đánh dấu phần nằm trong tuần; đơn **không có ngày kết thúc** chạy tới hết tuần (khớp cách `getStaff()` tính on-leave hôm nay). Lỗi đọc trả `{}` — dấu nghỉ là trang trí, không được làm hỏng trang. **Dấu nghỉ nằm trên ca chứ không thay thế ca**: ca xếp trúng ngày nghỉ đã duyệt là **xung đột thật** cần thấy, nên đổi từ hổ phách sang đỏ + ⚠ kèm số ca trong tooltip. Đồng thời vá đúng lỗ đã gặp ở `saveStaff`: `approveLeave`/`declineLeave`/`deleteLeave` trước chỉ revalidate `/portal/staff` → thêm `/portal/roster` (riêng `saveLeave` không cần: nó tạo đơn Pending, roster cố tình bỏ qua). Verify `verify-roster-approved-leave.mts` **6/6 PASS trên DB thật** (Pending vô hình · bung đủ 2 đầu mút · kẹp đúng tuần · open-ended tới hết tuần · tuần khác không lọt). Không đổi schema.
 - **2026-07-27** — ✅ **Luồng N (leave) + 3 việc roster theo yêu cầu của bạn.**
   - **N-1 · Sick leave tách quỹ riêng.** Trước đây `staff` chỉ có `annual` + `taken`, và RPC `approve_leave` **trừ `taken` cho CẢ annual lẫn sick** ⇒ nghỉ ốm ăn vào quỹ phép năm. Migration `0025_staff_leave_balances.sql`: thêm `sick` + `sick_taken`, đổi default của `annual`/`taken` về **0** (bỏ mặc định 20 ngày ngầm), và viết lại `approve_leave` để trừ theo `type` (Annual → `taken`, Sick → `sick_taken`, Shift swap → không trừ). `taken` cũ giữ nguyên nghĩa "annual đã dùng" — không có đơn nghỉ nào đã duyệt để chia lại. Code: `StaffRecord.sick`/`.sickTaken`, `getStaff()` select thêm 2 cột, `saveStaff` nhận **entitlement** từ form (mặc định 0) nhưng **không đụng** `taken`/`sick_taken` (chỉ `approve_leave` mới chuyển 2 số đó, nên lưu lại hồ sơ không thể ghi đè số dư). Form thêm 2 ô Annual/Sick + dòng "Đã dùng N ngày"; Team tab đổi cột thành "Leave left (A / S)" 2 dòng; Leave tab thành 2 thanh riêng. Verify `verify-staff-leave-balances.mts` **7/7 PASS trên DB thật** (sick không trừ vào annual · shift swap không trừ gì · duyệt lại lần 2 không cộng thêm · staff mới mặc định 0).
   - **N-2 · Fix "On leave" của Candy Tian.** Root cause: **2 nguồn sự thật đá nhau** — `getStaff()` suy on-leave từ `leave_requests` đã duyệt, nhưng khi không trúng thì fallback về cột `staff.status`, mà Candy Tian có `status = 'On leave'` lưu cứng từ seed dù DB **0 dòng `leave_requests`**. Sửa cả 2 tầng: dữ liệu (`supabase/seed/0006_clear_stale_on_leave_status.sql` reset về Active — bạn đã chạy, xác nhận **0 dòng còn sót**) **và** nguyên nhân gốc (`getStaff()` giờ **bỏ qua** `status = 'On leave'` đã lưu, nên badge chỉ có thể đến từ đơn nghỉ thật; các trạng thái khác như Suspended vẫn lấy từ cột).

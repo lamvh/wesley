@@ -13,7 +13,7 @@ export function RoomStyleRow({ style }: { style: RoomStyle }) {
       </div>
       <div className="px-10 py-[34px]">
         <div className="text-[11.5px] font-bold uppercase tracking-[1.4px] text-bronze">
-          {style.wing}
+          {style.eyebrow}
         </div>
         <h2 className="mt-1.5 font-serif text-[30px] font-semibold">{style.name}</h2>
         <p className="mt-3 mb-[18px] text-[15.5px] leading-[1.62] text-ink-muted">

@@ -8,10 +8,10 @@ const shifts: Shift[] = [
     full: true,
     gap: null,
     staff: [
-      { name: "Aroha Ngata", role: "RN", wing: "Rātā", initials: "AN", color: "#6E875E" },
-      { name: "Mere Solomon", role: "Carer", wing: "Rātā", initials: "MS", color: "#b06a5a" },
-      { name: "Tomasi Fifita", role: "Carer", wing: "Kōwhai", initials: "TF", color: "#5b8f9a" },
-      { name: "Grace Lin", role: "Activities", wing: "All", initials: "GL", color: "#c08a3e" },
+      { name: "Aroha Ngata", role: "RN", initials: "AN", color: "#6E875E" },
+      { name: "Mere Solomon", role: "Carer", initials: "MS", color: "#b06a5a" },
+      { name: "Tomasi Fifita", role: "Carer", initials: "TF", color: "#5b8f9a" },
+      { name: "Grace Lin", role: "Activities", initials: "GL", color: "#c08a3e" },
     ],
   },
   {
@@ -21,10 +21,10 @@ const shifts: Shift[] = [
     full: true,
     gap: null,
     staff: [
-      { name: "David Cho", role: "RN", wing: "Kōwhai", initials: "DC", color: "#8a6ba3" },
-      { name: "Ana Reti", role: "Carer", wing: "Rātā", initials: "AR", color: "#6e879e" },
-      { name: "Sione Latu", role: "Carer", wing: "Tōtara", initials: "SL", color: "#9a7b4f" },
-      { name: "Priya Nair", role: "Carer", wing: "Kōwhai", initials: "PN", color: "#7e9b6a" },
+      { name: "David Cho", role: "RN", initials: "DC", color: "#8a6ba3" },
+      { name: "Ana Reti", role: "Carer", initials: "AR", color: "#6e879e" },
+      { name: "Sione Latu", role: "Carer", initials: "SL", color: "#9a7b4f" },
+      { name: "Priya Nair", role: "Carer", initials: "PN", color: "#7e9b6a" },
     ],
   },
   {
@@ -32,10 +32,10 @@ const shifts: Shift[] = [
     time: "11:00pm – 7:00am",
     status: "1 open",
     full: false,
-    gap: "Kōwhai · 1 carer needed",
+    gap: "1 carer needed",
     staff: [
-      { name: "Rachel Boyd", role: "RN", wing: "All", initials: "RB", color: "#6E875E" },
-      { name: "James Whaanga", role: "Carer", wing: "Rātā", initials: "JW", color: "#b06a5a" },
+      { name: "Rachel Boyd", role: "RN", initials: "RB", color: "#6E875E" },
+      { name: "James Whaanga", role: "Carer", initials: "JW", color: "#b06a5a" },
     ],
   },
 ];

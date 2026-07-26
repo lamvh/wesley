@@ -3,6 +3,7 @@ import { BackLink } from "@/components/portal/back-link";
 import { PortalPageHeader } from "@/components/shared/portal-page-header";
 import { ResidentForm } from "@/components/portal/residents/resident-form";
 import { getResidentBySlug } from "@/lib/data/residents";
+import { getRoomNumbers } from "@/lib/data/rooms";
 
 export default async function EditResidentPage({
   params,
@@ -10,7 +11,7 @@ export default async function EditResidentPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const resident = await getResidentBySlug(id);
+  const [resident, rooms] = await Promise.all([getResidentBySlug(id), getRoomNumbers()]);
   if (!resident) notFound();
 
   return (
@@ -20,7 +21,7 @@ export default async function EditResidentPage({
         title={`Edit ${resident.pref || resident.name}`}
         sub="Update this resident's details"
       />
-      <ResidentForm resident={resident} />
+      <ResidentForm resident={resident} rooms={rooms} />
     </div>
   );
 }

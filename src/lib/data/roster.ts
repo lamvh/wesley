@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getShiftTemplates } from "@/lib/data/staff";
-import { getRosterDays, parseISODate, shiftWeek } from "@/lib/mock-data/roster-schedule";
+import { getRosterDays, parseISODate, shiftWeek, toISODate } from "@/lib/mock-data/roster-schedule";
 import {
   rosterCellKey,
   type RosterGrid,
@@ -111,6 +111,41 @@ export async function getShiftUsageByStaff(weekStartISO: string): Promise<ShiftU
       .sort((a, b) => b.count - a.count || a.shiftId.localeCompare(b.shiftId));
   }
   return usage;
+}
+
+// Approved leave overlapping [weekStartISO, weekEndISO], expanded to one entry
+// per staff member per day so the roster can mark the days someone is away.
+//
+// Only APPROVED requests count - a pending one hasn't been agreed yet and must
+// not look like settled leave on the grid. An open-ended request (`to_date`
+// null) runs from its start date onwards, matching how getStaff() decides who
+// is on leave today.
+export async function getApprovedLeaveByDay(
+  weekStartISO: string,
+  weekEndISO: string,
+): Promise<Record<string, string>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("leave_requests")
+    .select("staff_id,type,from_date,to_date")
+    .eq("building_id", BUILDING)
+    .eq("status", "Approved")
+    .lte("from_date", weekEndISO)
+    .or(`to_date.is.null,to_date.gte.${weekStartISO}`);
+  // Leave marks are decoration on the grid - never fail the whole page for them.
+  if (error || !data) return {};
+
+  const byDay: Record<string, string> = {};
+  for (const r of data) {
+    if (!r.staff_id || !r.from_date) continue;
+    // Clamp the request to the visible week, then walk it a day at a time.
+    const from = r.from_date > weekStartISO ? r.from_date : weekStartISO;
+    const to = !r.to_date || r.to_date > weekEndISO ? weekEndISO : r.to_date;
+    for (const cursor = parseISODate(from); toISODate(cursor) <= to; cursor.setDate(cursor.getDate() + 1)) {
+      byDay[rosterCellKey(r.staff_id, toISODate(cursor))] = r.type;
+    }
+  }
+  return byDay;
 }
 
 // Load the on-call assignment (nurse/HCA covering after hours) for each date in

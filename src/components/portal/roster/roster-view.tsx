@@ -62,6 +62,9 @@ interface RosterViewProps {
   /** per-staff shift counts over the weeks before this one, backing the
    *  "Thường làm" shortcut in the picker. */
   shiftUsage: ShiftUsageByStaff;
+  /** approved leave for the visible week, keyed `${staffId}::${dateISO}` →
+   *  leave type, so the grid can mark days someone is away. */
+  leaveByDay: Record<string, string>;
   /** open the duty-roster print preview on mount (roster?duty=1 deep-link). */
   initialDutyPreview?: boolean;
 }
@@ -80,6 +83,7 @@ export function RosterView({
   weekStartISO,
   initialOnCallByDay,
   shiftUsage,
+  leaveByDay,
   initialDutyPreview = false,
 }: RosterViewProps) {
   const router = useRouter();
@@ -337,6 +341,7 @@ export function RosterView({
           onToggle={toggleShift}
           onClear={clearCell}
           shiftUsage={shiftUsage}
+          leaveByDay={leaveByDay}
           bandRequired={bandRequired}
           showTimes={showTimes}
           onOpenStaff={(s) => {

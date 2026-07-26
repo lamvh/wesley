@@ -1,7 +1,6 @@
 // Typed mock-data layer. Screens read domain facts through these accessors;
 // swapping to a real DB later touches only this directory.
 export { getResidents, getResidentBySlug } from "./residents";
-export { getRooms, getRoomByNum, getRoomKpis, getRoomWings } from "./rooms";
 export { getShifts, getRosterCoverage, getLeaveRequests } from "./staff-shifts";
 export { getIncidents, getComplianceKpis } from "./incidents";
 export { getMeals, getDiets } from "./meals";

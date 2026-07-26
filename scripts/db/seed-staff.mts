@@ -39,28 +39,28 @@ async function main() {
 
   // Extended fields for the 10 already-seeded staff (match by name).
   const team = [
-    { name: "Aroha Ngata",  role: "Registered Nurse", wing: "Rātā",      contract: "Full-time", hours: 40, phone: "021 555 012", start: "Mar 2021", status: "Active",   annual: 20, taken: 6 },
-    { name: "David Cho",    role: "Registered Nurse", wing: "Kōwhai",    contract: "Full-time", hours: 40, phone: "021 555 034", start: "Aug 2020", status: "Active",   annual: 20, taken: 4 },
-    { name: "Mere Solomon", role: "Team Leader",      wing: "Rātā",      contract: "Full-time", hours: 38, phone: "021 555 056", start: "Jan 2019", status: "Active",   annual: 20, taken: 12 },
-    { name: "Tomasi Fifita",role: "Carer",            wing: "Kōwhai",    contract: "Full-time", hours: 40, phone: "021 555 078", start: "Feb 2022", status: "Active",   annual: 20, taken: 8 },
-    { name: "Hong Le",      role: "Carer",            wing: "Tōtara",    contract: "Part-time", hours: 24, phone: "021 555 090", start: "Jun 2022", status: "Active",   annual: 16, taken: 5 },
-    { name: "Candy Tian",   role: "Carer",            wing: "Rātā",      contract: "Part-time", hours: 20, phone: "021 555 102", start: "Sep 2023", status: "On leave", annual: 16, taken: 14 },
-    { name: "Priya Nair",   role: "Carer",            wing: "Kōwhai",    contract: "Casual",    hours: 12, phone: "021 555 124", start: "Nov 2023", status: "Active",   annual: 8,  taken: 2 },
-    { name: "Grace Lin",    role: "Activities",       wing: "All wings", contract: "Part-time", hours: 24, phone: "021 555 146", start: "Apr 2021", status: "Active",   annual: 16, taken: 7 },
-    { name: "Vo Hoang Lam", role: "Carer",            wing: "Tōtara",    contract: "Full-time", hours: 40, phone: "021 555 168", start: "Jul 2022", status: "Active",   annual: 20, taken: 9 },
-    { name: "LE Anh Thang", role: "Carer",            wing: "Tōtara",    contract: "Casual",    hours: 10, phone: "021 555 180", start: "Feb 2024", status: "Active",   annual: 8,  taken: 1 },
+    { name: "Aroha Ngata",  role: "Registered Nurse",      contract: "Full-time", hours: 40, phone: "021 555 012", start: "Mar 2021", status: "Active",   annual: 20, taken: 6 },
+    { name: "David Cho",    role: "Registered Nurse",    contract: "Full-time", hours: 40, phone: "021 555 034", start: "Aug 2020", status: "Active",   annual: 20, taken: 4 },
+    { name: "Mere Solomon", role: "Team Leader",      contract: "Full-time", hours: 38, phone: "021 555 056", start: "Jan 2019", status: "Active",   annual: 20, taken: 12 },
+    { name: "Tomasi Fifita",role: "Carer",    contract: "Full-time", hours: 40, phone: "021 555 078", start: "Feb 2022", status: "Active",   annual: 20, taken: 8 },
+    { name: "Hong Le",      role: "Carer",    contract: "Part-time", hours: 24, phone: "021 555 090", start: "Jun 2022", status: "Active",   annual: 16, taken: 5 },
+    { name: "Candy Tian",   role: "Carer",      contract: "Part-time", hours: 20, phone: "021 555 102", start: "Sep 2023", status: "On leave", annual: 16, taken: 14 },
+    { name: "Priya Nair",   role: "Carer",    contract: "Casual",    hours: 12, phone: "021 555 124", start: "Nov 2023", status: "Active",   annual: 8,  taken: 2 },
+    { name: "Grace Lin",    role: "Activities", contract: "Part-time", hours: 24, phone: "021 555 146", start: "Apr 2021", status: "Active",   annual: 16, taken: 7 },
+    { name: "Vo Hoang Lam", role: "Carer",    contract: "Full-time", hours: 40, phone: "021 555 168", start: "Jul 2022", status: "Active",   annual: 20, taken: 9 },
+    { name: "LE Anh Thang", role: "Carer",    contract: "Casual",    hours: 10, phone: "021 555 180", start: "Feb 2024", status: "Active",   annual: 8,  taken: 1 },
   ];
   for (const s of team) {
     const r = await client.query(
-      `update public.staff set role=$2, wing=$3, contract=$4, hours=$5, phone=$6, start_label=$7, status=$8, annual=$9, taken=$10
-       where name=$1 and building_id=$11`,
-      [s.name, s.role, s.wing, s.contract, s.hours, s.phone, s.start, s.status, s.annual, s.taken, B]);
+      `update public.staff set role=$2, contract=$3, hours=$4, phone=$5, start_label=$6, status=$7, annual=$8, taken=$9
+       where name=$1 and building_id=$10`,
+      [s.name, s.role, s.contract, s.hours, s.phone, s.start, s.status, s.annual, s.taken, B]);
     if (r.rowCount === 0) {
       const initials = s.name.split(/\s+/).map((w) => w[0]).slice(0,2).join("").toUpperCase();
       await client.query(
-        `insert into public.staff (building_id, name, role, wing, initials, color, status, contract, hours, phone, start_label, annual, taken)
-         values ($1,$2,$3,$4,$5,'#6E875E',$6,$7,$8,$9,$10,$11,$12)`,
-        [B, s.name, s.role, s.wing, initials, s.status, s.contract, s.hours, s.phone, s.start, s.annual, s.taken]);
+        `insert into public.staff (building_id, name, role, initials, color, status, contract, hours, phone, start_label, annual, taken)
+         values ($1,$2,$3,$4,'#6E875E',$5,$6,$7,$8,$9,$10,$11)`,
+        [B, s.name, s.role, initials, s.status, s.contract, s.hours, s.phone, s.start, s.annual, s.taken]);
     }
   }
   const shifts = [

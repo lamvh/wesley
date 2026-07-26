@@ -2,9 +2,8 @@
 // Supabase rows (see docs/03-data-model.md). Presentation values (colors)
 // are NOT stored here - derived in lib/design-meta.ts.
 
-export type Wing = "Rātā" | "Kōwhai" | "Tōtara";
+/** Room tier, now stored per room rather than derived from a wing name. */
 export type CareTier = "Normal" | "Premium" | "VIP";
-export type CareType = "Rest Home" | "Hospital" | "Dementia" | "Respite";
 
 /** Per-record avatar/person color (data-driven, rendered via PersonBadge). */
 export type PersonColor = string;
@@ -13,6 +12,8 @@ export interface Resident {
   slug: string;
   name: string;
   pref: string;
+  /** Location in the facility - a room number from the real register
+   *  (Supabase `rooms`, see lib/data/rooms.ts). "" when not yet placed. */
   room: string;
   age: number;
   diet: string;
@@ -22,6 +23,17 @@ export interface Resident {
   color: PersonColor;
   note: string;
   flags: string[];
+  /** date of birth, ISO YYYY-MM-DD; "" if unrecorded. `age` stays the stored
+   *  figure - it is not derived from this. */
+  dob: string;
+  /** date of admission, ISO YYYY-MM-DD; "" if unrecorded. */
+  admittedOn: string;
+  /** NZ National Health Index number (3 letters + 4 chars); "" if unrecorded. */
+  nhi: string;
+  gender: string;
+  /** the care/activity group this resident belongs to; "" if unassigned. */
+  group: string;
+  phone: string;
 }
 
 export type RoomStatus = "Occupied" | "Available" | "Maintenance" | "Respite";
@@ -43,9 +55,9 @@ export interface SupplyItem {
 
 export interface Room {
   num: string;
-  wing: Wing;
   status: RoomStatus;
-  careType: CareType;
+  /** "" when the home hasn't assigned this room a tier yet. */
+  tier: CareTier | "";
   resident?: RoomResident;
   note: string;
   house: string;
@@ -58,7 +70,6 @@ export type StaffRole = "RN" | "Carer" | "Activities";
 export interface StaffMember {
   name: string;
   role: StaffRole;
-  wing: Wing | "All";
   initials: string;
   color: PersonColor;
 }
@@ -188,13 +199,6 @@ export interface Alert {
   tone: AlertTone;
 }
 
-export interface OccupancyWing {
-  name: string;
-  filled: number;
-  total: number;
-  tone: "sage" | "navy" | "gold";
-}
-
 export interface ScheduleItem {
   time: string;
   title: string;
@@ -209,15 +213,14 @@ export interface Dashboard {
   kpis: Kpi[];
   alerts: Alert[];
   todaySchedule: ScheduleItem[];
-  wings: OccupancyWing[];
   familyPosts: { from: string; resident: string; initials: string; color: PersonColor; preview: string; time: string }[];
-  birthdays: Birthday[];
 }
 
 // ---- marketing ----
 export interface RoomStyle {
   name: string;
-  wing: string;
+  /** small label above the name, e.g. "Rest home care". */
+  eyebrow: string;
   slot: string;
   desc: string;
   points: string[];
@@ -237,12 +240,6 @@ export interface TimelineStep {
 
 export interface Facility {
   title: string;
-  desc: string;
-}
-
-export interface CareWing {
-  name: string;
-  care: string;
   desc: string;
 }
 
@@ -333,7 +330,6 @@ export interface Building {
   name: string;
   full: string;
   suburb: string;
-  wings: string[];
   suites: number;
   occupied: number;
   staff: number;

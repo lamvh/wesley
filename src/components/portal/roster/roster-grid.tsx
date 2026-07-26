@@ -43,6 +43,8 @@ interface RosterGridProps {
   /** Per-staff shift counts from earlier weeks, for the picker's "Thường làm"
    *  shortcut. Missing entry = no history, section is skipped. */
   shiftUsage: ShiftUsageByStaff;
+  /** Approved leave for the week, keyed `${staffId}::${dateISO}` → leave type. */
+  leaveByDay: Record<string, string>;
   /** Shift slots each band must cover per day, keyed by band id. 0 = no
    *  requirement recorded, so that band shows a bare count. */
   bandRequired: Record<string, number>;
@@ -76,6 +78,7 @@ export function RosterGrid({
   onToggle,
   onClear,
   shiftUsage,
+  leaveByDay,
   bandRequired,
   showTimes,
   onOpenStaff,
@@ -235,6 +238,7 @@ export function RosterGrid({
                           pickerDefs={pickers[st.id] ?? []}
                           usage={shiftUsage[st.id] ?? []}
                           showTimes={showTimes}
+                          leaveType={leaveByDay[cellKey]}
                           staffName={staffDisplayName(st)}
                           dayLabel={`${d.dow} ${d.date}`}
                           isOpen={openCell === cellKey}

@@ -78,7 +78,7 @@ async function main() {
     }
   }
 
-  // buildings + wings
+  // buildings
   for (const b of getBuildings()) {
     await client.query(
       `insert into public.buildings (id, name, full_name, suburb, manager_name, color, tint)
@@ -88,13 +88,6 @@ async function main() {
          manager_name = excluded.manager_name, color = excluded.color, tint = excluded.tint`,
       [b.id, b.name, b.full, b.suburb, b.mgr, b.color, b.tint],
     );
-    for (const wing of b.wings) {
-      await client.query(
-        `insert into public.building_wings (building_id, name) values ($1,$2)
-         on conflict (building_id, name) do nothing`,
-        [b.id, wing],
-      );
-    }
   }
 
   // app_users (role assignment lives here - auth_id linked on first sign-in)
@@ -131,12 +124,12 @@ async function main() {
   }
   for (const s of staff) {
     await client.query(
-      `insert into public.staff (building_id, name, role, wing, initials, color)
-       select $1,$2,$3,$4,$5,$6
+      `insert into public.staff (building_id, name, role, initials, color)
+       select $1,$2,$3,$4,$5
        where not exists (
          select 1 from public.staff where name = $2 and building_id = $1
        )`,
-      [DEFAULT_BUILDING, s.name, s.role, s.wing, s.initials, s.color],
+      [DEFAULT_BUILDING, s.name, s.role, s.initials, s.color],
     );
   }
 
@@ -162,7 +155,6 @@ async function main() {
     select 'roles' t, count(*) n from public.roles
     union all select 'role_permissions', count(*) from public.role_permissions
     union all select 'buildings', count(*) from public.buildings
-    union all select 'building_wings', count(*) from public.building_wings
     union all select 'app_users', count(*) from public.app_users
     union all select 'staff', count(*) from public.staff
     union all select 'residents', count(*) from public.residents

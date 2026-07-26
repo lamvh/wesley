@@ -13,10 +13,10 @@ const week: ActivityDay[] = [
     date: "7",
     isToday: false,
     items: [
-      a("9:30", "Morning stretch", "Rātā lounge", "move"),
+      a("9:30", "Morning stretch", "Lounge", "move"),
       a("11:00", "Book club", "Library", "social"),
       a("2:00", "Movie matinée", "Cinema room", "social"),
-      a("3:30", "Mahjong & cards", "Kōwhai lounge", "social"),
+      a("3:30", "Mahjong & cards", "Lounge", "social"),
     ],
   },
   {
@@ -26,7 +26,7 @@ const week: ActivityDay[] = [
     items: [
       a("9:30", "Podiatry clinic", "Sunroom · visiting", "care"),
       a("10:30", "Garden club", "Courtyard", "garden"),
-      a("11:30", "Chair yoga", "Kōwhai lounge", "move"),
+      a("11:30", "Chair yoga", "Lounge", "move"),
       a("2:30", "Piano & singalong", "Chapel", "music"),
     ],
   },
@@ -36,7 +36,7 @@ const week: ActivityDay[] = [
     isToday: false,
     items: [
       a("9:30", "Baking group", "Kitchen", "craft"),
-      a("11:00", "Waiata & kapa haka", "Tōtara lounge", "music"),
+      a("11:00", "Waiata & kapa haka", "Lounge", "music"),
       a("1:30", "Hair salon day", "Salon", "care"),
       a("3:00", "Happy hour", "Main lounge", "social"),
     ],
@@ -57,10 +57,10 @@ const week: ActivityDay[] = [
     isToday: true,
     items: [
       a("9:30", "Garden group", "Courtyard", "garden"),
-      a("11:00", "Gentle exercise", "Rātā lounge", "move"),
+      a("11:00", "Gentle exercise", "Lounge", "move"),
       a("2:00", "Choir & singalong", "Chapel", "music"),
-      a("2:30", "Mei’s 90th birthday tea", "Kōwhai lounge", "faith"),
-      a("3:30", "Afternoon quiz", "Kōwhai lounge", "social"),
+      a("2:30", "Mei’s 90th birthday tea", "Lounge", "faith"),
+      a("3:30", "Afternoon quiz", "Lounge", "social"),
     ],
   },
   {
@@ -86,10 +86,10 @@ const week: ActivityDay[] = [
 ];
 
 const birthdays: Birthday[] = [
-  { name: "Mei Lam", room: "Kōwhai 24", date: "Yesterday", initials: "ML", color: "#b06a5a", badge: "90th" },
-  { name: "Henry Fitzgerald", room: "Rātā 07", date: "14 Jul", initials: "HF", color: "#2C3563", badge: "89th" },
-  { name: "Dorothy Nguyen", room: "Kōwhai 21", date: "19 Jul", initials: "DN", color: "#8a6ba3", badge: "92nd" },
-  { name: "Patricia Vaughan", room: "Rātā 05", date: "27 Jul", initials: "PV", color: "#B88A34", badge: "81st" },
+  { name: "Mei Lam", room: "24", date: "Yesterday", initials: "ML", color: "#b06a5a", badge: "90th" },
+  { name: "Henry Fitzgerald", room: "07", date: "14 Jul", initials: "HF", color: "#2C3563", badge: "89th" },
+  { name: "Dorothy Nguyen", room: "21", date: "19 Jul", initials: "DN", color: "#8a6ba3", badge: "92nd" },
+  { name: "Patricia Vaughan", room: "05", date: "27 Jul", initials: "PV", color: "#B88A34", badge: "81st" },
 ];
 
 export function getActivityWeek(): ActivityDay[] {
