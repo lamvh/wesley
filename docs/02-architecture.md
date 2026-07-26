@@ -51,7 +51,7 @@ src/
 │   ├── ui/                        # shadcn generated
 │   ├── shared/                    # icons, Photo, badges, kpi-card
 │   ├── marketing/                 # nav, footer, hero, room-card, feature-grid, day-timeline, enquiry-form...
-│   └── portal/                    # sidebar, topbar, role-toggle, occupancy-bar, room-card, resident-card,
+│   └── portal/                    # sidebar, topbar, role-toggle, room-card, resident-card,
 │                                  #   shift-column, meal-card, activity-week, stock-table, incident-table, family-feed...
 ├── lib/
 │   ├── mock-data/                 # one file per entity + index accessors

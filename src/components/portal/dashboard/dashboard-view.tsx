@@ -9,13 +9,16 @@ import { PortalPageHeader } from "@/components/shared/portal-page-header";
 import { Button } from "@/components/ui/button";
 import { BirthdayStrip } from "./birthday-strip";
 import { NeedsAttention } from "./needs-attention";
-import { TodayProgramme } from "./today-programme";
-import { RecentFamilyMessages } from "./recent-family-messages";
 import { DashboardSkeleton } from "./dashboard-skeleton";
 
 // Portal landing screen. Same skeleton for both roles; greeting, sub, the 4
-// KPIs and the alert set swap with the active role. Schedule, family
-// messages and birthdays are shared. Header buttons are inert this phase.
+// KPIs and the alert set swap with the active role. Birthdays are shared and
+// come from the real register. Header buttons are inert this phase.
+//
+// "Today's programme" and "Recent family messages" used to sit below. Both
+// were hardcoded mock rows - Peggy W., George A., "Mei's 90th" - none of whom
+// are in either register, presented next to live occupancy and birthday data.
+// Removed rather than left dangling; git has them if a real source arrives.
 export function DashboardView({ birthdays }: { birthdays: Birthday[] }) {
   const { role } = usePortalRole();
   // Remount the body on role change (key) so the loading→render cycle re-runs
@@ -70,13 +73,8 @@ function DashboardBody({ role, birthdays }: { role: PortalRole; birthdays: Birth
 
       <BirthdayStrip birthdays={birthdays} />
 
-      <div className="mt-4 grid gap-4 md:grid-cols-[1.5fr_1fr]">
-        <NeedsAttention alerts={data.alerts} />
-        <TodayProgramme schedule={data.todaySchedule} />
-      </div>
-
       <div className="mt-4">
-        <RecentFamilyMessages posts={data.familyPosts} />
+        <NeedsAttention alerts={data.alerts} />
       </div>
     </div>
   );

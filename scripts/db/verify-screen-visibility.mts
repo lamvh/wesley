@@ -26,7 +26,9 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { createClient } from "@supabase/supabase-js";
-import { ALWAYS_VISIBLE, hideableScreens } from "../../src/lib/portal-nav.ts";
+// Imported from the app rather than restated here: a copy of the rule would
+// keep passing after the real one changed.
+import { ALWAYS_VISIBLE, hideableScreens } from "../../src/lib/portal-nav";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const env = (k: string) => {

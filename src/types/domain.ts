@@ -203,12 +203,6 @@ export interface Alert {
   tone: AlertTone;
 }
 
-export interface ScheduleItem {
-  time: string;
-  title: string;
-  where: string;
-}
-
 export type PortalRole = "admin" | "staff";
 
 export interface Dashboard {
@@ -216,8 +210,6 @@ export interface Dashboard {
   sub: string;
   kpis: Kpi[];
   alerts: Alert[];
-  todaySchedule: ScheduleItem[];
-  familyPosts: { from: string; resident: string; initials: string; color: PersonColor; preview: string; time: string }[];
 }
 
 // ---- marketing ----

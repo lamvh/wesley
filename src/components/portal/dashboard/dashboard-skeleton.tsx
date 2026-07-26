@@ -6,7 +6,9 @@ function Block({ className }: { className?: string }) {
 }
 
 // Loading-state mirror of DashboardView: same grid rhythm (header → 4 KPIs →
-// birthday strip → two split rows) so the swap to real content is seamless.
+// birthday strip → the alerts card) so the swap to real content is seamless.
+// It has to track that layout - it was already a row out of date, showing two
+// split rows the screen had stopped rendering.
 export function DashboardSkeleton() {
   return (
     <div className="mx-auto max-w-[1180px]" aria-busy="true" aria-live="polite">
@@ -29,15 +31,7 @@ export function DashboardSkeleton() {
 
       <Block className="mt-4 h-[68px]" />
 
-      <div className="mt-4 grid gap-4 md:grid-cols-[1.5fr_1fr]">
-        <Block className="h-[220px]" />
-        <Block className="h-[220px]" />
-      </div>
-
-      <div className="mt-4 grid gap-4 md:grid-cols-[1fr_1.5fr]">
-        <Block className="h-[200px]" />
-        <Block className="h-[200px]" />
-      </div>
+      <Block className="mt-4 h-[220px]" />
     </div>
   );
 }

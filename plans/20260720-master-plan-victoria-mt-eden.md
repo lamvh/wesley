@@ -116,6 +116,13 @@ Sinh lại bất cứ lúc nào (sau khi thêm role/module hoặc thêm/bớt sh
 
 Ghi theo ngày, mới nhất trên cùng.
 
+- **2026-07-27** — 🧹 **Bỏ "Today's programme" và "Recent family messages" khỏi dashboard.** Bạn yêu cầu ẩn. Cả hai đều là **mock cứng 100%**, và đang nằm ngay dưới strip sinh nhật đọc dữ liệu thật — Recent family messages liệt kê Peggy W., George A., Bill T., **không ai có trong sổ của cả 2 nhà**; Today's programme là 6 dòng lịch bịa ("Garden group", "Birthday afternoon tea · Mei's 90th") không có nguồn nào phía sau. Đây đúng kiểu lỗi đã dọn ở trang chi tiết phòng và strip sinh nhật.
+  - **Xoá hẳn chứ không chỉ ẩn**, vì không nơi nào khác dùng: 2 component `today-programme.tsx` + `recent-family-messages.tsx`, type `ScheduleItem`, và 2 field `todaySchedule`/`familyPosts` trên `Dashboard` + mock. Ẩn mà giữ lại là để code chết. Git vẫn còn nếu sau này có nguồn thật.
+  - `NeedsAttention` từ cột `1.5fr` chuyển thành **full width** (bỏ cột kia thì lưới `1.5fr_1fr` để trống nửa màn).
+  - **Phát hiện thêm:** `dashboard-skeleton.tsx` đã lệch từ trước — vẫn vẽ **2 hàng chia cột**, trong đó hàng "Occupancy by wing" đã bị bỏ từ đợt xoá wing. Đã sửa khớp lại layout thật.
+  - **Docs dashboard đã lỗi thời nặng** (vẫn mô tả Occupancy by wing + tham chiếu số dòng file design gốc) → **viết lại toàn bộ** theo đúng hiện trạng, kèm mục History ghi rõ 3 block đã bỏ và lý do. Dọn luôn tham chiếu cũ ở `03-data-model.md` và `02-architecture.md`.
+  - ⚠️ **Còn lại trên dashboard vẫn là mock:** 4 KPI (Occupancy 94%, Staff on shift 12…) và các dòng Needs attention. Chỉ strip sinh nhật là dữ liệu thật.
+  - `tsc`/eslint/`next build` sạch. Docs: [dashboard.md](../docs/features/portal/dashboard.md).
 - **2026-07-27** — 🔌 **Công tắc bật/tắt màn hình + tạm ẩn Meals & dietary.** Bạn chốt: **1 công tắc toàn hệ thống** (không phải theo role), **chặn luôn route** chứ không chỉ ẩn menu, **mỗi màn 1 công tắc riêng** (dùng lại được cho mọi màn sau này), và **chỉ super_admin** mới đổi được — admin cũng không.
   - **Tắt là tắt thật, không phải giấu link.** Ba tầng: (1) biến khỏi sidebar + tab bar mobile + More sheet; (2) **route đóng ở middleware** — `pathname === href || startsWith(href + "/")` nên **sub-route đi theo** (ẩn Residents là đóng luôn `/portal/residents/ada-lovelace`); (3) không xoá gì, bật lại là về nguyên trạng. Đặt guard ở middleware chứ không rải từng page vì rải là **sẽ quên** ở màn tiếp theo.
   - **Chỉ super_admin.** Thêm `superAdminOnly` cho nav item, `isSuperAdmin()` + `requireSuperAdmin()`. Chặn 3 tầng giống nhau: nav ẩn, route redirect, action từ chối server-side — vì ẩn link chưa bao giờ là guard (đúng bài học của lỗ hổng CMS lần trước).

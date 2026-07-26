@@ -1,26 +1,4 @@
-import type {
-  Alert,
-  Dashboard,
-  Kpi,
-  PortalRole,
-  ScheduleItem,
-} from "@/types/domain";
-
-// ---- shared across roles ----
-const todaySchedule: ScheduleItem[] = [
-  { time: "9:30", title: "Garden group", where: "Courtyard · with Pip" },
-  { time: "10:30", title: "Morning tea & scones", where: "Main lounge" },
-  { time: "11:00", title: "Gentle exercise", where: "Lounge · with physio" },
-  { time: "2:00", title: "Choir & singalong", where: "Chapel · with Grace" },
-  { time: "2:30", title: "Birthday afternoon tea", where: "Lounge · Mei’s 90th" },
-  { time: "3:30", title: "Afternoon quiz", where: "Lounge" },
-];
-
-const familyPosts: Dashboard["familyPosts"] = [
-  { from: "Aroha (RN)", resident: "Peggy W.", initials: "PW", color: "#6E875E", preview: "Picked the first sweet peas this morning - thrilled!", time: "2h" },
-  { from: "Grace (activities)", resident: "George A.", initials: "GA", color: "#b06a5a", preview: "Joined the choir today and sang every song.", time: "4h" },
-  { from: "Mere (carer)", resident: "Bill T.", initials: "WT", color: "#5b8f9a", preview: "Enjoyed the cricket on the big screen with Miso.", time: "5h" },
-];
+import type { Alert, Dashboard, Kpi, PortalRole } from "@/types/domain";
 
 // ---- admin-specific ----
 const adminKpis: Kpi[] = [
@@ -60,7 +38,5 @@ export function getDashboard(role: PortalRole): Dashboard {
       : "Here’s what needs you on shift today.",
     kpis: isAdmin ? adminKpis : staffKpis,
     alerts: isAdmin ? adminAlerts : staffAlerts,
-    todaySchedule,
-    familyPosts,
   };
 }

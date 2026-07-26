@@ -2,87 +2,82 @@
 
 - **Route:** `/portal` - `app/portal/page.tsx`
 - **Section:** Portal · **Access:** both (admin + staff variants)
-- **Source:** lines `484–581` (markup); data `1123–1166`, role-branch KPIs/alerts `1124–1148`
-- **Render:** RSC (reads `getDashboard(role)`); role comes from the `usePortalRole()` client island in `PortalLayout` - the page branches on the passed role, no client code of its own
+- **Render:** thin RSC awaits `getBirthdaysThisMonth()` and passes it into the client `DashboardView`; the role branch happens client-side because role lives in `usePortalRole()`
 
 ## Purpose
-Landing screen of the portal. Gives an at-a-glance operational picture. **Admin** (Sarah, Facility Manager) sees whole-home status across all three wings; **staff** (Aroha, RN on Rātā) sees her shift, residents, and tasks. Same layout skeleton, role-swapped content.
+Landing screen of the portal. An at-a-glance operational picture: **admin** sees whole-home status, **staff** sees their shift. Same layout, role-swapped content.
 
 ## Layout
-Centered `max-width:1180px` column inside `PortalLayout`'s `<main>`. Top→bottom, `16px` vertical rhythm between blocks:
+Centered `max-width:1180px` column inside `PortalLayout`'s `<main>`, `16px` vertical rhythm:
 
-1. Header row (greeting + sub, with Handover/+New buttons right-aligned).
+1. Header row (greeting + sub, Handover/+New buttons right-aligned).
 2. KPI grid - 4 cards.
 3. Upcoming-birthdays strip.
-4. Two-column row: **Needs attention** (`1.5fr`) + **Today's programme** (`1fr`).
-5. Two-column row: **Occupancy by wing** (`1fr`) + **Recent family messages** (`1.5fr`).
+4. **Needs attention** - full width.
 
 ## Sections & components
 
 | Section | Component | Notes |
 |---------|-----------|-------|
-| Header | (inline in `page.tsx`) | `greeting` H1 (Newsreader `34px`, weight 500) + `sub` (`#6b6255`). Right: "Handover notes" (cream-2 outline) + "+ New entry" (accent-fill) buttons - both inert. `flex`, wraps, `align-items:flex-end`. Source `486–495`. |
-| KPI grid | `kpi-card` × 4 | `grid-cols-4`, `gap:16px`, `margin-top:26px`. Each card: `label` + big `value` (Newsreader `33px`) + colored `delta` + `sub` meta. Source `497–509`. |
-| Birthdays strip | `birthday-strip` (inline header cell + one pill per resident) | Single `cream-2` bar: leading cake-icon header cell ("Upcoming birthdays · This month · N residents"; "None this month" when empty) then one pill per resident whose birthday falls in the current calendar month. `flex`, wraps, `gap:16px`. Source `511–524`. |
-| Needs attention | `alert-row` × N | Card titled "Needs attention" + "View all" (inert). Rows stacked `gap:10px`. Source `526–539`. |
-| Today's programme | (inline schedule rows in `page.tsx`) | Card titled "Today's programme"; each row = `time` (58px, navy, weight 700) + `title` + `where`, divided by `border-2`. Source `540–551`. |
-| Occupancy by wing | `occupancy-bar` × 3 | Card; per wing: label + `filled/total` + progress track (`#EAE0CE`) with colored fill to `pct`. Source `555–566`. |
-| Recent family messages | `family-message-row` × 3 | Card titled "Recent family messages" + "Open portal" → `/portal/family`; rows = avatar + `from · resident` + `preview` + `time`. Source `567–579`. |
+| Header | inline in `dashboard-view` | `greeting` H1 (Newsreader `34px`) + `sub`. Right: "Handover notes" (cream-2 outline) + "+ New entry" (navy fill) - both inert. |
+| KPI grid | `kpi-card` × 4 | `grid-cols-2 md:grid-cols-4`, `gap:16px`. Each: `label` + value (Newsreader `33px`) + colored `delta` + `sub`. |
+| Birthdays strip | `birthday-strip` | Single `cream-2` bar: cake-icon header cell ("Upcoming birthdays · This month · N residents"; "None this month" when empty) then one pill per resident with a birthday in the current month. Wraps. |
+| Needs attention | `needs-attention` | Card + inert "View all". Each row carries a tone-colored `3px` left border + dot + tag pill; the border color is derived from the tone's text class so it can't drift from the dot/pill. |
 
 ## Data consumed
-Two sources: `getDashboard(role)` (`lib/mock-data/dashboard.ts`) → `{ greeting, sub, kpis, alerts, todaySchedule, wings, familyPosts }` (static mock, no "today" computation), plus **live** `getBirthdaysThisMonth()` (`lib/data/residents.ts`) awaited in the `/portal` RSC page and passed into `DashboardView` as a prop.
+Two sources:
+- `getDashboard(role)` (`lib/mock-data/dashboard.ts`) → `{ greeting, sub, kpis, alerts }` - **still mock**, role-branched, no "today" computation.
+- `getBirthdaysThisMonth()` (`lib/data/residents.ts`) - **live Supabase**, awaited in the RSC page.
 
-- **`greeting`** / **`sub`** - role-branched strings (`1124–1127`).
-- **`kpis`**: `Kpi[]` - `{ label, value, delta, deltaTone, sub }`; role-branched set of 4 (`1128–1138`). `deltaTone` → color token (`accent` = navy, `warn` = terracotta `#BE7350`), derived not stored as hex.
-- **`alerts`**: `Alert[]` - `{ title, detail, tag, tone }`; role-branched (`1139–1148`). `tone` (`warn`/`amber`/`accent`) maps to left-border + tag color/tint via a helper.
-- **`todaySchedule`**: `{ time, title, where }[]` - shared, 6 items (`1149–1156`).
-- **`wings`**: `OccupancyWing[]` - `{ name, filled, total, colorKey }`; 3 wings, `pct` derived `filled/total` (`1157–1161`).
-- **`familyPosts`**: `FamilyPost[]` subset - `{ from, resident, initials, colorKey, preview, time }`; 3 items (`1162–1166`).
-- **`birthdays`**: `Birthday[]` - `{ name, room, date, initials, color, badge }`; **live from Supabase** `residents` (`name,room,dob,color`). Rows whose `dob` month equals the current month, sorted by day ascending. `date` = `"<day> <Mon>"` (or `"Today"`), `badge` = ordinal of the age they turn this year (e.g. `93rd`), `room` = `"Room <n> · <home>"`, `initials` derived via `initials()`. **Covers both homes** - the dashboard is home-wide, and the home is named because room numbers repeat across the two registers. Month/day are read off the ISO `dob` string, not a parsed `Date`, so no timezone shift.
+Fields:
+- **`greeting`** / **`sub`** - role-branched strings.
+- **`kpis`**: `Kpi[]` - `{ label, value, delta, deltaTone, sub }`, 4 per role. `deltaTone` → color token (`accent` navy, `warn` terracotta), derived not stored.
+- **`alerts`**: `Alert[]` - `{ title, detail, tag, tone }`, role-branched. `tone` (`warn`/`amber`/`accent`) maps to left-border + tag color/tint via `alertToneMeta`.
+- **`birthdays`**: `Birthday[]` - live from `residents(name,room,dob,color)`. Rows whose `dob` month is the current month, sorted by day. `date` = `"20 Jul"` or `"Today"`; `badge` = the ordinal age they turn this year (`93rd`); `room` = `"Room 5 · The Lodge"`. **Covers both homes** - the dashboard is home-wide and room numbers repeat across the two registers. Month/day are read straight off the ISO `dob` string, not a parsed `Date`, so there is no timezone shift.
 
-Colors (`deltaColor`, alert border/tint, wing fill, avatar bg) are derived in the accessor/helper layer from semantic scales / avatar palette - JSX references tokens only.
+Colors (delta, alert border/tint, avatar bg) derive in the accessor/helper layer from semantic scales and the avatar palette - JSX references tokens only.
 
 ## Variants & states
-
-**Admin vs staff differ in header + KPIs + alerts** (source `1124–1148`). `todaySchedule`, `wings`, `familyPosts`, `birthdays` are identical for both (birthdays come from one server-side fetch, above the role branch).
+Admin vs staff differ in **header + KPIs + alerts** only. Birthdays are identical for both (one server-side fetch, above the role branch).
 
 | | Admin (Sarah) | Staff (Aroha) |
 |---|---|---|
 | `greeting` | "Good morning, Sarah" | "Kia ora, Aroha" |
-| `sub` | "Here's how the home is running today across all three wings." | "You're on the Rātā (Normal) morning shift - here's what needs you." |
-| KPI 1 | Occupancy · 94% · +2% · 51 of 54 suites | My residents · 14 · Rātā · Rooms 05–18 |
-| KPI 2 | Staff on shift · 12 · Full · 3 RNs · 9 carers | Tasks due · 6 · 2 now · Meds, obs, care notes |
-| KPI 3 | Low stock alerts · 5 · 2 urgent (warn) · Across 3 categories | Shift ends · 3:00 · 4h left · Afternoon handover |
-| KPI 4 | Open incidents · 3 · 1 new (warn) · None high severity | Activities · 3 · Today · Garden, choir, quiz |
-| Alerts | 4 rows: glove reorder, open Sunday-night shift, Harry fall (INC-0432), Peggy GP review | 3 rows: Peggy 9am meds (Now), Harry post-fall obs (Obs), Joan care note pending (Note) |
+| KPI 1 | Occupancy · 94% | My residents · 14 |
+| KPI 2 | Staff on shift · 12 | Tasks due · 6 |
+| KPI 3 | Low stock alerts · 5 (warn) | Shift ends · 3:00 |
+| KPI 4 | Open incidents · 3 (warn) | Activities · 3 |
+| Alerts | 4 rows | 3 rows |
 
 Other states:
-- **Delta tone:** `warn` deltas render terracotta (`#BE7350`), else navy - the only status-driven styling in KPI cards.
-- **Alert tone:** drives the `3px` left border + dot + tag color/tint (warn=terracotta, amber=`#b0894a`, accent=navy-sage).
-- **Occupancy fill:** width = `pct`; a wing at `100%` (Tōtara) fills the whole track.
-- No empty states - dashboard always has data both roles.
-- Hover: cards/rows are static (no per-row hover nav this phase).
+- **Delta tone:** `warn` renders terracotta, else navy - the only status-driven styling in KPI cards.
+- **Birthday strip:** empty month renders "None this month" rather than an empty bar.
+- No other empty states - both roles always have KPI and alert data.
 
-**Loading state** (`dashboard-skeleton.tsx`): `DashboardView` is a client island with an explicit `loading` → render transition. On mount **and on every role switch** it shows `DashboardSkeleton` - a pulsing mirror of the real layout (header, 4 KPIs, birthday strip, both split rows) - then swaps to content. `getDashboard(role)` is still synchronous mock data; the settle window (`~450ms`) stands in for the async Supabase queries that will replace it, so the skeleton path is real and forward-compatible. Birthdays already come from Supabase, awaited in the RSC page before `DashboardView` mounts, so they render with the first content frame. Skeleton carries `aria-busy` / `aria-live`.
+**Loading** (`dashboard-skeleton.tsx`): `DashboardView` is a client island with an explicit `loading` → render transition, re-run on every role switch (the body remounts via `key={role}`). The skeleton mirrors the real layout (header, 4 KPIs, birthday strip, alerts card) and carries `aria-busy`/`aria-live`. `getDashboard(role)` is still synchronous mock; the `~450ms` settle window stands in for the Supabase query that will replace it, so the skeleton path is real. Birthdays are already awaited in the RSC page, so they land with the first content frame.
 
 ## Interactions
-- **"Open portal"** (family card header) → `/portal/family`. Real nav.
-- **"View all"** (Needs attention) - inert stub this phase.
-- **"Handover notes"** / **"+ New entry"** header buttons - inert stubs.
-- **Role change** happens in the topbar `role-toggle`; this page re-renders with the other variant. No in-page toggle.
+- "View all" (Needs attention), "Handover notes", "+ New entry" - inert stubs this phase.
+- Role change happens in the topbar; this page re-renders with the other variant.
 
 ## Tokens
-`cream-2` + `border` (all cards, radius `16px`, pad `18–22px`); Newsreader for greeting (`34px`) + KPI value (`33px`) + card titles (`20px`); `bronze-text` (`#B07C22`) for "View all"/"Open portal" links; `accent` (navy) fill for "+ New entry"; alert/stock/care **semantic scales** for delta + alert tones; **avatar palette** for birthday/family initials backgrounds; occupancy fill uses wing colors (`#3F5137` sage, navy, gold `#8A6516`); track `#EAE0CE`, dividers `border-2`. Birthday badge/date pill = gold tint (`#F3E8CE`/`#8A6516`).
+`cream-2` + `border-line` cards (radius `16px`, pad `18-22px`); Newsreader for greeting (`34px`), KPI value (`33px`), card titles (`20px`); `bronze-text` for "View all"; `navy` fill for "+ New entry"; alert **semantic scales** for delta + alert tones; **avatar palette** for birthday initials. Birthday badge/date pill = gold tint.
 
 ## Out of scope (this phase)
-- "Handover notes", "+ New entry", "View all" buttons - visually present, inert.
-- All values static; deltas ("+2%", "1 new"), "Shift ends 3:00", dates are fixed strings, no live data or "today" logic.
+- KPIs and alerts are still mock strings - no live occupancy, staffing, stock or incident counts.
+- "Handover notes", "+ New entry", "View all" are visually present but inert.
 
 ## Definition of Done
-- `/portal` renders the correct variant for the active role; toggling role in the topbar swaps greeting + sub + all 4 KPIs + the alert set, leaving schedule/occupancy/family/birthdays unchanged.
-- Layout matches source `484–581`: 4-col KPIs, single birthdays strip (wraps to more rows when the month has many birthdays), `1.5fr/1fr` then `1fr/1.5fr` two-col rows, `16px` gaps.
-- All content via `getDashboard(role)` except the birthday strip, which is fed by `getBirthdaysThisMonth()`; colors derived from semantic scales/avatar palette - no inline fixtures, no raw hex in JSX.
-- "Open portal" navigates to `/portal/family`; inert buttons noted above do nothing.
-- Named sub-components exist: `kpi-card`, `birthday-pill`, `alert-row`, `occupancy-bar`, `family-message-row`, `dashboard-skeleton`.
-- Loading state: first paint (and each role switch) shows `DashboardSkeleton`, then real content; skeleton grid matches the loaded layout.
-- `pnpm build` + `pnpm lint` clean; no body horizontal scroll; columns stack sensibly on narrow widths.
+- `/portal` renders the correct variant for the active role; switching role swaps greeting + sub + 4 KPIs + the alert set, leaving the birthday strip unchanged.
+- Birthday strip is fed by `getBirthdaysThisMonth()`; everything else by `getDashboard(role)`. Colors derived from semantic scales / avatar palette - no raw hex in JSX.
+- First paint and each role switch show `DashboardSkeleton`, whose grid matches the loaded layout.
+- `tsc` / lint / `next build` clean; no body horizontal scroll; columns stack on narrow widths.
+
+## History
+Three blocks have been removed from this screen, each because it presented invented data beside real data:
+
+- **Occupancy by wing** - went with the wing/care-type removal; occupancy was keyed off wing names that no longer exist.
+- **Today's programme** - six hardcoded rows ("Garden group", "Birthday afternoon tea · Mei's 90th") with no schedule source behind them.
+- **Recent family messages** - three hardcoded posts about Peggy W., George A. and Bill T., **none of whom appear in either register**, sitting directly under live birthday data.
+
+The `TodayProgramme` / `RecentFamilyMessages` components, the `ScheduleItem` type and the `todaySchedule` / `familyPosts` fields on `Dashboard` were deleted with them rather than left as dead code - nothing else consumed them. Git has the markup if a real source ever arrives. The KPI and alert sets are the remaining mock content on this screen.
