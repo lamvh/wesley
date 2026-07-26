@@ -239,6 +239,27 @@ export function StaffForm({
             )}
           </div>
 
+          {/* Deactivate rather than delete: the record and its shift history
+              stay, the person just drops off the roster. Only offered when
+              editing - a brand-new staffer is Active by definition. "On leave"
+              is never set here; it is derived from approved leave requests. */}
+          {editing && (
+            <label className="flex items-start justify-between gap-3 rounded-[11px] border border-line-soft bg-cream-2 px-[13px] py-[11px]">
+              <span className="flex flex-col gap-[3px]">
+                <span className={labelCls}>Đang làm việc</span>
+                <span className="text-[11.5px] leading-[1.35] text-ink-faint">
+                  Tắt để ẩn khỏi roster. Hồ sơ và lịch sử ca vẫn được giữ.
+                </span>
+              </span>
+              <input
+                type="checkbox"
+                name="active"
+                defaultChecked={staff?.status !== "Inactive"}
+                className="mt-[2px] size-[18px] shrink-0 accent-sage"
+              />
+            </label>
+          )}
+
           {/* Leave entitlements. Only the allowances are editable here - the
               days already used move solely through approving a leave request,
               so they are shown as read-only context rather than as inputs. */}

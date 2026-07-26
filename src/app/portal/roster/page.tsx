@@ -1,5 +1,5 @@
 import { RosterView } from "@/components/portal/roster/roster-view";
-import { getStaff } from "@/lib/data/staff";
+import { activeStaff, getStaff } from "@/lib/data/staff";
 import {
   getOnCallByDay,
   getRosterAssignments,
@@ -35,7 +35,10 @@ export default async function RosterPage({
   return (
     <RosterView
       key={weekStartISO}
-      staff={staff}
+      // Deactivated staff keep their record and their shift history, they just
+      // stop occupying a roster row (and, since the duty sheet is built from
+      // these bands, a line on the printed sheet).
+      staff={activeStaff(staff)}
       days={days}
       initialGrid={grid}
       shiftTypes={shiftTypes}

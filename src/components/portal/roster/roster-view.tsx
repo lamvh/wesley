@@ -20,7 +20,11 @@ import {
   setOnCallDay,
   toggleRosterShift,
 } from "@/lib/actions/roster";
-import { groupStaffForRoster, rosterPickersFor } from "@/lib/roster-grouping";
+import {
+  groupStaffForRoster,
+  rosterPickersFor,
+  shiftRequirementByBand,
+} from "@/lib/roster-grouping";
 import { staffDisplayName } from "@/lib/staff-display";
 import { usePersistedToggle } from "@/lib/use-persisted-toggle";
 import {
@@ -125,6 +129,10 @@ export function RosterView({
   // Staff are banded into their role group (Nurses & HCAs → Care Takers → …)
   // so the roster reads by role, not a flat alphabetical list.
   const bands = groupStaffForRoster(staff, roles, groups);
+
+  // Shift slots each band has to cover per day, so the grid can flag a day that
+  // is short. Derived from the templates' own `req`, not a separate setting.
+  const bandRequired = shiftRequirementByBand(roles, shiftTypes);
 
   // On-call options follow the band order, so nurses & HCAs surface first.
   const onCallOptions = bands.flatMap((b) =>
@@ -329,6 +337,7 @@ export function RosterView({
           onToggle={toggleShift}
           onClear={clearCell}
           shiftUsage={shiftUsage}
+          bandRequired={bandRequired}
           showTimes={showTimes}
           onOpenStaff={(s) => {
             // Dismiss any open cell picker first, so it isn't left hanging

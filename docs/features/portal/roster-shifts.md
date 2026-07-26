@@ -40,10 +40,38 @@ Header (title + week nav + **Export duty roster** + Publish) → shift-type lege
 - **Week nav:** ‹ › push `?week=` ±7 days via the router; the RSC reloads that week's saved assignments (grid + on-call).
 - **Copy last week:** toolbar **"Copy tuần trước"** copies every staffer's shifts; the **⟲** button that appears on a staff row when hovered copies just that person. See "Copy last week" below.
 - **Staff detail:** clicking a row's avatar + name opens that staffer's editable detail form (the shared `StaffForm`). See "Staff detail from the roster" below.
+- **Show / hide times:** toolbar **"Hiện giờ / Ẩn giờ"** toggles the time line on chips and in the picker. Off by default, and persisted — see "Shift times are opt-in" below.
+- **Per-band coverage:** each band closes with a **"Ca đã xếp / cần"** row — see "Per-band daily coverage" below.
 - **Export duty roster** → config modal → A4 print preview (`window.print()`). Publish flips the button label (no persistence yet).
 
 ## Tokens
 Shift types carry their own `color`/`tint`/`border` (**data** → inline style on chips/legend/picker swatches, sanctioned), set per-template via the swatch picker in Staff → Shift templates (`SHIFT_PALETTE`, `lib/actions/staff.ts`) — each shift template keeps its own distinct color, not derived from role. Table header `bg-navy-deep` + `text-cream`; totals `font-serif`.
+
+## Per-band daily coverage (2026-07-27)
+
+Every band closes with a **"Ca đã xếp / cần"** row: for each day, how many shifts that band's staff are assigned against how many the band needs, so an under-covered day is visible without counting chips. A short day renders bold in `text-rust`.
+
+The requirement is not a new setting — it comes from `shift_templates.req`, the headcount each template already records, summed per role group by `shiftRequirementByBand()` (`lib/roster-grouping.ts`). `req` is populated with real values (e.g. Registered Nurse has six templates at `req` 1). Templates with no role, or a role in no group, count towards the **Unassigned** band, matching where their staff land. `ShiftType` gained a `req` field to carry it through.
+
+**Assumption:** every template runs every day. Templates carry no per-weekday schedule, so the requirement is a flat per-day figure. A band with no `req` recorded shows a bare count instead of an `n / m` ratio.
+
+Note the two axes differ by design: the count is of shifts assigned to **staff in that band** (the rows directly above it), whereas the duty export groups each shift by **its own role's group**. A staffer covering a shift outside their band is counted here in their band, and printed there under the shift's group.
+
+## Shift times are opt-in (2026-07-27)
+
+Chips and picker rows can show a shift's `time` under its name, but **most templates are named after their own hours** — `6:45 - 15:15`, `TL: 16:15 - 22:45` — so the line simply repeats the name. It is therefore **off by default**, with a toolbar toggle to bring it back for the handful of templates that carry a real name (`Chef`, `Night`, `Morning + Stock`, `KH`).
+
+The preference is stored in localStorage under `wesley.roster.showTimes`, because `RosterView` is keyed on the week and remounts on every week change — component state would reset each time the user paged forward.
+
+It is read through `usePersistedToggle` (`lib/use-persisted-toggle.ts`), which wraps `useSyncExternalStore`. Seeding `useState` from localStorage desyncs hydration (the server has no such value), and writing it back in an effect trips `react-hooks/set-state-in-effect`; `useSyncExternalStore` is the hook built for exactly this — it serves the server snapshot for the first paint, then re-renders with the stored one.
+
+## Deactivated staff (2026-07-27)
+
+A staffer who has left is **deactivated, not deleted**: the "Đang làm việc" checkbox in the staff form (edit mode only) writes `staff.status = 'Inactive'`.
+
+`activeStaff()` (`lib/data/staff.ts`) filters them out at the roster page, so they stop occupying a row — and, since the duty sheet is built from the same bands, stop appearing on the printed sheet. Their record, leave balances and shift history are untouched, and they remain listed in Staff → Team with a grey "Inactive" badge so they can be brought back.
+
+`status` also carries the derived "On leave" value, which is never written to the DB (see "On leave is derived" in [staff.md](staff.md)); the form only ever writes `Active` or `Inactive`.
 
 ## Staff detail from the roster (2026-07-27)
 

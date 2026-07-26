@@ -182,6 +182,8 @@ export const staffContractMeta: Record<string, Swatch> = {
 export const staffStatusMeta: Record<string, { text: string; dot: string }> = {
   Active: { text: "text-sage", dot: "bg-sage" },
   "On leave": { text: "text-amber", dot: "bg-amber" },
+  // Deactivated: kept on file (and in Staff → Team) but off the roster.
+  Inactive: { text: "text-ink-faint", dot: "bg-line-strong" },
 };
 
 /** Leave-request status -> pill classes (Pending amber, Approved navy, Declined rust). */

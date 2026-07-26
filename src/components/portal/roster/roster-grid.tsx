@@ -12,6 +12,7 @@ import type { RosterBand, RosterPickerGroup } from "@/lib/roster-grouping";
 import { PersonBadge } from "@/components/shared/person-badge";
 import { RosterCell } from "@/components/portal/roster/roster-cell";
 import { staffDisplayName } from "@/lib/staff-display";
+import { cn } from "@/lib/utils";
 
 /** One selectable on-call candidate (nurses first, then HCAs, then the rest). */
 export interface OnCallOption {
@@ -42,6 +43,9 @@ interface RosterGridProps {
   /** Per-staff shift counts from earlier weeks, for the picker's "Thường làm"
    *  shortcut. Missing entry = no history, section is skipped. */
   shiftUsage: ShiftUsageByStaff;
+  /** Shift slots each band must cover per day, keyed by band id. 0 = no
+   *  requirement recorded, so that band shows a bare count. */
+  bandRequired: Record<string, number>;
   /** Render each shift's time line on the chips and in the picker. */
   showTimes: boolean;
   /** Open the staff detail form for this row. */
@@ -72,6 +76,7 @@ export function RosterGrid({
   onToggle,
   onClear,
   shiftUsage,
+  bandRequired,
   showTimes,
   onOpenStaff,
   onCopyStaffWeek,
@@ -242,6 +247,46 @@ export function RosterGrid({
                     })}
                   </tr>
               ))}
+              {/* Per-day coverage for this band: how many shifts its staff are
+                  assigned that day, against how many the band's shift templates
+                  say it needs (summed `req`). Short days are called out so an
+                  under-covered day is visible without counting chips. */}
+              <tr className="border-b-2 border-line" style={{ background: band.tint }}>
+                <td
+                  colSpan={2}
+                  className="px-3 py-[6px] text-right text-[11px] font-bold uppercase tracking-[0.4px]"
+                  style={{ color: band.color }}
+                >
+                  Ca đã xếp / cần
+                </td>
+                {days.map((d) => {
+                  const assigned = band.staff.reduce(
+                    (n, st) => n + (grid[rosterCellKey(st.id, d.iso)]?.length ?? 0),
+                    0,
+                  );
+                  const required = bandRequired[band.id] ?? 0;
+                  const short = required > 0 && assigned < required;
+                  return (
+                    <td
+                      key={d.iso}
+                      title={
+                        required > 0
+                          ? `${assigned} ca đã xếp trên ${required} ca cần cho ${band.label} · ${d.dow} ${d.date}`
+                          : `${assigned} ca đã xếp cho ${band.label} · ${d.dow} ${d.date} (chưa đặt mức cần)`
+                      }
+                      className={cn(
+                        "border-l border-line-divider px-1 py-[6px] text-center text-[12px] tabular-nums",
+                        short ? "font-bold text-rust" : "font-semibold text-ink-soft",
+                      )}
+                    >
+                      {assigned}
+                      {required > 0 && (
+                        <span className="font-medium text-ink-faint">/{required}</span>
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
             </Fragment>
           ))}
           <tr className="bg-cream">

@@ -44,11 +44,18 @@ export async function saveStaff(_prev: StaffFormState, fd: FormData): Promise<St
   };
   const supabase = await createClient();
   if (id) {
-    const { error } = await supabase.from("staff").update(fields).eq("id", id);
+    // Deactivating hides someone from the roster without deleting them. The
+    // checkbox is only rendered when editing, and "On leave" is derived from
+    // leave requests rather than stored, so this only ever writes the two
+    // states the form can express.
+    const { error } = await supabase
+      .from("staff")
+      .update({ ...fields, status: fd.get("active") === null ? "Inactive" : "Active" })
+      .eq("id", id);
     if (error) return { error: error.message };
   } else {
     const { error } = await supabase.from("staff")
-      .insert({ ...fields, building_id: BUILDING, taken: 0, sick_taken: 0 });
+      .insert({ ...fields, building_id: BUILDING, status: "Active", taken: 0, sick_taken: 0 });
     if (error) return { error: error.message };
   }
   revalidatePath("/portal/staff");

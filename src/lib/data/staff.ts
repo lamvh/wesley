@@ -2,6 +2,16 @@ import { createClient } from "@/lib/supabase/server";
 import type { StaffRecord, ShiftTemplate, StaffLeaveRequest } from "@/types/domain";
 const BUILDING = "wesley";
 
+/** Staff who have been deactivated: kept on file, but off the roster. */
+export const STAFF_INACTIVE = "Inactive";
+
+/** Drop deactivated staff. Used by the roster (and the duty sheet built from
+ *  it) so someone who has left stops taking up a row, without deleting the
+ *  record or the shift history attached to it. */
+export function activeStaff(staff: StaffRecord[]): StaffRecord[] {
+  return staff.filter((s) => s.status !== STAFF_INACTIVE);
+}
+
 // "On leave" is DERIVED, never stored: a staffer counts as away when they have
 // an approved Annual/Sick leave request spanning today. Nothing writes the
 // string to `staff.status` - approving a request only debits the balance.

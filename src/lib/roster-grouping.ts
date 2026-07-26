@@ -16,6 +16,30 @@ const UNASSIGNED: Omit<RosterBand, "staff"> = {
   tint: "#EFE7D7",
 };
 
+// How many shift slots each band has to cover on a single day, keyed by band id.
+//
+// A shift template carries `req` - the headcount that shift needs - so a band's
+// daily requirement is the sum of `req` across every template whose role belongs
+// to that group. Templates with no role, or a role in no group, count towards
+// the "Unassigned" band, matching where their staff land.
+//
+// This is a per-DAY figure: every template is assumed to run daily, which is how
+// the templates are set up (there is no per-weekday schedule on them). A band
+// with no requirement recorded returns 0, and the roster then shows a plain
+// count instead of a "n / m" ratio.
+export function shiftRequirementByBand(
+  roles: RoleDef[],
+  shiftTypes: ShiftType[],
+): Record<string, number> {
+  const groupOfRole = new Map(roles.map((r) => [r.name, r.groupId]));
+  const required: Record<string, number> = {};
+  for (const s of shiftTypes) {
+    const bandId = (s.role && groupOfRole.get(s.role)) || UNASSIGNED.id;
+    required[bandId] = (required[bandId] ?? 0) + (s.req || 0);
+  }
+  return required;
+}
+
 // Order staff into roster bands: each staffer lands in the earliest group (by
 // sortOrder) that any of their roles belongs to; staff whose roles map to no
 // group fall into a trailing "Unassigned" band. Empty bands are dropped. Within
