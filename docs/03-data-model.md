@@ -149,9 +149,23 @@ type RosterGrid = Record<string, string[]>;   // grid["{rowIdx}-{colIdx}"] = shi
 ```
 Date/week accessors (`roster-schedule.ts`): `getRosterDays()`, `dailyTotals(staffIds, days, grid)`, `totalShifts(grid)`, `rosterWeekTitle(days)`, week helpers. The **shift-type vocabulary is real data** - `getRosterShiftTypes()` (`lib/data/roster.ts`) maps Supabase `shift_templates` into `ShiftType`; there is no hardcoded shift lookup. A cell can hold multiple shift ids. Shift-type colors are stored per template, rendered via inline style.
 
+## Screen visibility - LIVE (`supabase/migrations/0029_screen_visibility.sql`)
+
+Lets a super_admin take a portal screen off the nav without a deploy. Backs `/portal/settings` → Screens.
+
+```sql
+screen_visibility(href pk, hidden, updated_at, updated_by)
+```
+
+Only hidden screens get a row: absence means visible, so a screen added in code is on by default and nothing needs backfilling. Keyed on the nav href because the sidebar, the tab bar and the middleware route guard all already hold it.
+
+RLS matches `role_permissions`: `screen_visibility_read` (select, authenticated) and **no write policy** - writes go through the service-role client behind `requireSuperAdmin()` (`lib/actions/screen-visibility.ts`). Reads fail open to "nothing hidden"; see [settings](./features/portal/settings.md).
+
 ## Stock, providers & ordering - LIVE (`supabase/migrations/0002_stock_procurement.sql`)
 
 Backs the **Stock** tabs (Inventory / Stock in/out / Place order / Providers). Applied + seeded (`scripts/db/seed-stock.mts`).
+
+Real catalogue: `supabase/seed/0009_cliffyhill_stock.sql` (from `scripts/db/emit-cliffyhill-stock-seed-sql.mts`) - 35 products from one provider (`cliffyhill`), replacing the 12 demo products and 4 demo providers of `0002_stock_seed.sql`. `products.price` is **excl GST** (`orders.total_excl_gst` is the ordering total); the emitter checks every row's incl-GST figure against `price x 1.15` and reports mismatches. `products.par` is **derived, not sourced** - the home's stocktake sheet has no par column, so par is qty rounded down to the nearest 5 with a floor of 5, purely so the low-stock/reorder UI has a baseline.
 
 ```sql
 providers(id, building_id, name, category, contact_email, phone, lead_time, terms, preferred, color, tint, created_at)

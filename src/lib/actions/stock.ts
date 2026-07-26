@@ -2,6 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/supabase/current-user";
+import type { MovementDest } from "@/types/domain";
 
 const BUILDING = "wesley";
 export interface StockFormState { error?: string }
@@ -80,8 +81,17 @@ export async function recordMovement(_p: StockFormState, fd: FormData): Promise<
     providerId = str(fd, "provider") || null;
     unitPrice = num(fd, "price") || null;
   } else {
-    const parsed = JSON.parse(str(fd, "dests") || "[]") as { room: string; person: string; qty: number }[];
-    const clean = parsed.map((d) => ({ ...d, qty: Number(d.qty) || 0 })).filter((d) => d.qty > 0);
+    const parsed = JSON.parse(str(fd, "dests") || "[]") as Partial<MovementDest>[];
+    // Rebuilt field by field rather than spread: this lands in a jsonb column
+    // straight from the client, so only the four known keys get through.
+    const clean = parsed
+      .map((d) => ({
+        room: String(d.room ?? ""),
+        person: String(d.person ?? ""),
+        home: d.home ? String(d.home) : undefined,
+        qty: Number(d.qty) || 0,
+      }))
+      .filter((d) => d.qty > 0);
     qty = clean.reduce((a, d) => a + d.qty, 0);
     dests = clean; receiver = str(fd, "receiver") || null;
   }

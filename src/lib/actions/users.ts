@@ -22,6 +22,17 @@ export async function requireAdmin(): Promise<MutateUserState | null> {
   return null;
 }
 
+// Stricter guard for instance-wide switches: super_admin only, admins included
+// in the refusal. Turning a screen off affects every user of the site, so it
+// sits above account management rather than beside it.
+export async function requireSuperAdmin(): Promise<MutateUserState | null> {
+  const me = await getCurrentUser();
+  if (me?.appUser?.role_id !== "super_admin") {
+    return { error: "Chỉ Super Admin mới đổi được cài đặt này." };
+  }
+  return null;
+}
+
 // Admin-only: creates a Supabase Auth account (with an admin-set password) plus
 // the linked app_users row. Username is required; email is optional. With no
 // email, the auth account uses a synthetic address so it can exist mailbox-free.

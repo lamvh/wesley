@@ -1,5 +1,31 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { ALWAYS_VISIBLE } from "@/lib/portal-nav";
+
+type MiddlewareClient = ReturnType<typeof createServerClient>;
+
+/** True when this request targets a screen an admin switched off in Settings.
+ *
+ * Enforced here rather than per page so sub-routes are covered too: hiding
+ * "Residents" has to close /portal/residents/ada-lovelace as well, and a
+ * guard added page by page is a guard someone forgets on the next screen.
+ *
+ * Fails OPEN - a read error lets the request through. This is a tidiness
+ * switch, not an access control, and a hiccup in it must not lock staff out
+ * of screens they need.
+ */
+async function isHiddenScreen(supabase: MiddlewareClient, pathname: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from("screen_visibility")
+    .select("href")
+    .eq("hidden", true);
+  if (error || !data) return false;
+
+  return data.some(({ href }: { href: string }) => {
+    if (ALWAYS_VISIBLE.includes(href)) return false;
+    return pathname === href || pathname.startsWith(`${href}/`);
+  });
+}
 
 // Refreshes the auth session on every matched request and enforces access:
 // unauthenticated users are pushed to /login (remembering where they were
@@ -22,8 +48,9 @@ export async function updateSession(request: NextRequest) {
   }
 
   let user = null;
+  let supabase: MiddlewareClient | null = null;
   try {
-    const supabase = createServerClient(supabaseUrl, supabaseKey, {
+    supabase = createServerClient(supabaseUrl, supabaseKey, {
       cookies: {
         getAll() {
           return request.cookies.getAll();
@@ -60,6 +87,12 @@ export async function updateSession(request: NextRequest) {
 
   // Signed-in users have no reason to see the login screen.
   if (user && pathname === "/login") {
+    return redirectWithSession("/portal", request, supabaseResponse);
+  }
+
+  // Screens switched off in Settings are closed, not just unlinked - a
+  // bookmark or a typed URL would otherwise walk straight past the hidden nav.
+  if (user && supabase && pathname.startsWith("/portal") && (await isHiddenScreen(supabase, pathname))) {
     return redirectWithSession("/portal", request, supabaseResponse);
   }
 

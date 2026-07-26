@@ -77,3 +77,10 @@ export function canAccessPortal(me: CurrentUser | null): boolean {
 export function toPortalRole(roleId: string | null | undefined): PortalRole {
   return roleId === "super_admin" || roleId === "admin" ? "admin" : "staff";
 }
+
+// Instance-wide switches sit above the admin|staff split: an admin runs the
+// home, a super_admin runs the site. Kept separate from toPortalRole() rather
+// than widening PortalRole, which the whole shell reads.
+export function isSuperAdmin(me: CurrentUser | null): boolean {
+  return me?.appUser?.role_id === "super_admin";
+}

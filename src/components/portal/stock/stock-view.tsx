@@ -10,6 +10,7 @@ import { deleteProduct, deleteProvider, placeOrder } from "@/lib/actions/stock";
 import { stockLevel } from "@/lib/design-meta";
 import { InventoryTab } from "@/components/portal/stock/inventory-tab";
 import { MovementsTab } from "@/components/portal/stock/movements-tab";
+import type { RoomDestOption } from "@/lib/stock-dest-options";
 import { OrderTab } from "@/components/portal/stock/order-tab";
 import { ProvidersTab } from "@/components/portal/stock/providers-tab";
 import { StockItemForm } from "@/components/portal/stock/stock-item-form";
@@ -41,9 +42,11 @@ interface StockViewProps {
   products: Product[];
   movements: StockMovement[];
   orders: Order[];
+  /** Room register for both homes, behind the issue-to picker. */
+  roomOptions: RoomDestOption[];
 }
 
-export function StockView({ providers, products, movements, orders }: StockViewProps) {
+export function StockView({ providers, products, movements, orders, roomOptions }: StockViewProps) {
   const { buildingId } = useBuilding();
   const buildingName = getBuildingById(buildingId).name;
 
@@ -287,7 +290,7 @@ export function StockView({ providers, products, movements, orders }: StockViewP
         />
       )}
       {tab === "movements" && (
-        <MovementsTab movements={movements} products={products} providers={providers} />
+        <MovementsTab movements={movements} products={products} providers={providers} roomOptions={roomOptions} />
       )}
       {tab === "order" && (
         <OrderTab

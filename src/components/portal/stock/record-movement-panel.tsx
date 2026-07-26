@@ -1,10 +1,12 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { recordMovement } from "@/lib/actions/stock";
 import { DestRows, type DestRow } from "@/components/portal/stock/dest-rows";
-import type { MovementDest, MovementDir, Product, Provider } from "@/types/domain";
+import { SearchSelect } from "@/components/portal/stock/search-select";
+import type { RoomDestOption } from "@/lib/stock-dest-options";
+import type { MovementDir, Product, Provider } from "@/types/domain";
 
 // Sticky dark record-movement panel (mirrors order-tab's order-draft aside):
 // a direction toggle, item + date, an IN block (qty/provider/price) or an OUT
@@ -27,10 +29,12 @@ function todayIso(): string {
 export function RecordMovementPanel({
   products,
   providers,
+  roomOptions,
   onRecorded,
 }: {
   products: Product[];
   providers: Provider[];
+  roomOptions: RoomDestOption[];
   onRecorded: () => void;
 }) {
   const [state, action, pending] = useActionState(recordMovement, {});
@@ -40,7 +44,14 @@ export function RecordMovementPanel({
   // Row ids are only for React keys (add/remove stability) - start at 1
   // since the initial row below is hardcoded as id 0.
   const rowId = useRef(1);
-  const [dests, setDests] = useState<DestRow[]>([{ id: 0, room: "", person: "", qty: 0 }]);
+  const [dests, setDests] = useState<DestRow[]>([{ id: 0, key: "", room: "", person: "", qty: 0 }]);
+
+  // Product options for the item picker. The supplier code is searchable but
+  // not shown - staff know items by name, purchasing knows them by code.
+  const itemOptions = useMemo(
+    () => products.map((p) => ({ value: p.id, label: p.name, hint: p.cat, keywords: p.id })),
+    [products],
+  );
 
   // Fresh state on a successful (error-free) submit - reported to the
   // parent, which remounts this component via `key` instead of us calling
@@ -53,11 +64,11 @@ export function RecordMovementPanel({
 
   const unit = products.find((p) => p.id === productId)?.unit ?? "";
 
-  function updateDest(id: number, patch: Partial<MovementDest>) {
+  function updateDest(id: number, patch: Partial<DestRow>) {
     setDests((rows) => rows.map((r) => (r.id === id ? { ...r, ...patch } : r)));
   }
   function addDest() {
-    setDests((rows) => [...rows, { id: rowId.current++, room: "", person: "", qty: 0 }]);
+    setDests((rows) => [...rows, { id: rowId.current++, key: "", room: "", person: "", qty: 0 }]);
   }
   function removeDest(id: number) {
     setDests((rows) => (rows.length > 1 ? rows.filter((r) => r.id !== id) : rows));
@@ -77,7 +88,7 @@ export function RecordMovementPanel({
           <input
             type="hidden"
             name="dests"
-            value={JSON.stringify(dests.map(({ room, person, qty }) => ({ room, person, qty })))}
+            value={JSON.stringify(dests.map(({ room, person, home, qty }) => ({ room, person, home, qty })))}
           />
         )}
 
@@ -104,21 +115,19 @@ export function RecordMovementPanel({
           </button>
         </div>
 
-        <label>
+        <div>
           <span className={labelCls}>Item</span>
-          <select
-            name="productId"
+          <SearchSelect
+            options={itemOptions}
             value={productId}
-            onChange={(e) => setProductId(e.target.value)}
-            required
+            onChange={(id) => setProductId(id)}
+            name="productId"
+            ariaLabel="Item"
+            placeholder={products.length === 0 ? "No items in catalog" : "Search items…"}
+            emptyLabel="No item matches"
             className={fieldCls}
-          >
-            {products.length === 0 && <option value="">No items in catalog</option>}
-            {products.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
-        </label>
+          />
+        </div>
 
         <label>
           <span className={labelCls}>Date</span>
@@ -149,7 +158,14 @@ export function RecordMovementPanel({
           </>
         ) : (
           <>
-            <DestRows dests={dests} unit={unit} onUpdate={updateDest} onAdd={addDest} onRemove={removeDest} />
+            <DestRows
+              dests={dests}
+              unit={unit}
+              roomOptions={roomOptions}
+              onUpdate={updateDest}
+              onAdd={addDest}
+              onRemove={removeDest}
+            />
             <label>
               <span className={labelCls}>Received by</span>
               <input name="receiver" placeholder="Staff who collected" className={fieldCls} />

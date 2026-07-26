@@ -84,7 +84,7 @@ Design source: `.design-src/victoria-mt-eden.dc.html` (canvas: `Victoria - Mobil
 
 ## Out of scope (this phase)
 - Search box - focusable input but query/results not wired.
-- Nav gating is still the coarse `admin`/`staff` split (mapped from `app_users.role_id`), not yet the fine-grained `role_permissions` matrix. No manual toggle. Admin-only routes visited as non-admin show an "Admin only" empty state, not a redirect.
+- Nav gating is still the coarse `admin`/`staff` split (mapped from `app_users.role_id`), not yet the fine-grained `role_permissions` matrix. Admin-only routes visited as non-admin show an "Admin only" empty state, not a redirect. Two exceptions now exist: `superAdminOnly` items (Settings) are hidden from admins as well, and **any** screen a super_admin has switched off in Settings is dropped from both navs and closed at the route - see [settings](../features/portal/settings.md).
 - Access gating (unprovisioned → "access not provisioned" screen) is **live in code but fails open until the schema is applied**, so it only enforces once `app_users` exists in the DB.
 - Date/wings are static strings (no "today" computation).
 

@@ -20,17 +20,38 @@ import { cn } from "@/lib/utils";
 // holds the full nav, the admin group and identity.
 const TAB_HREFS = ["/portal", "/portal/residents", "/portal/roster", "/portal/meals"];
 
-export function MobileTabBar({ identity }: { identity: PortalIdentity }) {
+export function MobileTabBar({
+  identity,
+  hiddenScreens,
+  isSuperAdmin,
+}: {
+  identity: PortalIdentity;
+  /** Hrefs an admin switched off in Settings. Also drops bottom tabs, which
+   *  are picked by href and would otherwise outlive the switch. */
+  hiddenScreens: string[];
+  /** super_admin runs the site, admin runs the home - Settings is the former. */
+  isSuperAdmin: boolean;
+}) {
   const pathname = usePathname();
   const { role } = usePortalRole();
   const [moreOpen, setMoreOpen] = useState(false);
   const me = identity;
   const isAdmin = role === "admin";
 
-  const tabs = TAB_HREFS.map((href) =>
-    PORTAL_NAV.find((i) => i.href === href),
-  ).filter((i): i is PortalNavItem => Boolean(i));
-  const mainNav = PORTAL_NAV.filter((i) => !i.adminOnly || isAdmin);
+  const shown = (items: PortalNavItem[]) =>
+    items.filter(
+      (i) =>
+        (!i.adminOnly || isAdmin) &&
+        (!i.superAdminOnly || isSuperAdmin) &&
+        !hiddenScreens.includes(i.href),
+    );
+  // Bottom tabs are picked by href, so they need the same filter or a switched
+  // off screen keeps its tab while vanishing from the sheet nav above it.
+  const tabs = TAB_HREFS.filter((href) => !hiddenScreens.includes(href))
+    .map((href) => PORTAL_NAV.find((i) => i.href === href))
+    .filter((i): i is PortalNavItem => Boolean(i));
+  const mainNav = shown(PORTAL_NAV);
+  const adminNav = shown(PORTAL_ADMIN_NAV);
 
   return (
     <>
@@ -113,7 +134,7 @@ export function MobileTabBar({ identity }: { identity: PortalIdentity }) {
                   Administration
                 </div>
                 <div className="grid grid-cols-1 gap-[3px]">
-                  {PORTAL_ADMIN_NAV.map((item) => (
+                  {adminNav.map((item) => (
                     <SheetLink
                       key={item.href}
                       item={item}

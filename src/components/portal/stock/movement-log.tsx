@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Icon } from "@/components/shared/icons";
-import type { Provider, StockMovement } from "@/types/domain";
+import type { MovementDest, Provider, StockMovement } from "@/types/domain";
 
 // Global movement ledger (all products): date/actor, item, +/- pill, a
 // details line (provider for IN, room/person + receiver for OUT), the
@@ -15,14 +15,24 @@ function formatDate(iso: string): string {
   return d.toLocaleDateString("en-NZ", { day: "numeric", month: "short" });
 }
 
+/** One destination: "Room 12 · Zhenping Shi (4)", or just the free text for a
+ *  destination outside the register. `home` is only ever set for the other
+ *  building (see buildRoomDestOptions) - this store is Wesley's, so naming it
+ *  on every row would be noise, but a Lodge room number would otherwise read
+ *  as a Wesley one. */
+function destLabel(d: MovementDest): string {
+  const parts = [d.room ? `Room ${d.room}` : "", d.home ?? "", d.person].filter(Boolean);
+  const where = parts.join(" · ") || "Issued";
+  return d.qty ? `${where} (${d.qty})` : where;
+}
+
 /** Human line for the "Details" column: provider for IN, rooms/persons + receiver for OUT. */
 function detailsFor(m: StockMovement, providerName: (id: string) => string): string {
   if (m.dir === "in") {
     return m.providerId ? providerName(m.providerId) : "No provider recorded";
   }
   const dests = m.dests ?? [];
-  const parts = dests.map((d) => `${d.room ? `${d.room} · ` : ""}${d.person}${d.qty ? ` (${d.qty})` : ""}`);
-  const base = parts.length > 0 ? parts.join(", ") : "Issued";
+  const base = dests.length > 0 ? dests.map(destLabel).join(", ") : "Issued";
   return m.receiver ? `${base} → ${m.receiver}` : base;
 }
 

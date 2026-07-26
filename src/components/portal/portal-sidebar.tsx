@@ -38,7 +38,17 @@ function NavLink({
   );
 }
 
-export function PortalSidebar({ identity }: { identity: PortalIdentity }) {
+export function PortalSidebar({
+  identity,
+  hiddenScreens,
+  isSuperAdmin,
+}: {
+  identity: PortalIdentity;
+  /** Hrefs an admin switched off in Settings - filtered out of both groups. */
+  hiddenScreens: string[];
+  /** super_admin runs the site, admin runs the home - Settings is the former. */
+  isSuperAdmin: boolean;
+}) {
   const pathname = usePathname();
   const { role } = usePortalRole();
   const [userCollapsed, setUserCollapsed] = useState(false);
@@ -48,7 +58,15 @@ export function PortalSidebar({ identity }: { identity: PortalIdentity }) {
   const setCollapsed = setUserCollapsed;
   const me = identity;
   const isAdmin = role === "admin";
-  const mainNav = PORTAL_NAV.filter((i) => !i.adminOnly || isAdmin);
+  const shown = (items: PortalNavItem[]) =>
+    items.filter(
+      (i) =>
+        (!i.adminOnly || isAdmin) &&
+        (!i.superAdminOnly || isSuperAdmin) &&
+        !hiddenScreens.includes(i.href),
+    );
+  const mainNav = shown(PORTAL_NAV);
+  const adminNav = shown(PORTAL_ADMIN_NAV);
 
   return (
     <aside
@@ -103,7 +121,7 @@ export function PortalSidebar({ identity }: { identity: PortalIdentity }) {
                 Administration
               </div>
             )}
-            {PORTAL_ADMIN_NAV.map((item) => (
+            {adminNav.map((item) => (
               <NavLink key={item.href} item={item} active={isNavActive(pathname, item.href)} collapsed={collapsed} />
             ))}
           </>

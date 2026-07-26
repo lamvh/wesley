@@ -1,28 +1,43 @@
+"use client";
+
 import { cn } from "@/lib/utils";
+import { SearchSelect } from "@/components/portal/stock/search-select";
+import type { RoomDestOption } from "@/lib/stock-dest-options";
 import type { MovementDest } from "@/types/domain";
 
 // Repeatable "issue to rooms" row editor for the OUT side of the
-// record-movement panel: room / person / qty + remove, plus a running
-// total and "+ Add room". Extracted from record-movement-panel.tsx to keep
-// that file under the file-size guideline.
+// record-movement panel: destination / qty + remove, plus a running total and
+// "+ Add room". Extracted from record-movement-panel.tsx to keep that file
+// under the file-size guideline.
+//
+// Room and resident used to be two free-text boxes. They are one picker now:
+// typing "12" or "Ian" both find the same row, and picking it fills room and
+// resident together - which is also why a resident can no longer be recorded
+// against the wrong room. Destinations outside the register (the kitchens,
+// laundry) still go in as typed text.
 
 const smallFieldCls =
   "w-full rounded-[9px] border border-input bg-cream px-2 py-[9px] text-[13px] text-ink outline-none focus:border-navy";
 
 export interface DestRow extends MovementDest {
   id: number;
+  /** What the picker shows: an option's value when one was chosen, otherwise
+   *  the raw typed text. Client-only - never submitted. */
+  key: string;
 }
 
 export function DestRows({
   dests,
   unit,
+  roomOptions,
   onUpdate,
   onAdd,
   onRemove,
 }: {
   dests: DestRow[];
   unit: string;
-  onUpdate: (id: number, patch: Partial<MovementDest>) => void;
+  roomOptions: RoomDestOption[];
+  onUpdate: (id: number, patch: Partial<DestRow>) => void;
   onAdd: () => void;
   onRemove: (id: number) => void;
 }) {
@@ -38,20 +53,23 @@ export function DestRows({
       </div>
       <div className="flex flex-col gap-2">
         {dests.map((d) => (
-          <div key={d.id} className="grid grid-cols-[1.2fr_1.3fr_54px_32px] items-center gap-[7px]">
-            <input
-              value={d.room}
-              onChange={(e) => onUpdate(d.id, { room: e.target.value })}
-              placeholder="Room"
-              aria-label="Room"
+          <div key={d.id} className="grid grid-cols-[1fr_54px_32px] items-center gap-[7px]">
+            <SearchSelect
+              options={roomOptions}
+              value={d.key}
+              allowFreeText
+              ariaLabel="Room or destination"
+              placeholder="Room, resident or area"
+              emptyLabel="Not in the register"
               className={smallFieldCls}
-            />
-            <input
-              value={d.person}
-              onChange={(e) => onUpdate(d.id, { person: e.target.value })}
-              placeholder="Resident / area"
-              aria-label="Resident or area"
-              className={smallFieldCls}
+              onChange={(value, option) =>
+                onUpdate(
+                  d.id,
+                  option
+                    ? { key: value, room: option.room, person: option.person, home: option.home }
+                    : { key: value, room: "", person: value, home: undefined },
+                )
+              }
             />
             <input
               type="number"

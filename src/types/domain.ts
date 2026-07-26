@@ -471,7 +471,11 @@ export type Cart = Record<string, number>;
 
 export type MovementDir = "in" | "out";
 
-export interface MovementDest { room: string; person: string; qty: number; }
+/** Where an OUT movement went. `room`/`person` are empty for destinations that
+ *  aren't in the register (the kitchens, laundry) - those carry free text in
+ *  `person`. `home` is the building name, recorded because room numbers repeat
+ *  across the two homes, so "3A" alone is ambiguous. */
+export interface MovementDest { room: string; person: string; home?: string; qty: number; }
 
 export interface StockMovement {
   id: string;

@@ -5,6 +5,7 @@ import { MovementLog } from "@/components/portal/stock/movement-log";
 import { RecordMovementPanel } from "@/components/portal/stock/record-movement-panel";
 import { ConfirmDeleteModal } from "@/components/portal/stock/confirm-delete-modal";
 import { deleteMovement } from "@/lib/actions/stock";
+import type { RoomDestOption } from "@/lib/stock-dest-options";
 import type { Product, Provider, StockMovement } from "@/types/domain";
 
 // Stock in/out tab: 3 rolling-7-day KPIs, then a two-column grid - the
@@ -42,10 +43,12 @@ export function MovementsTab({
   movements,
   products,
   providers,
+  roomOptions,
 }: {
   movements: StockMovement[];
   products: Product[];
   providers: Provider[];
+  roomOptions: RoomDestOption[];
 }) {
   // Bumped after a successful record - remounts the panel so its local
   // state (direction, dest rows, uncontrolled fields) starts fresh.
@@ -96,6 +99,7 @@ export function MovementsTab({
           key={panelKey}
           products={products}
           providers={providers}
+          roomOptions={roomOptions}
           onRecorded={() => setPanelKey((k) => k + 1)}
         />
       </div>

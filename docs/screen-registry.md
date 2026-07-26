@@ -32,7 +32,7 @@ Ported from Claude Design project `Wesley MtEden` (`Victoria at Mt Eden.dc.html`
 | - | Residents | `/portal/residents` | - | [residents](./features/portal/residents.md) |
 | - | Resident detail | `/portal/residents/[id]` | - | [resident-detail](./features/portal/resident-detail.md) |
 | - | Roster & shifts | `/portal/roster` | - | [roster-shifts](./features/portal/roster-shifts.md) |
-| - | Meals & dietary | `/portal/meals` | - | [meals-dietary](./features/portal/meals-dietary.md) |
+| - | Meals & dietary (**switched off** - see settings) | `/portal/meals` | - | [meals-dietary](./features/portal/meals-dietary.md) |
 | - | Meal report | `/portal/meal-report` | - | [meal-report](./features/portal/meal-report.md) |
 | - | Activities | `/portal/activities` | - | [activities](./features/portal/activities.md) |
 | - | Family portal | `/portal/family` | - | [family-portal](./features/portal/family-portal.md) |
@@ -41,6 +41,7 @@ Ported from Claude Design project `Wesley MtEden` (`Victoria at Mt Eden.dc.html`
 | - | Forms library (Administration, admin-only) | `/portal/forms` | v1.0 | [forms-library](./features/portal/forms-library.md) |
 | - | Staff (Administration) | `/portal/staff` | - | [staff](./features/portal/staff.md) |
 | - | Users & access | `/portal/users` | - | [users-access](./features/portal/users-access.md) |
+| - | Settings (Administration, **super_admin only**) | `/portal/settings` | v1.0 | [settings](./features/portal/settings.md) |
 | - | Website content (CMS) | `/portal/website` | v1.0 | — |
 
 ## Changelog (per screen)
