@@ -120,7 +120,7 @@ export function TeamTab({
                   className="size-10 rounded-full text-[13.5px]"
                 />
                 <div className="min-w-0">
-                  <div className="truncate text-[14.5px] font-semibold text-ink">{s.name}</div>
+                  <div className="text-[14.5px] font-semibold leading-[1.25] text-ink">{s.name}</div>
                   <div className="text-[12px] text-ink-faint">Since {s.start}</div>
                 </div>
               </div>

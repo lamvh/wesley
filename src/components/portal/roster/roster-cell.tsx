@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 // createPortal is only reached when the picker is open - a client-only state
 // that is always false during SSR - so document is never touched on the server.
 import { createPortal } from "react-dom";
-import type { ShiftType } from "@/types/domain";
+import type { ShiftType, ShiftUsage } from "@/types/domain";
 import type { RosterPickerGroup } from "@/lib/roster-grouping";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +14,8 @@ interface RosterCellProps {
   ids: string[];
   defs: Record<string, ShiftType>;
   pickerDefs: RosterPickerGroup[];
+  /** This staffer's shifts from earlier weeks, most-assigned first. */
+  usage: ShiftUsage[];
   staffName: string;
   dayLabel: string;
   isOpen: boolean;
@@ -25,8 +27,23 @@ interface RosterCellProps {
 
 const POPOVER_W = 236;
 
+/** Most shortcut rows to show. Past ~4 the section stops being a shortcut and
+ *  just repeats the list underneath it. */
+const MAX_SUGGESTIONS = 4;
+
 // One selectable shift row in the picker. `on` = already assigned to this cell.
-function ShiftOption({ d, on, onClick }: { d: ShiftType; on: boolean; onClick: () => void }) {
+// `count` renders the "×N" tally, set only in the suggestions section.
+function ShiftOption({
+  d,
+  on,
+  count,
+  onClick,
+}: {
+  d: ShiftType;
+  on: boolean;
+  count?: number;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"
@@ -43,6 +60,14 @@ function ShiftOption({ d, on, onClick }: { d: ShiftType; on: boolean; onClick: (
           {d.code} <span className="font-medium text-ink-faint">· {d.time}</span>
         </span>
       </span>
+      {count !== undefined && (
+        <span
+          title={`Đã xếp ${count} lần trong 8 tuần trước`}
+          className="shrink-0 text-[11px] font-bold tabular-nums text-ink-faint"
+        >
+          ×{count}
+        </span>
+      )}
       {on && <span className="text-[14px] font-extrabold text-sage">✓</span>}
     </button>
   );
@@ -58,6 +83,7 @@ export function RosterCell({
   ids,
   defs,
   pickerDefs,
+  usage,
   staffName,
   dayLabel,
   isOpen,
@@ -80,6 +106,17 @@ export function RosterCell({
   const extras = ids
     .map((id) => defs[id])
     .filter((d): d is ShiftType => !!d && !shownIds.has(d.id));
+
+  // "Thường làm": this staffer's most-assigned shifts from earlier weeks, lifted
+  // to the top so the common case doesn't mean walking the Group → Role → shift
+  // tree. Restricted to what the picker actually offers - a shift they used to
+  // work before changing role is history, not a valid suggestion - and to shifts
+  // not already in this cell, since the section is about what to add.
+  const suggestions = usage
+    .filter((u) => shownIds.has(u.shiftId) && !ids.includes(u.shiftId))
+    .slice(0, MAX_SUGGESTIONS)
+    .map((u) => ({ d: defs[u.shiftId], count: u.count }))
+    .filter((s): s is { d: ShiftType; count: number } => !!s.d);
 
   // Anchor the fixed popover to the cell each time it opens, clamped to the
   // viewport so it never overflows an edge.
@@ -199,6 +236,25 @@ export function RosterCell({
                 {pickerDefs.length === 0 && extras.length === 0 && (
                   <div className="py-2 text-center text-[11.5px] text-ink-faint">
                     No shifts available
+                  </div>
+                )}
+                {suggestions.length > 0 && (
+                  <div className="mb-[10px] border-b border-line-divider pb-[8px]">
+                    <div className="mb-[5px] flex items-baseline justify-between gap-2">
+                      <span className="text-[10.5px] font-bold uppercase tracking-[0.04em] text-ink-faint">
+                        Thường làm
+                      </span>
+                      <span className="text-[9.5px] font-medium text-ink-faint">8 tuần qua</span>
+                    </div>
+                    {suggestions.map(({ d, count }) => (
+                      <ShiftOption
+                        key={d.id}
+                        d={d}
+                        on={false}
+                        count={count}
+                        onClick={() => onToggle(cellKey, d.id)}
+                      />
+                    ))}
                   </div>
                 )}
                 {pickerDefs.map((group) => (

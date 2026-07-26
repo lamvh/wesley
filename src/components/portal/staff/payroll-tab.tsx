@@ -168,7 +168,7 @@ export function PayrollTab({
                 <div key={s.id} className={`${colClass} items-center border-b border-line-divider py-[13px]`}>
                   <div className="flex min-w-0 items-center gap-[11px]">
                     <PersonBadge initials={s.initials} color={s.color} className="size-[34px] rounded-full text-[12.5px]" />
-                    <span className="truncate text-[14.5px] font-semibold text-ink">{s.name}</span>
+                    <span className="text-[14.5px] font-semibold leading-[1.25] text-ink">{s.name}</span>
                   </div>
                   <div>
                     {role && (

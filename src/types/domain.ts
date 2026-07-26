@@ -375,6 +375,16 @@ export type RosterGrid = Record<string, string[]>;
 export const rosterCellKey = (staffId: string, dateISO: string) =>
   `${staffId}::${dateISO}`;
 
+/** How often one staffer has been given one shift over the lookback window. */
+export interface ShiftUsage {
+  shiftId: string;
+  count: number;
+}
+
+/** usage["{staffId}"] = that staffer's shifts, most-assigned first. Backs the
+ *  "Thường làm" suggestions at the top of the roster cell picker. */
+export type ShiftUsageByStaff = Record<string, ShiftUsage[]>;
+
 /** One assignment created by copying the previous week forward. */
 export interface RosterCopiedShift {
   staffId: string;

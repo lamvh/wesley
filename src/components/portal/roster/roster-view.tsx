@@ -34,6 +34,7 @@ import type {
   RosterDay,
   RosterGrid as RosterGridState,
   ShiftType,
+  ShiftUsageByStaff,
   StaffRecord,
 } from "@/types/domain";
 import { rosterCellKey } from "@/types/domain";
@@ -48,6 +49,9 @@ interface RosterViewProps {
   weekStartISO: string;
   /** on-call staff id per date ISO, persisted for the visible week. */
   initialOnCallByDay: Record<string, string>;
+  /** per-staff shift counts over the weeks before this one, backing the
+   *  "Thường làm" shortcut in the picker. */
+  shiftUsage: ShiftUsageByStaff;
   /** open the duty-roster print preview on mount (roster?duty=1 deep-link). */
   initialDutyPreview?: boolean;
 }
@@ -65,6 +69,7 @@ export function RosterView({
   groups,
   weekStartISO,
   initialOnCallByDay,
+  shiftUsage,
   initialDutyPreview = false,
 }: RosterViewProps) {
   const router = useRouter();
@@ -163,6 +168,10 @@ export function RosterView({
       else next[key] = ids;
       return next;
     });
+    // Close on pick: a cell holds one shift in ~98% of cases, so staying open
+    // just means an extra click to dismiss. Stacking a second shift means
+    // reopening the cell, which is the rarer path.
+    setOpenCell(null);
     const { staffId, dateISO } = cellParts(key);
     startTransition(() => {
       void toggleRosterShift(staffId, dateISO, shiftId);
@@ -289,6 +298,7 @@ export function RosterView({
           onClose={() => setOpenCell(null)}
           onToggle={toggleShift}
           onClear={clearCell}
+          shiftUsage={shiftUsage}
           onCopyStaffWeek={(staffId) => copyWeek(staffId)}
           copyPending={isPending}
         />

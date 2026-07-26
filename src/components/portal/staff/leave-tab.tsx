@@ -146,7 +146,7 @@ export function LeaveTab({
                     color={s.color}
                     className="size-[34px] shrink-0 rounded-full text-[12px]"
                   />
-                  <span className="flex-1 truncate text-[13.5px] font-semibold text-ink">{s.name}</span>
+                  <span className="flex-1 text-[13.5px] font-semibold leading-[1.25] text-ink">{s.name}</span>
                   <span className="shrink-0 text-[12.5px] text-ink-soft">
                     <span className="font-bold text-ink">{remaining}</span> of {s.annual} left
                   </span>

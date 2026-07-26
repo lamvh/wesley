@@ -1,5 +1,11 @@
 import { Fragment } from "react";
-import type { PersonColor, RosterDay, RosterGrid, ShiftType } from "@/types/domain";
+import type {
+  PersonColor,
+  RosterDay,
+  RosterGrid,
+  ShiftType,
+  ShiftUsageByStaff,
+} from "@/types/domain";
 import { rosterCellKey } from "@/types/domain";
 import type { RosterBand, RosterPickerGroup } from "@/lib/roster-grouping";
 import { PersonBadge } from "@/components/shared/person-badge";
@@ -32,6 +38,9 @@ interface RosterGridProps {
   onClose: () => void;
   onToggle: (key: string, id: string) => void;
   onClear: (key: string) => void;
+  /** Per-staff shift counts from earlier weeks, for the picker's "Thường làm"
+   *  shortcut. Missing entry = no history, section is skipped. */
+  shiftUsage: ShiftUsageByStaff;
   /** Pull just this staffer's shifts forward from last week. */
   onCopyStaffWeek: (staffId: string) => void;
   /** True while a copy is in flight, so the row buttons can't stack up. */
@@ -57,6 +66,7 @@ export function RosterGrid({
   onClose,
   onToggle,
   onClear,
+  shiftUsage,
   onCopyStaffWeek,
   copyPending = false,
 }: RosterGridProps) {
@@ -71,7 +81,7 @@ export function RosterGrid({
   }, 0);
   return (
     <div className="mt-4 max-h-[calc(100vh-230px)] overflow-auto rounded-[16px] border border-line bg-cream-2">
-      <table className="w-full min-w-[760px] table-fixed border-collapse">
+      <table className="w-full min-w-[820px] table-fixed border-collapse">
         <thead>
           {/* Weekday header sticks to the top of the scroll box so the day each
               cell belongs to stays visible while scrolling the roster. */}
@@ -79,7 +89,7 @@ export function RosterGrid({
             <th className="sticky top-0 z-30 h-[46px] w-[34px] border-b border-line bg-navy-deep px-[6px] py-[11px] text-center text-[11.5px] font-bold text-sidebar-idle">
               #
             </th>
-            <th className="sticky top-0 z-30 h-[46px] w-[180px] border-b border-line bg-navy-deep px-3 py-[11px] text-left text-[11.5px] font-bold uppercase tracking-[0.4px] text-toggle-track">
+            <th className="sticky top-0 z-30 h-[46px] w-[212px] border-b border-line bg-navy-deep px-3 py-[11px] text-left text-[11.5px] font-bold uppercase tracking-[0.4px] text-toggle-track">
               Staff
             </th>
             {days.map((d) => (
@@ -171,7 +181,10 @@ export function RosterGrid({
                           color={st.color}
                           className="size-[30px] rounded-full text-[11px]"
                         />
-                        <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold leading-[1.15] text-ink">
+                        {/* Names wrap rather than truncate - several staff share
+                            a first name, so a clipped "Tran Quynh…" is worse
+                            than a two-line row. */}
+                        <span className="min-w-0 flex-1 text-[13.5px] font-semibold leading-[1.25] text-ink">
                           {staffDisplayName(st)}
                         </span>
                         {/* Stays out of the way until the row is hovered or the
@@ -199,6 +212,7 @@ export function RosterGrid({
                           ids={grid[cellKey] ?? []}
                           defs={defs}
                           pickerDefs={pickers[st.id] ?? []}
+                          usage={shiftUsage[st.id] ?? []}
                           staffName={staffDisplayName(st)}
                           dayLabel={`${d.dow} ${d.date}`}
                           isOpen={openCell === cellKey}
