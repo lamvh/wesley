@@ -11,6 +11,11 @@ import { rosterCellKey } from "@/types/domain";
 import type { RosterBand, RosterPickerGroup } from "@/lib/roster-grouping";
 import { PersonBadge } from "@/components/shared/person-badge";
 import { RosterCell } from "@/components/portal/roster/roster-cell";
+import {
+  StaffHoursCell,
+  BandHoursCell,
+  WeekHoursCell,
+} from "@/components/portal/roster/roster-hours-cells";
 import { staffDisplayName } from "@/lib/staff-display";
 import { cn } from "@/lib/utils";
 
@@ -85,7 +90,9 @@ export function RosterGrid({
   onCopyStaffWeek,
   copyPending = false,
 }: RosterGridProps) {
-  const colSpan = days.length + 2;
+  // +3: row number, staff name, and the trailing weekly-hours column.
+  const colSpan = days.length + 3;
+  const paidHoursOf = (shiftId: string) => defs[shiftId]?.paidHours ?? 0;
   const onCallMeta = Object.fromEntries(onCallOptions.map((o) => [o.value, o]));
   // Running row number offset per band, so numbering flows continuously across
   // bands (computed up-front to avoid mutating a counter during render).
@@ -96,7 +103,7 @@ export function RosterGrid({
   }, 0);
   return (
     <div className="mt-4 max-h-[calc(100vh-230px)] overflow-auto rounded-[16px] border border-line bg-cream-2">
-      <table className="w-full min-w-[820px] table-fixed border-collapse">
+      <table className="w-full min-w-[898px] table-fixed border-collapse">
         <thead>
           {/* Weekday header sticks to the top of the scroll box so the day each
               cell belongs to stays visible while scrolling the roster. */}
@@ -116,6 +123,12 @@ export function RosterGrid({
                 <div className="text-[11px] text-sidebar-muted">{d.date} {d.month}</div>
               </th>
             ))}
+            <th className="sticky top-0 z-30 h-[46px] w-[78px] border-b border-b-line border-l border-l-sidebar-border bg-navy-deep px-1 py-[11px] text-center text-[11.5px] font-bold uppercase tracking-[0.4px] text-toggle-track">
+              Hours
+              <div className="text-[10px] font-medium normal-case tracking-normal text-sidebar-muted">
+                This week
+              </div>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -162,6 +175,7 @@ export function RosterGrid({
                 </td>
               );
             })}
+            <td className="border-l border-line-divider" />
           </tr>
           {bands.map((band, bi) => (
             <Fragment key={band.id}>
@@ -249,6 +263,13 @@ export function RosterGrid({
                         />
                       );
                     })}
+                    <StaffHoursCell
+                      staffId={st.id}
+                      days={days}
+                      grid={grid}
+                      paidHoursOf={paidHoursOf}
+                      name={staffDisplayName(st)}
+                    />
                   </tr>
               ))}
               {/* Per-day coverage for this band: how many shifts its staff are
@@ -290,6 +311,12 @@ export function RosterGrid({
                     </td>
                   );
                 })}
+                <BandHoursCell
+                  band={band}
+                  days={days}
+                  grid={grid}
+                  paidHoursOf={paidHoursOf}
+                />
               </tr>
             </Fragment>
           ))}
@@ -308,6 +335,12 @@ export function RosterGrid({
                 {t}
               </td>
             ))}
+            <WeekHoursCell
+              bands={bands}
+              days={days}
+              grid={grid}
+              paidHoursOf={paidHoursOf}
+            />
           </tr>
         </tbody>
       </table>

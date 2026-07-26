@@ -256,7 +256,13 @@ export function StaffView({
       </div>
 
       {tab === "team" && (
-        <TeamTab staff={staff} onEdit={openEditStaff} onDelete={requestDeleteStaff} />
+        <TeamTab
+          staff={staff}
+          roles={roles}
+          groups={groups}
+          onEdit={openEditStaff}
+          onDelete={requestDeleteStaff}
+        />
       )}
       {tab === "roles" && (
         <RolesGroupsTab roles={roles} groups={groups} roleCounts={roleCounts} />

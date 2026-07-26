@@ -205,10 +205,11 @@ export interface Alert {
 
 export type PortalRole = "admin" | "staff";
 
+/** Greeting + alerts for the dashboard. KPIs are live and whole-organisation
+ *  (lib/data/dashboard.ts), so they are not part of this role-branched shape. */
 export interface Dashboard {
   greeting: string;
   sub: string;
-  kpis: Kpi[];
   alerts: Alert[];
 }
 
@@ -353,6 +354,10 @@ export interface ShiftType {
   /** building id the shift belongs to ("wesley" | "lodge"); splits the duty
    *  sheet into per-building columns. */
   building: string;
+  /** paid hours this shift is worth (shift_templates.paid_hours); 0 if unset.
+   *  Lets the roster total a week's hours from the grid it already holds, so
+   *  the figure tracks unsaved edits instead of the last server read. */
+  paidHours: number;
 }
 
 export interface RosterDay {

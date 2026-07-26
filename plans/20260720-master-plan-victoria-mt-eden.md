@@ -116,6 +116,33 @@ Sinh lại bất cứ lúc nào (sau khi thêm role/module hoặc thêm/bớt sh
 
 Ghi theo ngày, mới nhất trên cùng.
 
+- **2026-07-27** — ⏱️ **Roster: cột "Hours · This week" (giờ công mỗi người/tuần).** Theo yêu cầu của bạn. Mỗi dòng staff hiện **giờ công + số ca**, mỗi band có dòng tổng, và dòng "Staff on duty" có tổng cả tuần.
+  - **Tính client-side từ chính lưới đang hiển thị, KHÔNG fetch lại.** Roster là màn tương tác — nếu đọc từ server thì con số sẽ là số của lần lưu trước trong khi bạn đang sửa, mà vẫn trông như số thật. `staffWeekHours()` đi trên đúng `grid` mà các ô đang render nên tổng nhảy theo từng ca xếp/bỏ.
+  - **Phải thêm `paidHours` vào `ShiftType`** — type này trước đó mang đủ mọi thứ của mẫu ca *trừ* số giờ (chỉ `ShiftTemplate` mới có).
+  - Ca có mẫu chưa đặt `paid_hours` tính **0 giờ nhưng vẫn đếm là 1 ca**, để mẫu chưa cấu hình lộ ra qua khoảng vênh giữa 2 số thay vì biến mất. Hiện **26/26 mẫu đang dùng đều đã có giờ**.
+  - Trùng cách tính với tab Payroll (`getPayrollHours()`, đọc server-side). Hai đường tính ra một con số chính là chỗ dễ lệch → `verify-roster-week-hours.mts` bắt chúng phải khớp: **4/4 PASS trên tuần thật** (34 người, 140 ca, **1049 giờ**), khớp từng người và khớp tổng. Top: Hong Le 56h/6 ca, Duy Nguyen 44h/6 ca.
+- **2026-07-27** — 📊 **Dashboard: KPI thật, gộp toàn bộ toà nhà.** Bạn chốt "dashboard hiển thị toàn bộ dữ liệu, không riêng building nào" + "thật được cái nào làm cái đó, bỏ phần còn lại". 4 KPI cũ **đều là chuỗi cứng**; nay còn **3 KPI thật**, `getDashboardKpis()` (`lib/data/dashboard.ts`):
+  - **Occupancy 95%** — "70 of 74 rooms · all homes", delta "4 free" (gộp Wesley 52/52 + Lodge 18/22).
+  - **Residents 71** — "52 Wesley · 19 The Lodge" (tách ra để bạn đối chiếu được tổng).
+  - **Low stock 18** — "of 35 tracked items · Wesley store". Loại sản phẩm `par = 0` (chưa đặt mức đặt lại) — không loại thì mọi item chưa cấu hình đều bị báo thiếu. Kho hiện chỉ có 1 site nên sub ghi rõ tên site thay vì ngầm hiểu là cả 2.
+  - **Bỏ hẳn "Open incidents"** — **không có bảng incidents** trong DB, không cách nào làm thật; để số bịa cạnh occupancy thật đúng là lỗi đã dọn 2 lần ở màn này.
+  - **KPI không còn tách theo role.** Trước đó staff thấy bộ riêng ("My residents 14", "Tasks due 6") — toàn số bịa và không suy ra được từ bất cứ thứ gì đang lưu. Occupancy/headcount là cùng một sự thật với mọi người xem. Role giờ chỉ đổi greeting + alerts.
+  - ⚠️ **Không làm KPI nhân sự**: `staff` và `roster_shifts` **chỉ có Wesley**, đếm lên sẽ mang tiếng "cả 2 nhà" mà thực chất đếm 1. ⚠️ **Alerts vẫn là mock** — các dòng "Needs attention" nhắc tên resident và mã incident không tồn tại; đây là nội dung bịa cuối cùng còn lại trên màn này.
+- **2026-07-27** — 🔎 **Staff Team: chip lọc theo nhóm / trạng thái / hợp đồng.** Bạn yêu cầu tag + group filter (nurse, kitchen, active, inactive…). Tìm kiếm chữ không còn đủ với 37 người.
+  - 3 hàng chip trên bảng: **Group** (Nurse 5 · HCA 16 · Care Takers 12 · Kitchen 8 · Activity Cordinator 1 · No group 1 — lấy đúng thứ tự và **màu** của band roster), **Status** (Active 34 · Inactive 3), **Contract** (Part-time 19 · Full-time 15 · Casual 3). Chọn nhiều trong 1 hàng (OR), kết hợp giữa các hàng (AND), và kết hợp với ô tìm kiếm.
+  - **Status dựng từ dữ liệu chứ không hardcode**: "On leave" là giá trị **suy ra lúc đọc, không bao giờ lưu**, nên danh sách cứng sẽ hoặc bỏ sót nó hoặc chào giá trị không ai có.
+  - **Người có vai trò thuộc >1 nhóm hiện ở TẤT CẢ các nhóm đó** — cố ý khác roster (roster buộc xếp mỗi người vào đúng 1 band). "Cho tôi xem người làm bếp" phải ra cả người vừa bếp vừa điều dưỡng.
+  - **Số trên chip tính với chính hàng của nó được gỡ ra**, nên bấm 1 nhóm không làm mọi chip nhóm khác về 0. Số trên chip = "bấm thêm cái này thì được bao nhiêu" — đó mới là số đáng hiện trên thứ bạn sắp bấm.
+  - Verify `verify-staff-team-filters.mts` **8/8 PASS trên 37 người thật**, gồm cả mục "số trên mỗi chip = số dòng thật sau khi bấm".
+- **2026-07-27** — 🐛 **`0009` bạn chạy là bản CŨ — 2 sản phẩm mang giá ÂM.** Bạn báo đã chạy `0009`; verify lại thì `bsl-rubbish-bag-kitchen-2` = **−14.78** và `bsl-rubbish-bag-lge-bin-liner-kitchen-1` = **−8.70**. Đó **chính xác** là 2 giá rác sinh ra từ lỗi lệch cột tôi đã phát hiện và sửa trước khi giao file → DB chạy bản seed cũ hơn file trên đĩa.
+  - Viết `diff-cliffyhill-seed-vs-db.mts` đối chiếu **cả 35 dòng** (name/category/unit/price/par/qty) thay vì chỉ vá 2 dòng đã thấy — kết quả **đúng 2 dòng lệch**, phần còn lại khớp.
+  - Sửa **đúng 2 dòng** bằng UPDATE, **không chạy lại `0009`** vì preamble của nó DELETE toàn bộ products/providers/movements/orders của `wesley`. Sau sửa: DB khớp file hoàn toàn, `verify-cliffyhill-stock.mts` **13/13 PASS**.
+  - ⚠️ **Bài học**: seed đã sinh ra là phải diff lại với DB sau khi apply, không tin "đã chạy rồi".
+- **2026-07-27** — ⚠️ **Phát hiện: `Tran Quynh Trang` bị TRÙNG 2 bản ghi, 1 bản vô hình nhưng đang giữ 2 ca.**
+  - `9396b604` — `building_id = wesley`, tạo **21/07**, **6 ca**.
+  - `ef6b94cd` — `building_id = **NULL**`, tạo **16/07**, **2 ca**.
+  - Mọi reader đều lọc `building_id = 'wesley'` ⇒ bản NULL **không hiện ở bất kỳ màn nào**, nhưng 2 ca gắn với nó vẫn nằm trong `roster_shifts`. Nghĩa là roster đang **thiếu 2 ca** của một người thật, và giờ công của người này bị chia đôi giữa 2 bản ghi.
+  - Đây là tên **duy nhất** bị trùng trong 37 người. **CHƯA xử lý** — chờ bạn chốt gộp thế nào (dời 2 ca sang bản wesley rồi xoá bản NULL, hay giữ bản NULL và gán nó về wesley).
 - **2026-07-27** — 🧹 **Bỏ "Today's programme" và "Recent family messages" khỏi dashboard.** Bạn yêu cầu ẩn. Cả hai đều là **mock cứng 100%**, và đang nằm ngay dưới strip sinh nhật đọc dữ liệu thật — Recent family messages liệt kê Peggy W., George A., Bill T., **không ai có trong sổ của cả 2 nhà**; Today's programme là 6 dòng lịch bịa ("Garden group", "Birthday afternoon tea · Mei's 90th") không có nguồn nào phía sau. Đây đúng kiểu lỗi đã dọn ở trang chi tiết phòng và strip sinh nhật.
   - **Xoá hẳn chứ không chỉ ẩn**, vì không nơi nào khác dùng: 2 component `today-programme.tsx` + `recent-family-messages.tsx`, type `ScheduleItem`, và 2 field `todaySchedule`/`familyPosts` trên `Dashboard` + mock. Ẩn mà giữ lại là để code chết. Git vẫn còn nếu sau này có nguồn thật.
   - `NeedsAttention` từ cột `1.5fr` chuyển thành **full width** (bỏ cột kia thì lưới `1.5fr_1fr` để trống nửa màn).

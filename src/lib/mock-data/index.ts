@@ -29,4 +29,6 @@ export {
   shiftWeek,
   dailyTotals,
   totalShifts,
+  staffWeekHours,
+  formatHours,
 } from "./roster-schedule";

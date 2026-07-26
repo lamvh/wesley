@@ -76,3 +76,18 @@ Two different things live in `staff.status`, and only one of them is real data:
 
 - **On leave** is **derived** — a staffer counts as away when an approved Annual/Sick request spans today (`getStaff()`, `lib/data/staff.ts`). Nothing writes the string to the column; approving a request only debits a balance. A *stored* "On leave" is therefore stale, and `getStaff()` now **ignores** it rather than trusting it, so the badge can only come from real leave records. One seeded row (Candy Tian) carried it with no request behind it and showed as away permanently; `supabase/seed/0006_clear_stale_on_leave_status.sql` cleared it.
 - **Inactive** is **stored** — set from the "Đang làm việc" checkbox on the staff form (edit mode only). It hides someone from the roster and the duty sheet via `activeStaff()` without deleting the record, its leave balances, or its shift history. They stay listed here with a grey badge and can be reactivated.
+
+## Team filters (2026-07-27)
+Free-text search alone stopped scaling at 37 staff, so the Team tab gained three rows of filter chips above the table (`team-filters.tsx`; rules in `lib/staff-filtering.ts`, kept out of the component because `team-tab.tsx` was already long).
+
+- **Group** - the real role groups (Nurse, HCA, Care Takers, Kitchen, Activity Cordinator), in registry order and carrying each band's own colour so the Team tab and the roster read as the same grouping. A trailing **No group** chip appears only when somebody is actually in it (Admin, Team Leader).
+- **Status** - built from the values present, not a hardcoded list: "On leave" is derived at read time and never stored, so a fixed list would either miss it or offer values nobody holds.
+- **Contract** - Full-time / Part-time / Casual.
+
+Multi-select **within** a row (OR), combined **across** rows (AND), and combined with the search box.
+
+**A staffer with roles in more than one group appears under all of them.** This deliberately differs from the roster, which must place each person in exactly one band: "show me kitchen staff" should list anyone who does kitchen work even if they also nurse. Verified against the live data - Tran Quynh Trang (Care Taker + HCA) shows under both.
+
+**Chip counts are computed with their own row lifted**, so picking one group does not drive every other group chip to 0. A chip's number is therefore "what you'd get if you picked this too", which is the only number worth showing on a chip you might click next.
+
+Verified by `scripts/db/verify-staff-team-filters.mts` - 8/8 PASS on the real 37-person list, including that every chip's count equals the row count you actually get after clicking it.

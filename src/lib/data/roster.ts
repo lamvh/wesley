@@ -37,6 +37,7 @@ export async function getRosterShiftTypes(): Promise<ShiftType[]> {
     role: t.role,
     req: t.req,
     building: t.building,
+    paidHours: t.paidHours,
   }));
 }
 

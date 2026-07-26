@@ -62,3 +62,36 @@ export function dailyTotals(staffIds: string[], days: RosterDay[], grid: RosterG
 export function totalShifts(grid: RosterGrid): number {
   return Object.values(grid).reduce((acc, ids) => acc + ids.length, 0);
 }
+
+/** Paid hours and shift count for one staffer over the visible week.
+ *
+ * Computed from the grid the scheduler is already holding rather than read back
+ * from the server, so the total moves the moment a shift is added or removed -
+ * a figure that only caught up on refresh would be read as the saved truth
+ * while showing the previous week's arithmetic.
+ *
+ * A shift whose template has no `paid_hours` contributes 0 hours but still
+ * counts as a shift, so an unconfigured template shows up as a gap between the
+ * two numbers instead of vanishing.
+ */
+export function staffWeekHours(
+  staffId: string,
+  days: RosterDay[],
+  grid: RosterGrid,
+  paidHoursOf: (shiftId: string) => number,
+): { hours: number; shifts: number } {
+  let hours = 0;
+  let shifts = 0;
+  for (const d of days) {
+    for (const id of grid[rosterCellKey(staffId, d.iso)] ?? []) {
+      hours += paidHoursOf(id);
+      shifts += 1;
+    }
+  }
+  return { hours, shifts };
+}
+
+/** Round to at most one decimal, dropping a trailing ".0" (7.5 → "7.5", 8 → "8"). */
+export function formatHours(hours: number): string {
+  return String(Math.round(hours * 10) / 10);
+}

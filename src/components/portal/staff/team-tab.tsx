@@ -4,7 +4,12 @@ import { useMemo, useState } from "react";
 import { PersonBadge } from "@/components/shared/person-badge";
 import { Icon } from "@/components/shared/icons";
 import { staffContractMeta, staffStatusMeta } from "@/lib/design-meta";
-import type { StaffRecord } from "@/types/domain";
+import { TeamFilters } from "@/components/portal/staff/team-filters";
+import {
+  EMPTY_STAFF_FILTER, buildStaffFacets, filterStaff, isFilterActive, toggleFilterValue,
+  type StaffFilter, type StaffFilterAxis,
+} from "@/lib/staff-filtering";
+import type { RoleDef, RoleGroup, StaffRecord } from "@/types/domain";
 import { cn } from "@/lib/utils";
 
 const COLS = "grid-cols-[2fr_1fr_1fr_1.1fr_0.7fr_1fr_1fr_88px]";
@@ -34,29 +39,39 @@ function visaPill(visaType: string, visaExpiry: string): { text: string; cls: st
 
 // Team directory: avatar+name+tenure, role, contract pill (+ weekly hours),
 // visa (type + expiry chip), leave balance, phone, status dot, edit/delete.
-// Searchable (name/role/contract/visa/phone/status) and paginated client-side.
+// Free-text search plus group/status/contract chips, paginated client-side.
+// Filtering rules live in lib/staff-filtering.ts; this file owns the table.
 export function TeamTab({
   staff,
+  roles,
+  groups,
   onEdit,
   onDelete,
 }: {
   staff: StaffRecord[];
+  roles: RoleDef[];
+  groups: RoleGroup[];
   onEdit: (s: StaffRecord) => void;
   onDelete: (s: StaffRecord) => void;
 }) {
   const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<StaffFilter>(EMPTY_STAFF_FILTER);
   const [page, setPage] = useState(0);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return staff;
-    return staff.filter((s) =>
-      [s.name, s.roles.join(" "), s.contract, s.visaType, s.phone, s.status]
-        .join(" ")
-        .toLowerCase()
-        .includes(q),
-    );
-  }, [staff, query]);
+  const filtered = useMemo(
+    () => filterStaff(staff, roles, filter, query),
+    [staff, roles, filter, query],
+  );
+  const facets = useMemo(
+    () => buildStaffFacets(staff, roles, groups, filter, query),
+    [staff, roles, groups, filter, query],
+  );
+
+  // Any narrowing can shrink the list past the current page.
+  function changeFilter(axis: StaffFilterAxis, value: string) {
+    setFilter((f) => toggleFilterValue(f, axis, value));
+    setPage(0);
+  }
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const curPage = Math.min(page, pageCount - 1);
@@ -68,6 +83,17 @@ export function TeamTab({
 
   return (
     <div className="mt-6">
+      <TeamFilters
+        facets={facets}
+        filter={filter}
+        active={isFilterActive(filter)}
+        onToggle={changeFilter}
+        onClear={() => {
+          setFilter(EMPTY_STAFF_FILTER);
+          setPage(0);
+        }}
+      />
+
       <div className="mb-3 flex flex-wrap items-center gap-3">
         <div className="relative min-w-[240px] flex-1 max-w-[380px]">
           <input
@@ -219,7 +245,7 @@ export function TeamTab({
 
         {filtered.length === 0 && (
           <div className="px-[22px] py-10 text-center text-[14px] text-ink-faint">
-            {staff.length === 0 ? "No staff members yet." : "No staff match your search."}
+            {staff.length === 0 ? "No staff members yet." : "No staff match your search or filters."}
           </div>
         )}
       </div>

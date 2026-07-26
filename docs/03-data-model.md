@@ -64,7 +64,7 @@ interface OccupancyWing { name: string; filled: number; total: number; colorKey:
 
 ## Dashboard (role-dependent)
 
-`getDashboard(role)` returns `{ greeting, sub, kpis, alerts }` - static mock, admin vs staff differ in all four. Birthdays are not part of this accessor: the dashboard strip reads live `residents.dob` via `getBirthdaysThisMonth()` (`lib/data/residents.ts`). `todaySchedule`, `wings` and `familyPosts` were dropped along with the blocks that rendered them (occupancy-by-wing, Today's programme, Recent family messages) - see [dashboard](./features/portal/dashboard.md) → History.
+`getDashboard(role)` returns `{ greeting, sub, alerts }` - static mock, role-branched. **KPIs are live** and come from `getDashboardKpis()` (`lib/data/dashboard.ts`), which counts rooms and residents across **every** building and stock for the single site that has any; they are not role-branched. Birthdays are not part of this accessor: the dashboard strip reads live `residents.dob` via `getBirthdaysThisMonth()` (`lib/data/residents.ts`). `todaySchedule`, `wings` and `familyPosts` were dropped along with the blocks that rendered them (occupancy-by-wing, Today's programme, Recent family messages) - see [dashboard](./features/portal/dashboard.md) → History.
 
 ## Marketing content
 

@@ -8,9 +8,14 @@ export interface RosterBand {
   staff: StaffRecord[];
 }
 
+/** Bucket id for staff whose roles belong to no group (Admin, Team Leader).
+ *  Exported so the Team-tab filter uses the same id as the roster band rather
+ *  than a second copy of the string. */
+export const UNASSIGNED_GROUP_ID = "__unassigned";
+
 // Band identity + palette for staff whose roles map to no group.
 const UNASSIGNED: Omit<RosterBand, "staff"> = {
-  id: "__unassigned",
+  id: UNASSIGNED_GROUP_ID,
   label: "Unassigned",
   color: "#7a7163",
   tint: "#EFE7D7",

@@ -183,3 +183,12 @@ Reported: "bấm print duty mặc định lại export ra 2 trang" (default prin
 Also removed the `overflow: hidden` on `.duty-sheet` added by the earlier "fix in single-day tràn 2 trang" pass (2026-07-20, same day) - that hypothesis (overflow-hidden + absolutely-positioned header bars causing duplication) didn't reproduce in an isolated headless-Chrome repro and is superseded by the `position: fixed` finding above; content is sized to fit one page by design, so the clip was unnecessary defense.
 
 **Not independently verified with an automated print-page-count check** - a headless `--print-to-pdf` repro was built to test hypotheses but gave inconsistent/unreliable pagination results unrelated to the actual fix (didn't even paginate a trivial 3-page test correctly), so it couldn't confirm the final state. `tsc`/eslint/`next build` are clean and the change is structurally minimal, but please verify visually: `/portal/roster` → Export → Single day → Print, and → Whole week → Print, before treating this as closed.
+
+## Weekly hours column (2026-07-27)
+The grid ends in an **Hours · This week** column (`roster-hours-cells.tsx`): paid hours + shift count per staff row, a subtotal on each band footer, and the week's grand total in the "Staff on duty" row.
+
+**Computed client-side from the grid, not fetched.** The roster is interactive, so a server-read figure would show the last saved arithmetic while the user is mid-edit - read as the saved truth, and wrong. `staffWeekHours()` (`lib/mock-data/roster-schedule.ts`) walks the same `grid` the cells render from, so the total moves with every assignment. This required adding `paidHours` to `ShiftType`, which previously carried everything about a shift template *except* its hours.
+
+A shift whose template has no `paid_hours` contributes **0 hours but still counts as a shift**, so an unconfigured template shows as a gap between the two numbers rather than disappearing. All 26 templates currently in use have hours set.
+
+Same arithmetic as the Payroll tab's `getPayrollHours()`, which reads the persisted rows server-side. Two paths to one number is where drift lives, so `scripts/db/verify-roster-week-hours.mts` asserts they agree - **4/4 PASS** on the real week (34 staff, 140 shifts, 1049 hours), per staffer and in total.

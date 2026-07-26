@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Birthday, PortalRole } from "@/types/domain";
+import type { Birthday, Kpi, PortalRole } from "@/types/domain";
 import { usePortalRole } from "@/lib/role-context";
 import { getDashboard } from "@/lib/mock-data";
 import { KpiCard } from "@/components/shared/kpi-card";
@@ -11,22 +11,34 @@ import { BirthdayStrip } from "./birthday-strip";
 import { NeedsAttention } from "./needs-attention";
 import { DashboardSkeleton } from "./dashboard-skeleton";
 
-// Portal landing screen. Same skeleton for both roles; greeting, sub, the 4
-// KPIs and the alert set swap with the active role. Birthdays are shared and
-// come from the real register. Header buttons are inert this phase.
+// Portal landing screen. Greeting, sub and the alert set swap with the active
+// role; the KPIs and birthday strip do NOT - they are live figures covering
+// every home, and the home's numbers are the same whoever is looking. This is
+// the one screen deliberately not scoped to a building.
+// Header buttons are inert this phase.
 //
 // "Today's programme" and "Recent family messages" used to sit below. Both
 // were hardcoded mock rows - Peggy W., George A., "Mei's 90th" - none of whom
 // are in either register, presented next to live occupancy and birthday data.
 // Removed rather than left dangling; git has them if a real source arrives.
-export function DashboardView({ birthdays }: { birthdays: Birthday[] }) {
+export function DashboardView({ birthdays, kpis }: { birthdays: Birthday[]; kpis: Kpi[] }) {
   const { role } = usePortalRole();
   // Remount the body on role change (key) so the loading→render cycle re-runs
   // cleanly without a setState inside the effect.
-  return <DashboardBody key={role} role={role} birthdays={birthdays} />;
+  return <DashboardBody key={role} role={role} birthdays={birthdays} kpis={kpis} />;
 }
 
-function DashboardBody({ role, birthdays }: { role: PortalRole; birthdays: Birthday[] }) {
+function DashboardBody({
+  role,
+  birthdays,
+  kpis,
+}: {
+  role: PortalRole;
+  birthdays: Birthday[];
+  /** Live, whole-organisation figures. Not role-branched: the numbers are the
+   *  home's numbers whoever is looking. */
+  kpis: Kpi[];
+}) {
   const [loading, setLoading] = useState(true);
 
   // Explicit loading → render transition. Today getDashboard() is synchronous
@@ -65,11 +77,13 @@ function DashboardBody({ role, birthdays }: { role: PortalRole; birthdays: Birth
         }
       />
 
-      <div className="mt-[26px] grid grid-cols-2 gap-4 md:grid-cols-4">
-        {data.kpis.map((kpi) => (
-          <KpiCard key={kpi.label} kpi={kpi} />
-        ))}
-      </div>
+      {kpis.length > 0 && (
+        <div className="mt-[26px] grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+          {kpis.map((kpi) => (
+            <KpiCard key={kpi.label} kpi={kpi} />
+          ))}
+        </div>
+      )}
 
       <BirthdayStrip birthdays={birthdays} />
 
